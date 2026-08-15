@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MoneyTrace - Main Dashboard</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter, Manrope, JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Chart.js for data visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Tailwind Config injected from system prompt -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#bec6e0",
+                        "surface-container-high": "#2a2a2b",
+                        "surface-container-low": "#1b1b1d",
+                        "outline-variant": "#45464d",
+                        "inverse-primary": "#565e74",
+                        "secondary": "#b4c5ff",
+                        "outline": "#909097",
+                        "surface-dim": "#131315",
+                        "on-tertiary": "#233144",
+                        "on-surface": "#e4e2e4",
+                        "on-error-container": "#ffdad6",
+                        "secondary-container": "#0053db",
+                        "tertiary-fixed": "#d5e3fd",
+                        "tertiary-container": "#09182a",
+                        "tertiary": "#b9c7e0",
+                        "on-secondary-fixed-variant": "#003ea8",
+                        "tertiary-fixed-dim": "#b9c7e0",
+                        "surface-variant": "#353436",
+                        "surface-bright": "#39393b",
+                        "surface-container-highest": "#353436",
+                        "on-secondary-fixed": "#00174b",
+                        "on-error": "#690005",
+                        "primary": "#bec6e0",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-primary-fixed": "#131b2e",
+                        "primary-container": "#0f172a",
+                        "on-tertiary-fixed-variant": "#3a485c",
+                        "on-tertiary-fixed": "#0d1c2f",
+                        "on-secondary": "#002a78",
+                        "background": "#131315",
+                        "surface-container": "#1f1f21",
+                        "on-primary": "#283044",
+                        "on-secondary-container": "#cdd7ff",
+                        "on-surface-variant": "#c6c6cd",
+                        "primary-fixed": "#dae2fd",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "primary-fixed-dim": "#bec6e0",
+                        "error": "#ffb4ab",
+                        "on-background": "#e4e2e4",
+                        "inverse-surface": "#e4e2e4",
+                        "secondary-fixed": "#dbe1ff",
+                        "surface": "#131315",
+                        "error-container": "#93000a",
+                        "surface-container-lowest": "#0e0e10",
+                        "on-tertiary-container": "#738298",
+                        "inverse-on-surface": "#303032",
+                        "on-primary-container": "#798098"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "card-padding": "20px",
+                        "sidebar-width": "280px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "code-data": ["JetBrains Mono"],
+                        "headline-lg": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "code-data": ["13px", { "lineHeight": "18px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Glassmorphism utility classes */
+        .glass-panel {
+            background-color: rgba(30, 41, 59, 0.6); /* Semi-transparent Slate */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); /* Inner glow */
+            transition: all 0.3s ease;
+        }
+        .glass-panel:hover {
+            background-color: rgba(30, 41, 59, 0.8);
+            border-color: rgba(51, 65, 85, 1);
+        }
+        .glass-sub-panel {
+            background-color: #1E293B; /* Slate */
+            border: 1px solid #334155;
+        }
+        
+        /* Layout utility for grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 16px;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #131315; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #353436; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #45464d; 
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md">
+<!-- TopNavBar (Shared Component) -->
+<nav class="bg-surface/60 backdrop-blur-xl border-b border-outline-variant/30 flex justify-between items-center px-container-margin h-16 w-full z-50 sticky top-0">
+<!-- Brand / Left Side -->
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">MoneyTrace</span>
+<!-- Search Bar (on_left) -->
+<div class="hidden md:flex relative ml-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="bg-surface-container-high border border-outline-variant rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary text-on-surface w-64 placeholder:text-on-surface-variant transition-colors" placeholder="Search entity, ID, or IP..." type="text"/>
+</div>
+</div>
+<!-- Trailing Actions / Right Side -->
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full border border-outline-variant/50 mr-2">
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+<span class="text-xs text-on-surface-variant font-medium">System Status: Active</span>
+</div>
+<button class="text-on-surface-variant hover:bg-surface-variant/50 transition-colors p-2 rounded-full scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-variant/50 transition-colors p-2 rounded-full scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">settings_suggest</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-variant/50 transition-colors p-2 rounded-full scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</nav>
+<!-- App Layout: Sidebar + Main Content -->
+<div class="flex h-[calc(100vh-64px)] w-full overflow-hidden">
+<!-- SideNavBar (Shared Component) -->
+<!-- Note: Using hidden md:flex to hide on mobile as per standard responsive practices, though JSON doesn't strictly dictate mobile behavior, 'docked left-0 h-full w-sidebar-width' implies desktop -->
+<aside class="hidden md:flex bg-surface-dim/80 backdrop-blur-2xl border-r border-outline-variant/20 flex-col w-sidebar-width h-full z-40 transition-all duration-300 ease-in-out shrink-0 overflow-y-auto">
+<!-- Sidebar Header -->
+<div class="p-6 pb-8 border-b border-outline-variant/20">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center border border-outline-variant/50 overflow-hidden">
+<img alt="Investigator Profile" class="w-full h-full object-cover" data-alt="A macro shot of a sleek, high-tech metallic avatar icon glowing with electric blue accents against a dark slate background. The lighting is cinematic, highlighting the precision milled edges of the icon, evoking a sense of advanced artificial intelligence and secure financial surveillance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJVDODZnanS-qhxetYfQtgu00E933MFH1oQPXVoWKyVuk6khWR9pzGhrfCwqGBoYbQndB6UXJJ4WBb60Q84R0rjZhRaYNVY03iZTs4pdejLBPijjRzikcrkscwNA-hnBubYlkStpyXWxCZEzFiF1SN97lgo785WFufsgE-GAfV4mwXvRlsGjlEtbfvkwqSE3XNisgURRR2vdEvXXj_9DJEPHbe8vr4pSKtEjMubRB_FjsOq0VC26vDZg"/>
+</div>
+<div>
+<div class="font-headline-md text-headline-md text-primary text-base">MoneyTrace AI</div>
+<div class="text-xs text-on-surface-variant font-medium">Lead Investigator</div>
+</div>
+</div>
+<button class="w-full bg-secondary-container text-on-secondary-container hover:bg-secondary-container/80 transition-colors py-2.5 rounded-lg flex items-center justify-center gap-2 font-medium text-sm">
+<span class="material-symbols-outlined text-sm">add</span>
+                    New Investigation
+                </button>
+</div>
+<!-- Sidebar Navigation Tabs -->
+<nav class="flex-1 py-4 flex flex-col gap-1 px-2 font-label-caps text-label-caps uppercase">
+<!-- Dashboard is ACTIVE -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface border-l-4 border-secondary-container bg-secondary-container/10 transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+                    Transactions
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">warning</span>
+                    Alerts
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">search_insights</span>
+                    Investigation
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">assessment</span>
+                    Reports
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</nav>
+<!-- Sidebar Footer -->
+<div class="p-4 border-t border-outline-variant/20 flex flex-col gap-1 font-label-caps text-label-caps uppercase">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined text-sm">help</span>
+                    Support
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined text-sm">logout</span>
+                    Sign Out
+                </a>
+</div>
+</aside>
+<!-- Main Workspace -->
+<main class="flex-1 overflow-y-auto p-4 md:p-container-margin bg-background relative">
+<!-- Background atmosphere (subtle radial gradient) -->
+<div class="absolute top-0 left-1/4 w-1/2 h-96 bg-secondary-container/5 rounded-full blur-[120px] pointer-events-none"></div>
+<header class="mb-6">
+<h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Overview</h1>
+<p class="text-on-surface-variant font-body-sm mt-1">Real-time surveillance and fraud telemetry.</p>
+</header>
+<!-- Stat Cards (Bento Grid Style Top Row) -->
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+<!-- Total Transactions -->
+<div class="glass-panel rounded-xl p-card-padding flex flex-col justify-between min-h-[120px]">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Total Transactions</span>
+<span class="material-symbols-outlined text-primary text-sm opacity-70">receipt_long</span>
+</div>
+<div class="font-headline-md text-headline-md text-on-surface">12,450</div>
+<div class="mt-2 text-xs font-code-data text-code-data text-secondary-container flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">trending_up</span> +5.2% vs last week
+                    </div>
+</div>
+<!-- Fraud Alerts -->
+<div class="glass-panel rounded-xl p-card-padding flex flex-col justify-between min-h-[120px]">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Fraud Alerts</span>
+<span class="material-symbols-outlined text-error text-sm opacity-70">warning</span>
+</div>
+<div class="font-headline-md text-headline-md text-error">48</div>
+<div class="mt-2 text-xs font-code-data text-code-data text-error-container flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">priority_high</span> 12 require action
+                    </div>
+</div>
+<!-- Money At Risk -->
+<div class="glass-panel rounded-xl p-card-padding flex flex-col justify-between min-h-[120px]">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Money At Risk</span>
+<span class="material-symbols-outlined text-secondary text-sm opacity-70">account_balance_wallet</span>
+</div>
+<div class="font-headline-md text-headline-md text-on-surface">₹4,50,000</div>
+<div class="mt-2 text-xs font-code-data text-code-data text-on-surface-variant flex items-center gap-1">
+                        Across 34 suspicious accounts
+                    </div>
+</div>
+<!-- Recovery Probability -->
+<div class="glass-panel rounded-xl p-card-padding flex flex-col justify-between min-h-[120px]">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Recovery Prob.</span>
+<span class="material-symbols-outlined text-[#4ade80] text-sm opacity-70">verified</span>
+</div>
+<div class="font-headline-md text-headline-md text-[#4ade80]">92%</div>
+<!-- Small inline progress bar -->
+<div class="w-full bg-surface-container-high rounded-full h-1 mt-3">
+<div class="bg-[#4ade80] h-1 rounded-full" style="width: 92%"></div>
+</div>
+</div>
+<!-- Active Investigations -->
+<div class="glass-panel rounded-xl p-card-padding flex flex-col justify-between min-h-[120px]">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Active Invest.</span>
+<span class="material-symbols-outlined text-primary text-sm opacity-70">search_insights</span>
+</div>
+<div class="font-headline-md text-headline-md text-on-surface">18</div>
+<div class="mt-2 text-xs font-code-data text-code-data text-on-surface-variant flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> 4 ongoing right now
+                    </div>
+</div>
+</div>
+<!-- Main Content Area Charts (Bento Grid Layout) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+<!-- Line Chart: Daily Transaction Volume (Takes up 8 columns on desktop) -->
+<div class="lg:col-span-8 glass-panel rounded-xl p-card-padding relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-secondary-container/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="flex justify-between items-center mb-4 relative z-10">
+<h2 class="font-headline-md text-body-lg md:text-headline-md text-on-surface">Daily Transaction Volume</h2>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded">
+<span class="material-symbols-outlined text-sm">more_horiz</span>
+</button>
+</div>
+<div class="h-[300px] w-full relative z-10">
+<canvas id="volumeChart"></canvas>
+</div>
+</div>
+<!-- Pie Chart: Fraud Distribution (Takes up 4 columns on desktop) -->
+<div class="lg:col-span-4 glass-panel rounded-xl p-card-padding relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-surface-variant/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="flex justify-between items-center mb-4 relative z-10">
+<h2 class="font-headline-md text-body-lg md:text-headline-md text-on-surface">Fraud Distribution</h2>
+</div>
+<div class="h-[240px] w-full relative z-10 flex justify-center items-center">
+<canvas id="distributionChart"></canvas>
+</div>
+<!-- Custom Legend -->
+<div class="mt-4 flex flex-col gap-2 relative z-10 font-code-data text-code-data text-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-outline-variant"></span> Normal</div>
+<span class="text-on-surface-variant">85%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-secondary"></span> Suspicious</div>
+<span class="text-on-surface-variant">12%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-error"></span> High Risk</div>
+<span class="text-on-surface-variant">3%</span>
+</div>
+</div>
+</div>
+<!-- Area Chart: Fraud Trend (Takes full width on next row) -->
+<div class="lg:col-span-12 glass-panel rounded-xl p-card-padding relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-t from-error-container/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="flex justify-between items-center mb-4 relative z-10">
+<div>
+<h2 class="font-headline-md text-body-lg md:text-headline-md text-on-surface">Fraud Trend Analysis</h2>
+<p class="text-xs font-code-data text-on-surface-variant mt-1">Alerts volume over the last 30 days</p>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-surface-container-high rounded border border-outline-variant/30 text-xs font-label-caps text-on-surface hover:bg-surface-variant transition-colors">7D</button>
+<button class="px-3 py-1 bg-secondary-container/20 rounded border border-secondary-container/50 text-xs font-label-caps text-secondary transition-colors">30D</button>
+<button class="px-3 py-1 bg-surface-container-high rounded border border-outline-variant/30 text-xs font-label-caps text-on-surface hover:bg-surface-variant transition-colors">90D</button>
+</div>
+</div>
+<div class="h-[250px] w-full relative z-10">
+<canvas id="trendChart"></canvas>
+</div>
+</div>
+</div>
+<!-- Extra padding at bottom for scroll clearance -->
+<div class="h-8"></div>
+</main>
+</div>
+<!-- Chart Initializations -->
+<script>
+        // Common Chart.js options for dark theme
+        Chart.defaults.color = '#909097'; // outline color
+        Chart.defaults.font.family = 'JetBrains Mono';
+        Chart.defaults.font.size = 11;
+        
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1E293B',
+                    titleColor: '#e4e2e4',
+                    bodyColor: '#c6c6cd',
+                    borderColor: '#334155',
+                    borderWidth: 1,
+                    padding: 10,
+                    cornerRadius: 4,
+                    displayColors: true
+                }
+            }
+        };
+
+        // 1. Line Chart: Daily Transaction Volume
+        const ctxVolume = document.getElementById('volumeChart').getContext('2d');
+        
+        // Gradient for line
+        let gradientLine = ctxVolume.createLinearGradient(0, 0, 0, 300);
+        gradientLine.addColorStop(0, 'rgba(0, 83, 219, 0.8)'); // secondary-container
+        gradientLine.addColorStop(1, 'rgba(0, 83, 219, 0)');
+        
+        new Chart(ctxVolume, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Volume',
+                    data: [8200, 9100, 8500, 10200, 11500, 12450, 10800],
+                    borderColor: '#b4c5ff', // secondary
+                    borderWidth: 2,
+                    backgroundColor: gradientLine,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#131315',
+                    pointBorderColor: '#b4c5ff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                ...commonOptions,
+                scales: {
+                    x: {
+                        grid: { color: '#353436', drawBorder: false }, // surface-variant
+                        ticks: { color: '#909097' }
+                    },
+                    y: {
+                        grid: { color: '#353436', drawBorder: false, borderDash: [5, 5] },
+                        ticks: { color: '#909097', stepSize: 2000 }
+                    }
+                }
+            }
+        });
+
+        // 2. Pie Chart (Doughnut style for modern look): Fraud Distribution
+        const ctxDist = document.getElementById('distributionChart').getContext('2d');
+        new Chart(ctxDist, {
+            type: 'doughnut',
+            data: {
+                labels: ['Normal', 'Suspicious', 'High Risk'],
+                datasets: [{
+                    data: [85, 12, 3],
+                    backgroundColor: [
+                        '#45464d', // outline-variant
+                        '#b4c5ff', // secondary
+                        '#ffb4ab'  // error
+                    ],
+                    borderColor: '#131315', // background color for spacing
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                ...commonOptions,
+                cutout: '75%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 3. Area Chart: Fraud Trend Analysis
+        const ctxTrend = document.getElementById('trendChart').getContext('2d');
+        
+        // Gradient for Area
+        let gradientArea = ctxTrend.createLinearGradient(0, 0, 0, 250);
+        gradientArea.addColorStop(0, 'rgba(255, 180, 171, 0.4)'); // error color low opacity
+        gradientArea.addColorStop(1, 'rgba(255, 180, 171, 0)');
+        
+        // Generate dummy 30 day labels
+        const days = Array.from({length: 30}, (_, i) => i + 1);
+        // Generate dummy spikey data
+        const trendData = days.map(d => Math.max(0, Math.floor(10 + Math.random() * 20 + (d === 15 ? 40 : 0) + (d === 22 ? 25 : 0))));
+
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: days.map(d => `Day ${d}`),
+                datasets: [{
+                    label: 'Alerts',
+                    data: trendData,
+                    borderColor: '#ffb4ab', // error
+                    borderWidth: 1.5,
+                    backgroundColor: gradientArea,
+                    fill: true,
+                    tension: 0.2, // slightly jagged for 'tech' feel
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    pointBackgroundColor: '#ffb4ab'
+                }]
+            },
+            options: {
+                ...commonOptions,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { 
+                            maxTicksLimit: 6,
+                            color: '#909097'
+                        }
+                    },
+                    y: {
+                        grid: { color: '#2a2a2b', drawBorder: false }, // surface-container-high
+                        ticks: { color: '#909097', display: false } // hide y labels to focus on trend shape
+                    }
+                }
+            }
+        });
+    </script>
+</body></html>

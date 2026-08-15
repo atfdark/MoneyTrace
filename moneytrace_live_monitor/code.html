@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Live Transaction Monitor - MoneyTrace AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;family=Manrope:wght@600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#bec6e0",
+                        "surface-container-high": "#2a2a2b",
+                        "surface-container-low": "#1b1b1d",
+                        "outline-variant": "#45464d",
+                        "inverse-primary": "#565e74",
+                        "secondary": "#b4c5ff",
+                        "outline": "#909097",
+                        "surface-dim": "#131315",
+                        "on-tertiary": "#233144",
+                        "on-surface": "#e4e2e4",
+                        "on-error-container": "#ffdad6",
+                        "secondary-container": "#0053db",
+                        "tertiary-fixed": "#d5e3fd",
+                        "tertiary-container": "#09182a",
+                        "tertiary": "#b9c7e0",
+                        "on-secondary-fixed-variant": "#003ea8",
+                        "tertiary-fixed-dim": "#b9c7e0",
+                        "surface-variant": "#353436",
+                        "surface-bright": "#39393b",
+                        "surface-container-highest": "#353436",
+                        "on-secondary-fixed": "#00174b",
+                        "on-error": "#690005",
+                        "primary": "#bec6e0",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-primary-fixed": "#131b2e",
+                        "primary-container": "#0f172a",
+                        "on-tertiary-fixed-variant": "#3a485c",
+                        "on-tertiary-fixed": "#0d1c2f",
+                        "on-secondary": "#002a78",
+                        "background": "#131315",
+                        "surface-container": "#1f1f21",
+                        "on-primary": "#283044",
+                        "on-secondary-container": "#cdd7ff",
+                        "on-surface-variant": "#c6c6cd",
+                        "primary-fixed": "#dae2fd",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "primary-fixed-dim": "#bec6e0",
+                        "error": "#ffb4ab",
+                        "on-background": "#e4e2e4",
+                        "inverse-surface": "#e4e2e4",
+                        "secondary-fixed": "#dbe1ff",
+                        "surface": "#131315",
+                        "error-container": "#93000a",
+                        "surface-container-lowest": "#0e0e10",
+                        "on-tertiary-container": "#738298",
+                        "inverse-on-surface": "#303032",
+                        "on-primary-container": "#798098"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "card-padding": "20px",
+                        "sidebar-width": "280px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "code-data": ["JetBrains Mono"],
+                        "headline-lg": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "code-data": ["13px", { "lineHeight": "18px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(51, 65, 85, 1);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .row-hover:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full flex flex-col py-6 z-40 bg-surface-dim/80 backdrop-blur-2xl text-secondary font-label-caps text-label-caps border-r border-outline-variant/20 transition-all duration-300 ease-in-out w-sidebar-width hidden md:flex">
+<div class="px-container-margin mb-8">
+<h1 class="font-headline-md text-headline-md text-primary tracking-tight">MoneyTrace AI</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-unit">Lead Investigator</p>
+</div>
+<div class="flex-1 overflow-y-auto px-gutter space-y-unit">
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface border-l-4 border-secondary-container bg-secondary-container/10 transition-all" href="#">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+                Transactions
+            </a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined mr-3">warning</span>
+                Alerts
+            </a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined mr-3">search_insights</span>
+                Investigation
+            </a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined mr-3">assessment</span>
+                Reports
+            </a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+                Settings
+            </a>
+</div>
+<div class="px-gutter mt-auto pt-6 space-y-unit border-t border-outline-variant/20 mx-container-margin">
+<button class="w-full bg-primary-container text-on-primary-container hover:bg-primary/20 transition-colors py-3 rounded-lg flex justify-center items-center font-label-caps text-label-caps">
+<span class="material-symbols-outlined mr-2 text-sm">add</span> New Investigation
+            </button>
+<div class="pt-4 space-y-unit">
+<a class="flex items-center px-4 py-2 text-on-surface-variant hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined mr-3 text-sm">help</span> Support
+                </a>
+<a class="flex items-center px-4 py-2 text-on-surface-variant hover:text-on-surface transition-all" href="#">
+<span class="material-symbols-outlined mr-3 text-sm">logout</span> Sign Out
+                </a>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:ml-[280px] h-screen overflow-hidden">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center px-container-margin h-16 w-full z-50 sticky top-0 bg-surface/60 backdrop-blur-xl border-b border-outline-variant/30 text-primary font-body-md text-body-md">
+<div class="flex items-center">
+<!-- Mobile Menu Toggle -->
+<button class="md:hidden mr-4 text-on-surface-variant">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="relative w-64 hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-high border-outline-variant/50 text-on-surface rounded-full pl-10 pr-4 py-1.5 focus:border-secondary focus:ring-1 focus:ring-secondary text-sm" placeholder="Global Search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-2 mr-4 bg-surface-container px-3 py-1 rounded-full border border-outline-variant/30 hidden sm:flex">
+<div class="w-2 h-2 rounded-full bg-green-500 pulse-dot"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">System Status: Active</span>
+</div>
+<button class="text-on-surface-variant hover:bg-surface-variant/50 transition-colors p-2 rounded-full scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-variant/50 transition-colors p-2 rounded-full scale-95 active:scale-90 transition-transform hidden sm:block">
+<span class="material-symbols-outlined">settings_suggest</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-variant/50 transition-colors p-2 rounded-full scale-95 active:scale-90 transition-transform">
+<img class="w-8 h-8 rounded-full object-cover border border-outline" data-alt="A small, professional avatar image of an investigator in dark mode styling, subtle corporate background, moody lighting, 50-100 words" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB_p7pNj09_ScZcF1WvqlBFQCquuWKffzVK8U6DTyG7U_rMefDCOVi7SbpIugz7mQoSzsFCONSW8egCNglt8DbMhiujcQzkyGXWu6NftXb2iRY14LIyADmUpFSOjJVingC7pp7HiWsKaLJAWHAK-eiTkFPyfaHXaF5owKHgoe5MJvMXz3X5b2a1FFvxz9svpxsohmrgl_GXFUGoH7dBaPOvwTexjUgGgU6TXRXA1z2Y1J2ZA0m7U2xNg"/>
+</button>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 overflow-y-auto p-container-margin">
+<!-- Header Section -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface flex items-center">
+                        Live Transaction Monitor
+                        <div class="ml-4 w-3 h-3 rounded-full bg-green-500 pulse-dot inline-block"></div>
+</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Real-time surveillance of network financial flow</p>
+</div>
+<div class="flex gap-2 w-full sm:w-auto">
+<button class="glass-panel px-4 py-2 rounded-lg font-label-caps text-label-caps flex items-center hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined text-sm mr-2">filter_list</span> Filters
+                    </button>
+<button class="glass-panel px-4 py-2 rounded-lg font-label-caps text-label-caps flex items-center hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined text-sm mr-2">download</span> Export
+                    </button>
+</div>
+</div>
+<!-- Filters Bar (Mockup) -->
+<div class="glass-panel rounded-xl p-card-padding mb-6 flex flex-wrap gap-4 items-center">
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-1">Date Range</label>
+<select class="bg-surface border border-outline-variant/50 rounded-md text-body-sm py-1.5 pl-3 pr-8 focus:ring-secondary focus:border-secondary">
+<option>Last 1 Hour</option>
+<option>Today</option>
+<option>Last 7 Days</option>
+</select>
+</div>
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-1">Amount threshold</label>
+<select class="bg-surface border border-outline-variant/50 rounded-md text-body-sm py-1.5 pl-3 pr-8 focus:ring-secondary focus:border-secondary">
+<option>All Amounts</option>
+<option>&gt; ₹10,000</option>
+<option>&gt; ₹50,000</option>
+</select>
+</div>
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-1">Risk Score</label>
+<div class="flex gap-2">
+<button class="bg-surface border border-outline-variant/50 px-3 py-1.5 rounded-md text-body-sm hover:border-error transition-colors">High</button>
+<button class="bg-surface border border-outline-variant/50 px-3 py-1.5 rounded-md text-body-sm hover:border-yellow-500 transition-colors">Medium</button>
+<button class="bg-surface border border-outline-variant/50 px-3 py-1.5 rounded-md text-body-sm hover:border-green-500 transition-colors">Low</button>
+</div>
+</div>
+<div class="ml-auto relative w-full sm:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+<input class="w-full bg-surface border border-outline-variant/50 text-on-surface rounded-md pl-9 pr-3 py-1.5 focus:border-secondary focus:ring-1 focus:ring-secondary text-sm" placeholder="Txn ID, User..." type="text"/>
+</div>
+</div>
+<!-- Live Feed Table -->
+<div class="glass-panel rounded-xl overflow-hidden flex flex-col h-[calc(100vh-280px)] min-h-[400px]">
+<div class="overflow-x-auto flex-1">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container border-b border-outline-variant/30 sticky top-0 z-10">
+<tr>
+<th class="p-4 font-label-caps text-label-caps text-on-surface-variant font-semibold">Timestamp</th>
+<th class="p-4 font-label-caps text-label-caps text-on-surface-variant font-semibold">Sender</th>
+<th class="p-4 font-label-caps text-label-caps text-on-surface-variant font-semibold">Receiver</th>
+<th class="p-4 font-label-caps text-label-caps text-on-surface-variant font-semibold text-right">Amount</th>
+<th class="p-4 font-label-caps text-label-caps text-on-surface-variant font-semibold">Risk Status</th>
+<th class="p-4 font-label-caps text-label-caps text-on-surface-variant font-semibold text-center">Action</th>
+</tr>
+</thead>
+<tbody class="font-code-data text-code-data divide-y divide-outline-variant/20">
+<!-- Row: High Risk -->
+<tr class="row-hover group relative">
+<td class="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></td>
+<td class="p-4 whitespace-nowrap text-on-surface-variant">09:16:42</td>
+<td class="p-4 whitespace-nowrap">Amit</td>
+<td class="p-4 whitespace-nowrap text-on-surface-variant">Unknown</td>
+<td class="p-4 whitespace-nowrap text-right font-bold text-on-surface">₹80,000</td>
+<td class="p-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-500/15 text-red-400 border border-red-500/30">
+                                        High Risk
+                                    </span>
+</td>
+<td class="p-4 whitespace-nowrap text-center">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row: Normal -->
+<tr class="row-hover relative group">
+<td class="absolute left-0 top-0 bottom-0 w-1 bg-green-500"></td>
+<td class="p-4 whitespace-nowrap text-on-surface-variant">09:15:10</td>
+<td class="p-4 whitespace-nowrap">Rahul</td>
+<td class="p-4 whitespace-nowrap">Priya</td>
+<td class="p-4 whitespace-nowrap text-right text-on-surface">₹2,000</td>
+<td class="p-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-500/15 text-green-400 border border-green-500/30">
+                                        Normal
+                                    </span>
+</td>
+<td class="p-4 whitespace-nowrap text-center">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row: Medium Risk -->
+<tr class="row-hover relative group">
+<td class="absolute left-0 top-0 bottom-0 w-1 bg-yellow-500"></td>
+<td class="p-4 whitespace-nowrap text-on-surface-variant">09:14:05</td>
+<td class="p-4 whitespace-nowrap">Vikram</td>
+<td class="p-4 whitespace-nowrap">Offshore Corp LLC</td>
+<td class="p-4 whitespace-nowrap text-right text-on-surface">₹45,500</td>
+<td class="p-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-500/15 text-yellow-400 border border-yellow-500/30">
+                                        Elevated
+                                    </span>
+</td>
+<td class="p-4 whitespace-nowrap text-center">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row: Normal -->
+<tr class="row-hover relative group">
+<td class="absolute left-0 top-0 bottom-0 w-1 bg-green-500"></td>
+<td class="p-4 whitespace-nowrap text-on-surface-variant">09:12:33</td>
+<td class="p-4 whitespace-nowrap">Neha</td>
+<td class="p-4 whitespace-nowrap">Amazon Services</td>
+<td class="p-4 whitespace-nowrap text-right text-on-surface">₹4,250</td>
+<td class="p-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-500/15 text-green-400 border border-green-500/30">
+                                        Normal
+                                    </span>
+</td>
+<td class="p-4 whitespace-nowrap text-center">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="bg-surface-container border-t border-outline-variant/30 p-3 text-center text-xs text-on-surface-variant font-label-caps">
+                    Showing real-time stream... <span class="animate-pulse inline-block w-2 h-2 bg-secondary rounded-full ml-1"></span>
+</div>
+</div>
+</main>
+</div>
+</body></html>
