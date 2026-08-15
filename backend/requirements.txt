@@ -1,0 +1,24 @@
+# Core
+fastapi==0.115.5
+uvicorn[standard]==0.32.0
+
+# Database
+SQLAlchemy==2.0.36
+asyncpg==0.30.0
+psycopg2-binary==2.9.10
+alembic==1.14.0
+aiosqlite==0.20.0
+
+# Configuration
+python-dotenv==1.0.0
+pydantic-settings==2.6.1
+
+# Pydantic (core dependency, explicit version)
+pydantic==2.10.4
+
+# Auth & Security
+passlib==1.7.4
+python-jose[cryptography]==3.5.0
+
+# Date/Time utilities
+python-multipart==0.0.9
