@@ -26,7 +26,7 @@ export const useDashboardTrends = (period: '7d' | '30d' | '90d' | '1y' = '30d') 
   });
 };
 
-export const useFraudSummary = (params?: { start_date?: string; end_date?: string }) => {
+export const useDashboardFraudSummary = (params?: { start_date?: string; end_date?: string }) => {
   return useQuery({
     queryKey: ['dashboard', 'fraud-summary', params],
     queryFn: async () => {
@@ -70,5 +70,16 @@ export const useRecentAlerts = (limit: number = 10) => {
       return payload?.recent_alerts || [];
     },
     staleTime: 30 * 1000,
+  });
+};
+
+export const useInvestigators = () => {
+  return useQuery({
+    queryKey: ['dashboard', 'investigators'],
+    queryFn: async () => {
+      const res = await dashboardService.getInvestigatorLeaderboard();
+      return res?.data || res;
+    },
+    staleTime: 60 * 1000,
   });
 };

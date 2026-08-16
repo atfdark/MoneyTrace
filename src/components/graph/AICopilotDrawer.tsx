@@ -33,7 +33,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
       id: 'init-1',
       role: 'assistant',
       content:
-        '👋 Hello Investigator! I am your AI Financial Crime Copilot. I analyze money flow graphs, mule rings, layering chains, and asset recovery probabilities. Ask me anything about the network.',
+        '👋 Hello Investigator! I am your AI Financial Crime Copilot. I analyze live money flow graphs, mule rings, layering chains, and asset recovery probabilities. Ask me anything about the network.',
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -56,7 +56,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
     setLoading(true);
 
     try {
-      // Call backend assistant API
+      // Call real backend assistant API
       const res = await chatService.sendMessage({
         message: q,
         context: {
@@ -65,8 +65,12 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
         } as any,
       });
 
-      const reply = res?.data?.response || res?.data?.message || (res as any)?.response ||
-        `Based on graph topological analysis of ${selectedAccountId || 'the network'}, this pattern exhibits classic fan-out / layering characteristics. The rapid transfer interval (< 30s) and near-identical fractional amounts point to automated mule script dispersion. Recommend immediate temporary freeze and filing of an SAR report.`;
+      const reply =
+        res?.data?.response ||
+        res?.data?.message ||
+        (res as any)?.response ||
+        (res as any)?.message ||
+        'No detailed AI response returned from the server.';
 
       setMessages(prev => [
         ...prev,
@@ -77,14 +81,18 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
           timestamp: new Date().toISOString(),
         },
       ]);
-    } catch (err) {
-      // High-grade fallback analysis response
+    } catch (err: any) {
       setMessages(prev => [
         ...prev,
         {
           id: `ai-${Date.now()}`,
           role: 'assistant',
-          content: `🔍 **Forensic Analysis Report for ${selectedAccountId || 'Active Network'}**:\n\n1. **Pattern Identified**: Multi-hop rapid layering with circular velocity.\n2. **Confidence**: 94.2% Mule Account Probability.\n3. **Recommended Action**: Issue Section 91 CrPC notice, place hold on downstream collector account, and initiate nodal bank recovery protocol.`,
+          content: `⚠️ **AI Copilot Error**: ${
+            err?.response?.data?.detail ||
+            err?.response?.data?.message ||
+            err?.message ||
+            'Unable to reach AI assistant engine. Please verify network connectivity.'
+          }`,
           timestamp: new Date().toISOString(),
         },
       ]);
@@ -114,7 +122,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
 
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+          className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
         >
           <span className="material-symbols-outlined text-lg">close</span>
         </button>
@@ -160,7 +168,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
             <button
               key={idx}
               onClick={() => handleSend(s)}
-              className="text-[9px] text-purple-300 bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/30 px-2 py-1 rounded-lg text-left transition-colors"
+              className="text-[9px] text-purple-300 bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/30 px-2 py-1 rounded-lg text-left transition-colors cursor-pointer"
             >
               {s}
             </button>
@@ -181,7 +189,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
         <button
           onClick={() => handleSend()}
           disabled={!input.trim() || loading}
-          className="w-9 h-9 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white flex items-center justify-center shadow-lg transition-all"
+          className="w-9 h-9 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white flex items-center justify-center shadow-lg transition-all cursor-pointer"
         >
           <span className="material-symbols-outlined text-base">send</span>
         </button>

@@ -8,7 +8,8 @@ __pycache__/
 dist/
 build/
 eggs/
-*.egg
+.pytest_cache/
+*.pyc
 
 # Virtual environments
 .venv/

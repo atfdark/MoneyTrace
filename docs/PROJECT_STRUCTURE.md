@@ -9,22 +9,28 @@ This document provides a directory-by-directory breakdown of the **MoneyTrace** 
 ```text
 MoneyTrace/
 ├── .gitignore
-├── README.md                      # Master Overview & Project Summary
-├── PROJECT_STRUCTURE.md           # This document
-├── SYSTEM_ARCHITECTURE.md         # System Architecture & Layer Diagram
-├── DATA_FLOW.md                   # Step-by-Step Data Flow & Sequence Diagrams
-├── DATABASE_SCHEMA.md             # SQLAlchemy ORM Schema & ER Diagram
-├── API_REFERENCE.md               # Complete REST API Endpoint Reference
-├── AI_ENGINE_DOCUMENTATION.md     # Deep-Dive into Fraud, Graph, Recovery & AI Engines
-├── INSTALLATION_GUIDE.md          # Step-by-Step Setup Guide
-├── DEMO_GUIDE.md                  # Comprehensive Demo / Viva Script
-├── CLEANUP_REPORT.md              # Repository Audit & Recommendations
+├── README.md                      # Master Overview & Documentation Index
 ├── index.html                     # Vite HTML Entrypoint
 ├── package.json                   # Node.js Dependencies & Scripts
 ├── tsconfig.json                  # TypeScript Compiler Configuration
 ├── vite.config.ts                 # Vite Build & Dev Server Configuration
 ├── tailwind.config.js             # Tailwind Design Tokens & Styling
 ├── postcss.config.js              # PostCSS Configuration
+├── docs/                          # In-depth Technical Documentation & Assets
+│   ├── SYSTEM_ARCHITECTURE.md     # System Architecture & Layer Diagram
+│   ├── AI_ENGINE_DOCUMENTATION.md # Deep-Dive into Fraud, Graph, Recovery & AI Engines
+│   ├── DATABASE_SCHEMA.md         # SQLAlchemy ORM Schema & ER Diagram
+│   ├── DATA_FLOW.md               # Step-by-Step Data Flow & Sequence Diagrams
+│   ├── API_REFERENCE.md           # Complete REST API Endpoint Reference
+│   ├── PROJECT_STRUCTURE.md       # Repository Structure Breakdown
+│   ├── INSTALLATION_GUIDE.md      # Step-by-Step Setup Guide
+│   ├── DEMO_GUIDE.md              # Comprehensive Demo / Viva Script
+│   ├── CLEANUP_REPORT.md          # Repository Audit & Recommendations
+│   ├── FRONTEND_AUDIT.md          # Frontend Component & Route Audit
+│   ├── BACKEND_CONNECTION_AUDIT.md# API Connectivity Verification
+│   ├── ACCESSIBILITY_REPORT.md    # WCAG 2.1 AA Compliance Report
+│   ├── UI_AUDIT_REPORT.md         # Design System & Aesthetic Audit
+│   └── screenshots/               # Architectural & UI Screenshots
 ├── src/                           # React 18 TypeScript Frontend Source
 │   ├── main.tsx                   # React DOM Entrypoint
 │   ├── App.tsx                    # Root Router & Providers

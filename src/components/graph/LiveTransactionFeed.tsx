@@ -22,49 +22,16 @@ export interface LiveTransactionFeedProps {
 export const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({
   initialTransactions = [],
   onSelectTx,
-  demoMode = false,
 }) => {
   const [feed, setFeed] = useState<LiveTxItem[]>([]);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Initialize with real transactions
+  // Synchronize with real graph transaction events
   useEffect(() => {
-    if (initialTransactions.length > 0) {
-      setFeed(initialTransactions.slice(0, 30));
+    if (!isPaused && initialTransactions && initialTransactions.length > 0) {
+      setFeed(initialTransactions.slice(0, 40));
     }
-  }, [initialTransactions]);
-
-  // Demo simulation stream
-  useEffect(() => {
-    if (!demoMode || isPaused) return;
-
-    const interval = setInterval(() => {
-      const names = ['Rahul Sharma', 'Sneha Patel', 'Karan Verma', 'Aditya Roy', 'Pooja Nair', 'Vikas Mehra', 'Ananya Das'];
-      const accs = ['ACC355642', 'ACC1002', 'ACC1005', 'ACC2001', 'ACC89145', 'ACC_RING_A', 'ACC_RING_B', 'ACC_RING_C'];
-      const amounts = [15000, 35000, 75000, 120000, 250000, 480000];
-      const risks = [12, 28, 55, 78, 92, 98];
-
-      const sIdx = Math.floor(Math.random() * accs.length);
-      let tIdx = Math.floor(Math.random() * accs.length);
-      if (tIdx === sIdx) tIdx = (sIdx + 1) % accs.length;
-
-      const newTx: LiveTxItem = {
-        id: `TXN_LIVE_${Date.now()}`,
-        source: accs[sIdx],
-        target: accs[tIdx],
-        source_name: names[sIdx % names.length],
-        target_name: names[tIdx % names.length],
-        amount: amounts[Math.floor(Math.random() * amounts.length)],
-        risk_score: risks[Math.floor(Math.random() * risks.length)],
-        timestamp: new Date().toISOString(),
-        is_flagged: Math.random() > 0.6,
-      };
-
-      setFeed(prev => [newTx, ...prev.slice(0, 40)]);
-    }, 2800);
-
-    return () => clearInterval(interval);
-  }, [demoMode, isPaused]);
+  }, [initialTransactions, isPaused]);
 
   return (
     <div className="glass-panel rounded-2xl border border-slate-700/50 flex flex-col h-full overflow-hidden shadow-xl">
@@ -84,7 +51,7 @@ export const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({
           <button
             onClick={() => setIsPaused(!isPaused)}
             title={isPaused ? 'Resume stream' : 'Pause stream'}
-            className="text-slate-400 hover:text-white p-1"
+            className="text-slate-400 hover:text-white p-1 cursor-pointer"
           >
             <span className="material-symbols-outlined text-sm">
               {isPaused ? 'play_arrow' : 'pause'}

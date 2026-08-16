@@ -21,6 +21,24 @@ Transaction Tracking + Fraud Detection + Money Flow Graph + Recovery Intelligenc
 
 ---
 
+## 📚 Technical Documentation Index
+
+All in-depth architectural and technical specifications are organized in the [`docs/`](file:///f:/codee/MoneyTrace/docs) directory:
+
+| Document | Description |
+| :--- | :--- |
+| [**SYSTEM_ARCHITECTURE.md**](file:///f:/codee/MoneyTrace/docs/SYSTEM_ARCHITECTURE.md) | High-level system topology, protocol definitions & component interactions |
+| [**AI_ENGINE_DOCUMENTATION.md**](file:///f:/codee/MoneyTrace/docs/AI_ENGINE_DOCUMENTATION.md) | Fraud rule heuristics, NetworkX graph algorithms, RAG engine & XAI |
+| [**DATABASE_SCHEMA.md**](file:///f:/codee/MoneyTrace/docs/DATABASE_SCHEMA.md) | Entity Relationship (ER) diagrams, table structures, and indexes |
+| [**DATA_FLOW.md**](file:///f:/codee/MoneyTrace/docs/DATA_FLOW.md) | End-to-end data pipeline, state machines & message lifecycles |
+| [**API_REFERENCE.md**](file:///f:/codee/MoneyTrace/docs/API_REFERENCE.md) | Complete OpenAPI / REST API route specifications |
+| [**PROJECT_STRUCTURE.md**](file:///f:/codee/MoneyTrace/docs/PROJECT_STRUCTURE.md) | Repository organization and module breakdown |
+| [**INSTALLATION_GUIDE.md**](file:///f:/codee/MoneyTrace/docs/INSTALLATION_GUIDE.md) | Full setup, environment, and deployment manual |
+| [**DEMO_GUIDE.md**](file:///f:/codee/MoneyTrace/docs/DEMO_GUIDE.md) | Evaluator / Viva demonstration flow script |
+| [**CLEANUP_REPORT.md**](file:///f:/codee/MoneyTrace/docs/CLEANUP_REPORT.md) | Codebase audit and resource health summary |
+
+---
+
 ## 🚀 Key Modules & Capabilities
 
 ### 1. Banking Simulator & Real-Time Transaction Engine
@@ -164,15 +182,17 @@ python scripts/test_reports_endpoints.py
 
 ---
 
-## 📸 Screenshots
+## 📸 Platform Screenshots
 
-| Executive SOC Dashboard | Money Flow Graph Visualizer |
-| :---: | :---: |
-| *(Dashboard view with 30-day volume trends and risk metrics)* | *(Multi-hop directed fund trail and cycle detection)* |
+Screenshots and UI designs are stored in [`docs/screenshots/`](file:///f:/codee/MoneyTrace/docs/screenshots):
 
-| AI Investigator Copilot Pro | Reports & Export Center |
-| :---: | :---: |
-| *(Conversational NLU, RAG circulars & XAI bars)* | *(1-Click PDF, DOCX, CSV & Excel downloads)* |
+- `docs/screenshots/dashboard_overview.png` — SOC Dashboard with volume trends & risk metrics
+- `docs/screenshots/flow_visualization.png` — Multi-hop directed fund flow graph & cycle detection
+- `docs/screenshots/alert_center.png` — Real-time fraud alert triage & rapid action controls
+- `docs/screenshots/investigation_deep_dive.png` — Forensic case analysis & evidence locker
+- `docs/screenshots/live_monitor.png` — Real-time transaction ingestion telemetry
+- `docs/screenshots/recovery_intel.png` — Asset preservation scoring & nodal freeze notices
+- `docs/screenshots/login_screen.png` — Secure role-based investigator login interface
 
 ---
 

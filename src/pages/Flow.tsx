@@ -37,7 +37,6 @@ export const Flow: React.FC = () => {
   /* ─────────────────────── UI States ─────────────────────── */
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('force');
   const [viewMode, setViewMode] = useState<'graph' | 'timeline'>('graph');
-  const [demoMode, setDemoMode] = useState(false);
 
   // Search & Trace
   const [searchQuery, setSearchQuery] = useState('');
@@ -309,35 +308,45 @@ export const Flow: React.FC = () => {
         {[
           {
             label: 'Total Transactions',
-            value: dashboardStats?.total_transactions ? dashboardStats.total_transactions.toLocaleString() : `${rawEdges.length}`,
+            value: dashboardStats?.total_transactions != null
+              ? dashboardStats.total_transactions.toLocaleString()
+              : (rawEdges.length > 0 ? `${rawEdges.length}` : '0'),
             icon: 'sync_alt',
             color: 'text-blue-400',
             border: 'border-blue-500/20',
           },
           {
             label: 'Fraud Alerts',
-            value: dashboardStats?.fraud_alerts ?? '14',
+            value: String(
+              dashboardStats?.fraud_alerts ??
+                (alertsData as any)?.total ??
+                (Array.isArray(alertsData) ? alertsData.length : 0)
+            ),
             icon: 'warning',
             color: 'text-amber-400',
             border: 'border-amber-500/20',
           },
           {
             label: 'Critical Alerts',
-            value: dashboardStats?.critical_alerts ?? '5',
+            value: String(dashboardStats?.critical_alerts ?? 0),
             icon: 'gpp_bad',
             color: 'text-red-400',
             border: 'border-red-500/20',
           },
           {
             label: 'Money At Risk',
-            value: dashboardStats?.money_at_risk ? formatCurrency(dashboardStats.money_at_risk) : '₹12.4M',
+            value: dashboardStats?.money_at_risk != null
+              ? formatCurrency(dashboardStats.money_at_risk)
+              : formatCurrency(0),
             icon: 'monetization_on',
             color: 'text-rose-400',
             border: 'border-rose-500/20',
           },
           {
             label: 'Recovery Rate',
-            value: dashboardStats?.recovery_rate ? `${dashboardStats.recovery_rate}%` : '78.4%',
+            value: dashboardStats?.recovery_rate != null
+              ? `${dashboardStats.recovery_rate}%`
+              : '0%',
             icon: 'verified_user',
             color: 'text-emerald-400',
             border: 'border-emerald-500/20',
@@ -496,8 +505,6 @@ export const Flow: React.FC = () => {
         onRiskThresholdChange={setRiskThresholdFilter}
         activeTypeFilters={activeTypeFilters}
         onToggleTypeFilter={handleToggleTypeFilter}
-        demoMode={demoMode}
-        onToggleDemoMode={() => setDemoMode(!demoMode)}
       />
 
       {/* ═══════════════════════════════════════════════════════════════════
@@ -615,7 +622,7 @@ export const Flow: React.FC = () => {
             /* Live Transaction Feed */
             <div className="flex-1 min-h-0">
               <LiveTransactionFeed
-                initialTransactions={rawEdges.slice(0, 20).map(e => ({
+                initialTransactions={rawEdges.slice(0, 30).map(e => ({
                   id: e.id,
                   source: e.source,
                   target: e.target,
@@ -627,13 +634,12 @@ export const Flow: React.FC = () => {
                   focusNodeOnCanvas(source);
                   setTraceHighlight(new Set([source, target]));
                 }}
-                demoMode={demoMode}
               />
             </div>
           )}
 
           {/* Active Online Investigators */}
-          <OnlineUsersPanel demoMode={demoMode} />
+          <OnlineUsersPanel />
         </div>
       </div>
 
@@ -643,7 +649,6 @@ export const Flow: React.FC = () => {
       <FraudAlertCenter
         onInvestigateAccount={focusNodeOnCanvas}
         onFreezeAccount={handleEmergencyFreeze}
-        demoMode={demoMode}
       />
 
       {/* Floating "Ask Copilot" Button */}

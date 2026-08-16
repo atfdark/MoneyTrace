@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { formatCurrency } from '../../utils/formatters';
+import { useCriticalAlerts } from '../../hooks/useAlerts';
 
 export interface FraudNotification {
   id: string;
@@ -15,61 +16,63 @@ export interface FraudNotification {
 export interface FraudAlertCenterProps {
   onInvestigateAccount: (accountId: string) => void;
   onFreezeAccount?: (accountId: string) => void;
+  alerts?: any[];
   demoMode?: boolean;
 }
 
 export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
   onInvestigateAccount,
   onFreezeAccount,
-  demoMode = false,
+  alerts: propAlerts,
 }) => {
-  const [alerts, setAlerts] = useState<FraudNotification[]>([]);
+  const { data: criticalData } = useCriticalAlerts(3);
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
-  // Demo mode simulated fraud alerts
-  useEffect(() => {
-    if (!demoMode) return;
+  const activeAlerts: FraudNotification[] = useMemo(() => {
+    const rawList = propAlerts || (criticalData as any)?.data || criticalData || [];
+    const list = Array.isArray(rawList) ? rawList : (rawList?.items || []);
 
-    const interval = setInterval(() => {
-      const demoAlerts: FraudNotification[] = [
-        {
-          id: `ALERT_${Date.now()}`,
-          account: 'ACC1005',
-          user_name: 'Rahul Sharma',
-          amount: 500000,
-          risk_score: 95,
-          rules_triggered: ['High Velocity Structuring', 'Rapid Mule Funnel', 'Geographic Hop Mismatch'],
-          recovery_probability: 'LOW',
-          timestamp: new Date().toISOString(),
-        },
-        {
-          id: `ALERT_${Date.now() + 1}`,
-          account: 'ACC_RING_B',
-          user_name: 'Karan Verma',
-          amount: 240000,
-          risk_score: 88,
-          rules_triggered: ['Circular Chain Participant', 'Immediate Fund Dispersion'],
-          recovery_probability: 'MEDIUM',
-          timestamp: new Date().toISOString(),
-        },
-      ];
+    return list
+      .filter((a: any) => {
+        const id = String(a.id || a.alert_id || '');
+        return id && !dismissedIds.has(id);
+      })
+      .slice(0, 3)
+      .map((a: any) => {
+        const id = String(a.id || a.alert_id || `alert-${Math.random()}`);
+        const risk = Number(a.risk_score || (a.severity === 'CRITICAL' ? 95 : a.severity === 'HIGH' ? 80 : 50));
+        const rules = Array.isArray(a.triggered_rules)
+          ? a.triggered_rules
+          : Array.isArray(a.rules_triggered)
+          ? a.rules_triggered
+          : [a.alert_type || a.rule_name || 'Flagged Risk Telemetry'];
 
-      const newAlert = demoAlerts[Math.floor(Math.random() * demoAlerts.length)];
-      setAlerts(prev => [newAlert, ...prev.slice(0, 2)]);
-    }, 12000);
+        const recoveryProb: 'HIGH' | 'MEDIUM' | 'LOW' =
+          risk >= 85 ? 'LOW' : risk >= 60 ? 'MEDIUM' : 'HIGH';
 
-    return () => clearInterval(interval);
-  }, [demoMode]);
+        return {
+          id,
+          account: a.account_number || a.account || a.sender_account || 'ACC-LIVE',
+          user_name: a.user_name || a.entity_name || undefined,
+          amount: Number(a.amount || a.transaction?.amount || 0),
+          risk_score: risk,
+          rules_triggered: rules,
+          recovery_probability: recoveryProb,
+          timestamp: a.timestamp || a.created_at || new Date().toISOString(),
+        };
+      });
+  }, [propAlerts, criticalData, dismissedIds]);
 
   const dismissAlert = (id: string) => {
-    setAlerts(prev => prev.filter(a => a.id !== id));
+    setDismissedIds(prev => new Set([...prev, id]));
   };
 
-  if (alerts.length === 0) return null;
+  if (activeAlerts.length === 0) return null;
 
   return (
     <div className="fixed top-20 right-6 z-50 flex flex-col gap-3 max-w-sm pointer-events-auto">
-      {alerts.map(alert => {
-        const isCritical = alert.risk_score >= 90;
+      {activeAlerts.map(alert => {
+        const isCritical = alert.risk_score >= 80;
 
         return (
           <div
@@ -98,7 +101,8 @@ export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
               </div>
               <button
                 onClick={() => dismissAlert(alert.id)}
-                className="text-slate-400 hover:text-white p-0.5 rounded"
+                className="text-slate-400 hover:text-white p-0.5 rounded cursor-pointer"
+                title="Dismiss alert"
               >
                 <span className="material-symbols-outlined text-sm">close</span>
               </button>
@@ -156,7 +160,7 @@ export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
                   onInvestigateAccount(alert.account);
                   dismissAlert(alert.id);
                 }}
-                className="flex-1 py-1.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold text-[11px] rounded-xl shadow-lg transition-all"
+                className="flex-1 py-1.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold text-[11px] rounded-xl shadow-lg transition-all cursor-pointer"
               >
                 Investigate Now
               </button>
@@ -167,7 +171,7 @@ export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
                     onFreezeAccount(alert.account);
                     dismissAlert(alert.id);
                   }}
-                  className="px-3 py-1.5 bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 font-bold text-[11px] rounded-xl transition-all"
+                  className="px-3 py-1.5 bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 font-bold text-[11px] rounded-xl transition-all cursor-pointer"
                 >
                   Freeze
                 </button>

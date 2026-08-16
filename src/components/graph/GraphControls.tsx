@@ -15,8 +15,8 @@ export interface GraphControlsProps {
   onRiskThresholdChange: (risk: number) => void;
   activeTypeFilters: Set<string>;
   onToggleTypeFilter: (type: string) => void;
-  demoMode: boolean;
-  onToggleDemoMode: () => void;
+  demoMode?: boolean;
+  onToggleDemoMode?: () => void;
 }
 
 const LAYOUT_OPTIONS: Array<{ id: LayoutMode; label: string; icon: string }> = [
@@ -49,8 +49,6 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
   onRiskThresholdChange,
   activeTypeFilters,
   onToggleTypeFilter,
-  demoMode,
-  onToggleDemoMode,
 }) => {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 p-3 glass-panel rounded-2xl border border-slate-700/50 text-xs">
@@ -62,7 +60,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             <button
               key={opt.id}
               onClick={() => onLayoutModeChange(opt.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
                 isActive
                   ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/40'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
@@ -86,7 +84,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             <button
               key={t.id}
               onClick={() => onToggleTypeFilter(t.id)}
-              className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold uppercase transition-all flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold uppercase transition-all flex items-center gap-1 cursor-pointer ${
                 isSelected
                   ? `bg-slate-800 ${t.border} ${t.color}`
                   : 'bg-transparent border-slate-800 text-slate-600 line-through'
@@ -99,7 +97,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
         })}
       </div>
 
-      {/* ───── Right: Zoom, Re-settle & Demo Mode ───── */}
+      {/* ───── Right: Zoom, Reset & Amount Filter ───── */}
       <div className="flex items-center gap-2">
         {/* Min Amount Threshold Selector */}
         <select
@@ -119,28 +117,28 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
           <button
             onClick={onZoomIn}
             title="Zoom In"
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">add</span>
           </button>
           <button
             onClick={onZoomOut}
             title="Zoom Out"
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">remove</span>
           </button>
           <button
             onClick={onFitView}
             title="Fit to Screen"
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">fit_screen</span>
           </button>
           <button
             onClick={onResetView}
             title="Reset View"
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">refresh</span>
           </button>
@@ -148,25 +146,12 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             <button
               onClick={onReheatPhysics}
               title="Re-stabilize Physics"
-              className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-purple-400 hover:bg-slate-800"
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-purple-400 hover:bg-slate-800 cursor-pointer"
             >
               <span className="material-symbols-outlined text-base">flare</span>
             </button>
           )}
         </div>
-
-        {/* Live Demo Simulation Toggle */}
-        <button
-          onClick={onToggleDemoMode}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold border transition-all ${
-            demoMode
-              ? 'bg-gradient-to-r from-red-600 to-orange-600 border-red-500 text-white shadow-lg shadow-red-900/40 animate-pulse'
-              : 'bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white hover:border-slate-600'
-          }`}
-        >
-          <span className={`w-2 h-2 rounded-full ${demoMode ? 'bg-white animate-ping' : 'bg-red-500'}`} />
-          <span>{demoMode ? 'DEMO ACTIVE' : 'DEMO MODE'}</span>
-        </button>
       </div>
     </div>
   );
