@@ -33,6 +33,22 @@ from app.schemas.recovery import (
     RecoveryStatsResponse,
 )
 
+from app.schemas.dashboard import (
+    OverviewResponse,
+    LiveDashboardResponse,
+    VolumeTrendPoint,
+    TransactionAnalyticsResponse,
+    FraudAnalyticsResponse,
+    RecoveryAnalyticsResponse,
+    LocationAnalyticsResponse,
+    RiskyAccountResponse,
+    TopRiskyAccountsResponse,
+    TrendPoint,
+    FraudTrendsResponse,
+    InvestigatorStatsItem,
+    InvestigatorLeaderboardResponse,
+)
+
 __all__ = [
     "HealthResponse",
     "TokenPayload",
@@ -55,4 +71,17 @@ __all__ = [
     "RecoveryCaseResponse",
     "RecoveryCaseListResponse",
     "RecoveryStatsResponse",
+    "OverviewResponse",
+    "LiveDashboardResponse",
+    "VolumeTrendPoint",
+    "TransactionAnalyticsResponse",
+    "FraudAnalyticsResponse",
+    "RecoveryAnalyticsResponse",
+    "LocationAnalyticsResponse",
+    "RiskyAccountResponse",
+    "TopRiskyAccountsResponse",
+    "TrendPoint",
+    "FraudTrendsResponse",
+    "InvestigatorStatsItem",
+    "InvestigatorLeaderboardResponse",
 ]

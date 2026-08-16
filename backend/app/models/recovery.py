@@ -70,6 +70,18 @@ class RecoveryCase(Base):
         String(20), default=CaseStatus.OPEN.value, nullable=False, index=True
     )
 
+    # Investigator Assignment & Resolution Tracking
+    assigned_to_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True, index=True
+    )
+    assigned_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    closed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -89,6 +101,9 @@ class RecoveryCase(Base):
     )
     transaction: Mapped["Transaction"] = relationship(
         "Transaction", foreign_keys=[transaction_id], backref="recovery_cases"
+    )
+    assigned_to: Mapped["User | None"] = relationship(
+        "User", foreign_keys=[assigned_to_id]
     )
 
     def __repr__(self) -> str:
