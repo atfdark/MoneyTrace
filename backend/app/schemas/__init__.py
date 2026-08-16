@@ -27,6 +27,12 @@ from app.schemas.graph import (
     SuspiciousNetworkResponse,
 )
 
+from app.schemas.recovery import (
+    RecoveryCaseResponse,
+    RecoveryCaseListResponse,
+    RecoveryStatsResponse,
+)
+
 __all__ = [
     "HealthResponse",
     "TokenPayload",
@@ -46,4 +52,7 @@ __all__ = [
     "GraphEdge",
     "NetworkGraphResponse",
     "SuspiciousNetworkResponse",
+    "RecoveryCaseResponse",
+    "RecoveryCaseListResponse",
+    "RecoveryStatsResponse",
 ]
