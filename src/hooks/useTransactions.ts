@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { transactionService } from '../services';
 import type {
@@ -103,9 +104,32 @@ export const useTransactionStats = (params?: { start_date?: string; end_date?: s
   });
 };
 
-export const useExportTransactions = () => {
+export const useTransactions = useTransactionHistory;
+
+export const useTransactionFilters = () => {
+  const [filters, setFilters] = React.useState<any>({
+    status: '',
+    risk_level: '',
+    search: '',
+    date_from: '',
+    date_to: '',
+  });
+
+  const clearFilters = () => setFilters({ status: '', risk_level: '', search: '', date_from: '', date_to: '' });
+
+  return {
+    filters,
+    setFilters,
+    clearFilters,
+    hasActiveFilters: Object.values(filters).some(Boolean),
+  };
+};
+
+export const useSearch = () => {
   return useMutation({
-    mutationFn: ({ params, format }: { params: TransactionHistoryParams; format?: 'csv' | 'excel' }) =>
-      transactionService.exportTransactions(params, format),
+    mutationFn: async (query: string) => {
+      const res = await transactionService.getHistory({ search: query, limit: 10 });
+      return res.data?.transactions || [];
+    },
   });
 };

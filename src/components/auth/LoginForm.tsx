@@ -44,7 +44,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         if (err instanceof ApiError) {
           setFormError(err.getUserMessage());
         } else {
-          setFormError('Login failed. Please try again.');
+          setFormError('Login failed. Please check your credentials.');
         }
       },
     });
@@ -59,17 +59,25 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      {/* Global Form Error Banner */}
+      {formError && (
+        <div className="p-3.5 bg-red-950/60 border border-red-500/50 rounded-xl text-red-200 text-xs flex items-center gap-2">
+          <span className="material-symbols-outlined text-red-400 text-base flex-shrink-0">error</span>
+          <span>{formError}</span>
+        </div>
+      )}
+
       {/* Email Field */}
       <div className="space-y-1 group">
         <label
           htmlFor="email"
-          className="font-label-caps text-label-caps text-on-surface-variant group-focus-within:text-secondary transition-colors"
+          className="text-xs font-bold uppercase tracking-wider text-purple-300 group-focus-within:text-purple-400 transition-colors block"
         >
-          Username / Email
+          Username / Email Address
         </label>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant group-focus-within:text-secondary transition-colors">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors text-[20px]">
             account_circle
           </span>
           <input
@@ -78,8 +86,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             id="email"
             value={credentials.email}
             onChange={handleChange}
-            placeholder="investigator@agency.gov"
-            className="w-full bg-surface-container/50 border border-outline-variant/50 rounded-DEFAULT py-3 pl-12 pr-4 text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary/50 transition-all font-body-md"
+            placeholder="admin@moneytrace.dev"
+            className="w-full bg-[#1E293B] border border-slate-600 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400 transition-all text-sm font-medium shadow-inner"
             disabled={isPending}
             autoComplete="email"
             required
@@ -92,19 +100,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         <div className="flex justify-between items-center">
           <label
             htmlFor="password"
-            className="font-label-caps text-label-caps text-on-surface-variant group-focus-within:text-secondary transition-colors"
+            className="text-xs font-bold uppercase tracking-wider text-purple-300 group-focus-within:text-purple-400 transition-colors block"
           >
             Password
           </label>
-          <Link
-            to="/forgot-password"
-            className="font-label-caps text-label-caps text-secondary hover:text-secondary-container transition-colors"
-          >
-            Forgot?
-          </Link>
+          <span className="text-[11px] text-purple-400 hover:text-purple-300 font-medium cursor-pointer">
+            Forgot Password?
+          </span>
         </div>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant group-focus-within:text-secondary transition-colors">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors text-[20px]">
             lock
           </span>
           <input
@@ -114,7 +119,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             value={credentials.password}
             onChange={handleChange}
             placeholder="••••••••••••"
-            className="w-full bg-surface-container/50 border border-outline-variant/50 rounded-DEFAULT py-3 pl-12 pr-10 text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary/50 transition-all font-body-md"
+            className="w-full bg-[#1E293B] border border-slate-600 rounded-xl py-3 pl-12 pr-11 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400 transition-all text-sm font-medium shadow-inner"
             disabled={isPending}
             autoComplete="current-password"
             required
@@ -122,88 +127,57 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-outline-variant hover:text-on-surface transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
             disabled={isPending}
+            tabIndex={-1}
           >
             <span className="material-symbols-outlined text-[20px]">{showPassword ? 'visibility' : 'visibility_off'}</span>
           </button>
         </div>
       </div>
 
-      {/* Error Message */}
-      {(formError || error) && (
-        <div
-          className="bg-error-container/20 border border-error/30 text-error px-4 py-3 rounded-lg font-body-sm flex items-center gap-2 animate-in slide-in-from-top-2"
-          role="alert"
-        >
-          <span className="material-symbols-outlined">error</span>
-          {formError || (error instanceof ApiError ? error.getUserMessage() : 'Login failed')}
-        </div>
-      )}
-
       {/* Remember Me */}
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          name="remember_me"
-          id="remember"
-          checked={credentials.remember_me}
-          onChange={handleChange}
-          className="h-4 w-4 bg-surface-container border-outline-variant rounded text-secondary focus:ring-secondary focus:ring-offset-background"
-          disabled={isPending}
-        />
-        <label
-          htmlFor="remember"
-          className="ml-2 font-body-sm text-body-sm text-on-surface-variant cursor-pointer"
-        >
-          Remember device for 30 days
+      <div className="flex items-center justify-between pt-1">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            name="remember_me"
+            checked={credentials.remember_me}
+            onChange={handleChange}
+            className="w-4 h-4 rounded border-slate-600 bg-[#1E293B] text-purple-600 focus:ring-purple-500/40"
+          />
+          <span className="text-xs text-slate-300">Remember session</span>
         </label>
+        <span className="text-xs font-mono text-purple-400 font-semibold bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800/40">
+          SOC Node Active
+        </span>
       </div>
 
       {/* Submit Button */}
       <button
         type="submit"
         disabled={isPending}
-        className="w-full bg-secondary-container hover:bg-secondary-container/80 text-on-secondary-container font-headline-md text-body-md py-3 rounded-DEFAULT transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-secondary-container/20 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+        className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold rounded-xl text-sm shadow-lg shadow-purple-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2 cursor-pointer"
       >
         {isPending ? (
           <>
-            <svg
-              className="animate-spin h-5 w-5"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-            Authenticating...
+            <span className="material-symbols-outlined text-lg animate-spin">sync</span>
+            <span>Authenticating Investigator...</span>
           </>
         ) : (
           <>
-            <span>Authenticate</span>
-            <span className="material-symbols-outlined text-[20px]">login</span>
+            <span>Sign In to MoneyTrace</span>
+            <span className="material-symbols-outlined text-lg">arrow_forward</span>
           </>
         )}
       </button>
 
       {/* Register Link */}
-      <div className="text-center">
-        <p className="font-body-sm text-body-sm text-on-surface-variant">
-          Don&apos;t have an account?{' '}
-          <Link to="/register" className="text-secondary hover:text-secondary-container font-medium transition-colors">
-            Register
+      <div className="text-center pt-2">
+        <p className="text-xs text-slate-400">
+          Need an investigator account?{' '}
+          <Link to="/register" className="text-purple-400 hover:text-purple-300 font-bold transition-colors">
+            Register Here
           </Link>
         </p>
       </div>

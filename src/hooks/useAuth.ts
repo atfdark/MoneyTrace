@@ -106,3 +106,5 @@ export const useResetPassword = () => {
       authService.resetPassword(token, newPassword),
   });
 };
+
+export const useUser = useCurrentUser;

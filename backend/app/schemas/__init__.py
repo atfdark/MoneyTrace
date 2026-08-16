@@ -56,6 +56,15 @@ from app.schemas.ai_assistant import (
     ChatHistoryResponse,
 )
 
+from app.schemas.reports import (
+    InvestigationReportData,
+    FraudReportData,
+    RecoveryReportData,
+    DashboardReportData,
+    ReportHistoryItem,
+    ReportHistoryResponse,
+)
+
 __all__ = [
     "HealthResponse",
     "TokenPayload",
@@ -95,4 +104,10 @@ __all__ = [
     "ChatResponse",
     "ChatHistoryItem",
     "ChatHistoryResponse",
+    "InvestigationReportData",
+    "FraudReportData",
+    "RecoveryReportData",
+    "DashboardReportData",
+    "ReportHistoryItem",
+    "ReportHistoryResponse",
 ]

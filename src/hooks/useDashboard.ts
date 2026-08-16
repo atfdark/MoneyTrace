@@ -35,3 +35,25 @@ export const useRealTimeMetrics = () => {
     refetchInterval: 30 * 1000,
   });
 };
+
+export const useRecentTransactions = (limit: number = 10) => {
+  return useQuery({
+    queryKey: ['dashboard', 'recent-transactions', limit],
+    queryFn: async () => {
+      const res = await dashboardService.getStats();
+      return res.data?.recent_transactions || [];
+    },
+    staleTime: 30 * 1000,
+  });
+};
+
+export const useRecentAlerts = (limit: number = 10) => {
+  return useQuery({
+    queryKey: ['dashboard', 'recent-alerts', limit],
+    queryFn: async () => {
+      const res = await dashboardService.getStats();
+      return res.data?.recent_alerts || [];
+    },
+    staleTime: 30 * 1000,
+  });
+};

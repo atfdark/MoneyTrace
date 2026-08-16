@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { alertService } from '../services';
 import type {
@@ -98,4 +99,22 @@ export const useExportAlerts = () => {
     mutationFn: ({ params, format }: { params: AlertsParams; format?: 'csv' | 'excel' }) =>
       alertService.exportAlerts(params, format),
   });
+};
+
+export const useAlertFilters = () => {
+  const [filters, setFilters] = React.useState<any>({
+    severity: '',
+    status: '',
+    alert_type: '',
+    search: '',
+  });
+
+  const clearFilters = () => setFilters({ severity: '', status: '', alert_type: '', search: '' });
+
+  return {
+    filters,
+    setFilters,
+    clearFilters,
+    hasActiveFilters: Object.values(filters).some(Boolean),
+  };
 };

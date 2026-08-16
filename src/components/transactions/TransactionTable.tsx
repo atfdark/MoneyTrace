@@ -171,7 +171,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                 <option value="critical">Critical (80+)</option>
                 <option value="high">High (60-79)</option>
                 <option value="medium">Medium (40-59)</option>
-                <option value="low">Low (<40)</option>
+                <option value="low">Low (&lt;40)</option>
               </select>
             </div>
 
