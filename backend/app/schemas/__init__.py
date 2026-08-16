@@ -49,6 +49,13 @@ from app.schemas.dashboard import (
     InvestigatorLeaderboardResponse,
 )
 
+from app.schemas.ai_assistant import (
+    ChatRequest,
+    ChatResponse,
+    ChatHistoryItem,
+    ChatHistoryResponse,
+)
+
 __all__ = [
     "HealthResponse",
     "TokenPayload",
@@ -84,4 +91,8 @@ __all__ = [
     "FraudTrendsResponse",
     "InvestigatorStatsItem",
     "InvestigatorLeaderboardResponse",
+    "ChatRequest",
+    "ChatResponse",
+    "ChatHistoryItem",
+    "ChatHistoryResponse",
 ]

@@ -6,6 +6,7 @@ from app.models.account import Account, AccountStatus
 from app.models.transaction import Transaction, TransactionStatus
 from app.models.fraud_alert import FraudAlert, Severity, AlertStatus
 from app.models.recovery import RecoveryCase, RecoveryProbability, CaseStatus
+from app.models.investigator_chat import InvestigatorChat
 
 __all__ = [
     "Base",
@@ -21,4 +22,5 @@ __all__ = [
     "RecoveryCase",
     "RecoveryProbability",
     "CaseStatus",
+    "InvestigatorChat",
 ]
