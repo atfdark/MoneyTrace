@@ -10,6 +10,23 @@ from app.schemas.auth import (
     UserResponse,
 )
 
+from app.schemas.fraud import (
+    FraudAlertResponse,
+    FraudAlertListResponse,
+    FraudStatsResponse,
+    AnalyzeTransactionResponse,
+    UpdateAlertStatusRequest,
+)
+
+from app.schemas.graph import (
+    MoneyTraceHop,
+    MoneyTraceResponse,
+    GraphNode,
+    GraphEdge,
+    NetworkGraphResponse,
+    SuspiciousNetworkResponse,
+)
+
 __all__ = [
     "HealthResponse",
     "TokenPayload",
@@ -18,4 +35,15 @@ __all__ = [
     "RefreshRequest",
     "TokenResponse",
     "UserResponse",
+    "FraudAlertResponse",
+    "FraudAlertListResponse",
+    "FraudStatsResponse",
+    "AnalyzeTransactionResponse",
+    "UpdateAlertStatusRequest",
+    "MoneyTraceHop",
+    "MoneyTraceResponse",
+    "GraphNode",
+    "GraphEdge",
+    "NetworkGraphResponse",
+    "SuspiciousNetworkResponse",
 ]

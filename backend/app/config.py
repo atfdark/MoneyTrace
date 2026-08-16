@@ -8,13 +8,13 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(Path(__file__).parent.parent / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/moneytrace"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./moneytrace.db"
 
     # Security / Auth
     SECRET_KEY: str = "super-secret-key-change-in-production"

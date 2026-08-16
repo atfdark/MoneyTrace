@@ -7,6 +7,7 @@ from app.routes.api_v1.endpoints import (
     transactions,
     dashboard,
     alerts,
+    fraud,
     investigation,
     graph,
     recovery,
@@ -21,6 +22,7 @@ api_router.include_router(auth.router, tags=["auth"], prefix="/auth")
 api_router.include_router(transactions.router, tags=["transactions"], prefix="/transactions")
 api_router.include_router(dashboard.router, tags=["dashboard"], prefix="/dashboard")
 api_router.include_router(alerts.router, tags=["alerts"], prefix="/alerts")
+api_router.include_router(fraud.router, tags=["fraud"], prefix="/fraud")
 api_router.include_router(investigation.router, tags=["investigation"], prefix="/investigation")
 api_router.include_router(graph.router, tags=["graph"], prefix="/graph")
 api_router.include_router(recovery.router, tags=["recovery"], prefix="/recovery")

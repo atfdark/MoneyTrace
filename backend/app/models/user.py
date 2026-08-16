@@ -3,10 +3,11 @@
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 from enum import Enum
+from typing import List
 
 from sqlalchemy import Column, DateTime, Boolean, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
@@ -54,6 +55,11 @@ class User(Base):
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
+    )
+
+    # Relationships
+    accounts: Mapped[List["Account"]] = relationship(
+        "Account", back_populates="user", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:

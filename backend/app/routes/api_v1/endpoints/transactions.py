@@ -1,71 +1,141 @@
-"""Transactions endpoints - placeholder."""
+"""Transaction endpoints — Phase 4 Banking Simulator."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Query, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
+from decimal import Decimal
+
+from app.core import exceptions
+from app.core.deps import get_current_active_user
+from app.database import get_session
+from app.models.user import User
+from app.schemas.transaction import (
+    SendTransactionRequest,
+    TransactionResponse,
+    TransactionHistoryResponse,
+    AccountResponse,
+    LiveTransactionResponse,
+)
+from app.services.transaction import TransactionService
 
 router = APIRouter()
 
 
-@router.get("/", name="transactions-list")
-async def list_transactions() -> dict[str, str]:
-    """List all transactions."""
-    return {"message": "Transactions list endpoint placeholder"}
+# ---------------------------------------------------------------------------
+# Send Money
+# ---------------------------------------------------------------------------
+
+@router.post("/send", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
+async def send_money(
+    data: SendTransactionRequest,
+    current_user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_session),
+) -> TransactionResponse:
+    """Send money to another account."""
+    service = TransactionService(session)
+    transaction = await service.send_money(
+        sender_user_id=current_user.id,
+        receiver_account_number=data.receiver_account_number,
+        amount=data.amount,
+        remark=data.remark,
+        device_info=data.device_info,
+        ip_address=data.ip_address,
+        location=data.location,
+    )
+    return TransactionResponse.model_validate(transaction)
 
 
-@router.post("/", name="transactions-create")
-async def create_transaction() -> dict[str, str]:
-    """Create a new transaction."""
-    return {"message": "Create transaction endpoint placeholder"}
+# ---------------------------------------------------------------------------
+# Transaction History
+# ---------------------------------------------------------------------------
+
+@router.get("/history", response_model=TransactionHistoryResponse)
+async def get_transaction_history(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    current_user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_session),
+) -> TransactionHistoryResponse:
+    """Get paginated transaction history for current user."""
+    service = TransactionService(session)
+    transactions, total = await service.get_transaction_history(
+        user_id=current_user.id,
+        page=page,
+        page_size=page_size,
+    )
+
+    total_pages = (total + page_size - 1) // page_size
+    return TransactionHistoryResponse(
+        transactions=[TransactionResponse.model_validate(t) for t in transactions],
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+    )
 
 
-@router.get("/history", name="transactions-history")
-async def get_transaction_history() -> dict[str, str]:
-    """Get transaction history with filters."""
-    return {"message": "Transaction history endpoint placeholder"}
+# ---------------------------------------------------------------------------
+# Live Transaction Feed
+# ---------------------------------------------------------------------------
+
+@router.get("/live", response_model=list[LiveTransactionResponse])
+async def get_live_transactions(
+    limit: int = Query(50, ge=1, le=200),
+    session: AsyncSession = Depends(get_session),
+) -> list[LiveTransactionResponse]:
+    """Get latest transactions across all accounts (public feed)."""
+    service = TransactionService(session)
+    transactions = await service.get_live_transactions(limit=limit)
+
+    # Build simplified response with account numbers
+    response = []
+    for t in transactions:
+        # Note: sender_account and receiver_account are loaded via selectinload
+        sender_acc_num = t.sender_account.account_number if t.sender_account else "UNKNOWN"
+        receiver_acc_num = t.receiver_account.account_number if t.receiver_account else "UNKNOWN"
+        response.append(LiveTransactionResponse(
+            transaction_id=t.transaction_id,
+            sender_account_number=sender_acc_num,
+            receiver_account_number=receiver_acc_num,
+            amount=t.amount,
+            timestamp=t.timestamp,
+        ))
+    return response
 
 
-@router.get("/live", name="transactions-live")
-async def get_live_feed() -> dict[str, str]:
-    """Get live transaction feed."""
-    return {"message": "Live feed endpoint placeholder"}
+# ---------------------------------------------------------------------------
+# Transaction Detail
+# ---------------------------------------------------------------------------
+
+@router.get("/{transaction_id}", response_model=TransactionResponse)
+async def get_transaction(
+    transaction_id: str,
+    current_user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_session),
+) -> TransactionResponse:
+    """Get transaction details by ID."""
+    service = TransactionService(session)
+    transaction = await service.get_transaction_by_id(
+        transaction_id=transaction_id,
+        user_id=current_user.id,
+    )
+    if transaction is None:
+        raise exceptions.NotFoundError("Transaction not found")
+    return TransactionResponse.model_validate(transaction)
 
 
-@router.get("/{transaction_id}", name="transactions-detail")
-async def get_transaction(transaction_id: str) -> dict[str, str]:
-    """Get transaction by ID."""
-    return {"message": f"Transaction {transaction_id} endpoint placeholder"}
+# ---------------------------------------------------------------------------
+# Account Detail (Current User)
+# ---------------------------------------------------------------------------
 
-
-@router.get("/hash/{tx_hash}", name="transactions-hash")
-async def get_transaction_by_hash(tx_hash: str) -> dict[str, str]:
-    """Get transaction by hash."""
-    return {"message": f"Transaction hash {tx_hash} endpoint placeholder"}
-
-
-@router.post("/{transaction_id}/flag", name="transactions-flag")
-async def flag_transaction(transaction_id: str) -> dict[str, str]:
-    """Flag a transaction manually."""
-    return {"message": f"Flag transaction {transaction_id} endpoint placeholder"}
-
-
-@router.post("/{transaction_id}/approve", name="transactions-approve")
-async def approve_transaction(transaction_id: str) -> dict[str, str]:
-    """Approve a flagged transaction."""
-    return {"message": f"Approve transaction {transaction_id} endpoint placeholder"}
-
-
-@router.post("/{transaction_id}/freeze", name="transactions-freeze")
-async def freeze_transaction(transaction_id: str) -> dict[str, str]:
-    """Freeze a transaction."""
-    return {"message": f"Freeze transaction {transaction_id} endpoint placeholder"}
-
-
-@router.get("/stats", name="transactions-stats")
-async def get_transaction_stats() -> dict[str, str]:
-    """Get transaction statistics."""
-    return {"message": "Transaction stats endpoint placeholder"}
-
-
-@router.get("/export", name="transactions-export")
-async def export_transactions() -> dict[str, str]:
-    """Export transactions."""
-    return {"message": "Export transactions endpoint placeholder"}
+@router.get("/accounts/me", response_model=AccountResponse)
+async def get_my_account(
+    current_user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_session),
+) -> AccountResponse:
+    """Get current user's account details."""
+    service = TransactionService(session)
+    account = await service.get_account_by_user_id(current_user.id)
+    if account is None:
+        raise exceptions.NotFoundError("Account not found")
+    return AccountResponse.model_validate(account)
