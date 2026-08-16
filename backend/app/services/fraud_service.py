@@ -82,6 +82,46 @@ class FraudService:
                     created_at=datetime.now(timezone.utc),
                 )
                 self.session.add(alert)
+                await self.session.flush()
+
+                # Automatically evaluate Recovery Case (Phase 7)
+                try:
+                    from app.services.recovery_service import RecoveryService
+                    rec_service = RecoveryService(self.session)
+                    rec_case = await rec_service.analyze_recovery(alert.alert_id)
+                    
+                    # Broadcast Recovery event
+                    from app.core.websocket import ws_manager
+                    await ws_manager.broadcast("RECOVERY_CASE_CREATED", {
+                        "case_id": rec_case.case_id,
+                        "alert_id": alert.alert_id,
+                        "recovery_score": rec_case.recovery_score,
+                        "recovery_probability": rec_case.recovery_probability,
+                        "current_holder_account": rec_case.current_holder_account,
+                        "amount_at_risk": rec_case.amount_at_risk,
+                        "recommended_action": rec_case.recommended_action,
+                        "status": rec_case.status,
+                    })
+                except Exception as e:
+                    # Non-fatal if recovery evaluation fails
+                    pass
+
+                # Broadcast Fraud Alert event
+                try:
+                    from app.core.websocket import ws_manager
+                    await ws_manager.broadcast("FRAUD_ALERT_CREATED", {
+                        "alert_id": alert.alert_id,
+                        "alert_type": alert.alert_type,
+                        "risk_score": alert.risk_score,
+                        "severity": alert.severity,
+                        "description": alert.description,
+                        "account_id": str(alert.account_id),
+                        "transaction_id": str(alert.transaction_id),
+                        "status": alert.status,
+                        "created_at": alert.created_at.isoformat() if alert.created_at else None,
+                    })
+                except Exception:
+                    pass
 
         await self.session.flush()
         return result, alert

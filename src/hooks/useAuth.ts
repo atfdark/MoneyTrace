@@ -9,12 +9,34 @@ export const useLogin = () => {
   const { setUser, setTokens: setAuthTokens } = useAuthStore();
 
   return useMutation({
-    mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
-    onSuccess: (response) => {
-      const { user, tokens } = response.data;
-      setTokens(tokens.access_token, tokens.refresh_token);
-      setAuthTokens(tokens);
-      setUser(user);
+    mutationFn: async (credentials: LoginCredentials) => {
+      const res = await authService.login(credentials);
+      return res;
+    },
+    onSuccess: async (response: any) => {
+      const payload = response.data || response;
+      const tokens: AuthTokens = payload.tokens || (payload.access_token ? payload : null);
+      let user: User | null = payload.user || null;
+
+      if (tokens && tokens.access_token) {
+        setTokens(tokens.access_token, tokens.refresh_token);
+        setAuthTokens(tokens);
+      }
+
+      // If user profile is not directly in login response, fetch /auth/me
+      if (!user && tokens && tokens.access_token) {
+        try {
+          const meRes = await authService.getMe();
+          user = (meRes as any).data || meRes;
+        } catch (err) {
+          console.warn('Could not fetch user profile immediately:', err);
+        }
+      }
+
+      if (user) {
+        setUser(user);
+      }
+
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
@@ -25,12 +47,33 @@ export const useRegister = () => {
   const { setUser, setTokens: setAuthTokens } = useAuthStore();
 
   return useMutation({
-    mutationFn: (data: RegisterData) => authService.register(data),
-    onSuccess: (response) => {
-      const { user, tokens } = response.data;
-      setTokens(tokens.access_token, tokens.refresh_token);
-      setAuthTokens(tokens);
-      setUser(user);
+    mutationFn: async (data: RegisterData) => {
+      const res = await authService.register(data);
+      return res;
+    },
+    onSuccess: async (response: any) => {
+      const payload = response.data || response;
+      const tokens: AuthTokens = payload.tokens || (payload.access_token ? payload : null);
+      let user: User | null = payload.user || (!payload.tokens && payload.id ? payload : null);
+
+      if (tokens && tokens.access_token) {
+        setTokens(tokens.access_token, tokens.refresh_token);
+        setAuthTokens(tokens);
+      }
+
+      if (!user && tokens && tokens.access_token) {
+        try {
+          const meRes = await authService.getMe();
+          user = (meRes as any).data || meRes;
+        } catch (err) {
+          console.warn('Could not fetch user profile after register:', err);
+        }
+      }
+
+      if (user) {
+        setUser(user);
+      }
+
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
@@ -48,7 +91,6 @@ export const useLogout = () => {
       queryClient.clear();
     },
     onError: () => {
-      // Even if logout fails on server, clear local state
       clearTokens();
       clearAuth();
       queryClient.clear();
@@ -63,9 +105,8 @@ export const useCurrentUser = () => {
     queryKey: ['user', 'me'],
     queryFn: () => authService.getMe(),
     enabled: isAuthenticated && !!getAccessToken(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
     retry: (failureCount, error) => {
-      // Don't retry on auth errors
       if (error instanceof Error && 'isAuthError' in error && (error as any).isAuthError) {
         return false;
       }
@@ -80,8 +121,9 @@ export const useUpdateProfile = () => {
 
   return useMutation({
     mutationFn: (data: Partial<User>) => authService.updateProfile(data),
-    onSuccess: (response) => {
-      setUser(response.data);
+    onSuccess: (response: any) => {
+      const payload = response.data || response;
+      setUser(payload);
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });

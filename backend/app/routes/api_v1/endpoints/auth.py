@@ -7,6 +7,7 @@ from app.core import exceptions
 from app.core.deps import get_current_user, get_current_active_user
 from app.database import get_session
 from app.schemas.auth import (
+    AuthDataResponse,
     LoginRequest,
     RegisterRequest,
     RefreshRequest,
@@ -18,15 +19,14 @@ from app.services.auth import AuthService
 router = APIRouter()
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=AuthDataResponse, status_code=status.HTTP_201_CREATED)
 async def register(
     data: RegisterRequest,
     session: AsyncSession = Depends(get_session),
-) -> UserResponse:
-    """Register a new user."""
+) -> AuthDataResponse:
+    """Register a new user, create their bank account, and return tokens."""
     service = AuthService(session)
-    user = await service.register(data)
-    return UserResponse.model_validate(user)
+    return await service.register(data)
 
 
 @router.post("/login", response_model=TokenResponse)

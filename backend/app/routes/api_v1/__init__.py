@@ -13,12 +13,14 @@ from app.routes.api_v1.endpoints import (
     recovery,
     reports,
     assistant,
+    users,
 )
 
 api_router = APIRouter()
 
 # Include all endpoint routers under /api/v1
 api_router.include_router(auth.router, tags=["auth"], prefix="/auth")
+api_router.include_router(users.router, tags=["users"], prefix="/users")
 api_router.include_router(transactions.router, tags=["transactions"], prefix="/transactions")
 api_router.include_router(dashboard.router, tags=["dashboard"], prefix="/dashboard")
 api_router.include_router(alerts.router, tags=["alerts"], prefix="/alerts")

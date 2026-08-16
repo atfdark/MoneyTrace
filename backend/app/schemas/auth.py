@@ -80,3 +80,9 @@ class UserResponse(BaseModel):
     is_superuser: bool
     created_at: datetime
     updated_at: datetime | None = None
+
+
+class AuthDataResponse(BaseModel):
+    """Returned after registration and login."""
+    user: UserResponse
+    tokens: TokenResponse

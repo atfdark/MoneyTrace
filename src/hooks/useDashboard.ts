@@ -1,20 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '../services';
-import type { DashboardStats, DashboardTrends, FraudSummary } from '../types';
 
 export const useDashboardStats = () => {
   return useQuery({
     queryKey: ['dashboard', 'stats'],
-    queryFn: () => dashboardService.getStats(),
+    queryFn: async () => {
+      const res = await dashboardService.getStats();
+      // Backend returns flat OverviewResponse, or wrapped in { data: ... }
+      return res?.data || res;
+    },
     staleTime: 60 * 1000,
-    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+    refetchInterval: 5 * 60 * 1000,
   });
 };
 
 export const useDashboardTrends = (period: '7d' | '30d' | '90d' | '1y' = '30d') => {
+  const daysMap: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 };
   return useQuery({
     queryKey: ['dashboard', 'trends', period],
-    queryFn: () => dashboardService.getTrends({ period }),
+    queryFn: async () => {
+      const res = await dashboardService.getTrends({ days: daysMap[period] || 30 });
+      return res?.data || res;
+    },
     staleTime: 60 * 1000,
   });
 };
@@ -22,7 +29,10 @@ export const useDashboardTrends = (period: '7d' | '30d' | '90d' | '1y' = '30d') 
 export const useFraudSummary = (params?: { start_date?: string; end_date?: string }) => {
   return useQuery({
     queryKey: ['dashboard', 'fraud-summary', params],
-    queryFn: () => dashboardService.getFraudSummary(params),
+    queryFn: async () => {
+      const res = await dashboardService.getFraudSummary(params);
+      return res?.data || res;
+    },
     staleTime: 60 * 1000,
   });
 };
@@ -30,7 +40,10 @@ export const useFraudSummary = (params?: { start_date?: string; end_date?: strin
 export const useRealTimeMetrics = () => {
   return useQuery({
     queryKey: ['dashboard', 'realtime'],
-    queryFn: () => dashboardService.getRealTimeMetrics(),
+    queryFn: async () => {
+      const res = await dashboardService.getRealTimeMetrics();
+      return res?.data || res;
+    },
     staleTime: 10 * 1000,
     refetchInterval: 30 * 1000,
   });
@@ -41,7 +54,8 @@ export const useRecentTransactions = (limit: number = 10) => {
     queryKey: ['dashboard', 'recent-transactions', limit],
     queryFn: async () => {
       const res = await dashboardService.getStats();
-      return res.data?.recent_transactions || [];
+      const payload = res?.data || res;
+      return payload?.recent_transactions || [];
     },
     staleTime: 30 * 1000,
   });
@@ -52,7 +66,8 @@ export const useRecentAlerts = (limit: number = 10) => {
     queryKey: ['dashboard', 'recent-alerts', limit],
     queryFn: async () => {
       const res = await dashboardService.getStats();
-      return res.data?.recent_alerts || [];
+      const payload = res?.data || res;
+      return payload?.recent_alerts || [];
     },
     staleTime: 30 * 1000,
   });

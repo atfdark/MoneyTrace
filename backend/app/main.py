@@ -1,11 +1,11 @@
 """MoneyTrace – AI Financial Crime Intelligence Platform.
 
-Main FastAPI application entry point.
+Main FastAPI application entry point with real-time WebSocket support.
 """
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -13,6 +13,7 @@ from pydantic import ValidationError as PydanticValidationError
 
 from app.config import settings
 from app.core.exceptions import AppException
+from app.core.websocket import ws_manager
 from app.routes.root import router as root_router
 from app.routes.api_v1 import api_router
 
@@ -21,7 +22,7 @@ from app.routes.api_v1 import api_router
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
-    print("Starting MoneyTrace API...")
+    print("Starting MoneyTrace AI Banking & Crime Intelligence Platform...")
     yield
     # Shutdown
     print("Shutting down MoneyTrace API...")
@@ -29,7 +30,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="MoneyTrace API",
-    description="AI Financial Crime Intelligence Platform",
+    description="AI Financial Crime Intelligence & Banking Simulation Platform",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -39,16 +40,37 @@ app = FastAPI(
 
 
 # ---------------------------------------------------------------------------
-# CORS Middleware
+# CORS Middleware — Permissive for multi-student local network access
 # ---------------------------------------------------------------------------
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_ORIGIN],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ---------------------------------------------------------------------------
+# Real-Time WebSocket Endpoint
+# ---------------------------------------------------------------------------
+
+@app.websocket("/ws/live")
+@app.websocket("/api/v1/ws/live")
+async def websocket_live_endpoint(websocket: WebSocket):
+    """WebSocket endpoint for broadcasting live transactions, alerts & recovery cases."""
+    await ws_manager.connect(websocket)
+    try:
+        while True:
+            # Keep connection open & handle incoming client pings or heartbeats
+            data = await websocket.receive_text()
+            if data == "ping":
+                await websocket.send_text("pong")
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket)
+    except Exception:
+        ws_manager.disconnect(websocket)
 
 
 # ---------------------------------------------------------------------------

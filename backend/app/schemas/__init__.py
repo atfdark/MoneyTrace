@@ -1,4 +1,7 @@
-"""Schemas package — request/response models."""
+from app.schemas.user import (
+    UserSearchResult,
+    UserSearchResponse,
+)
 
 from app.schemas.health import HealthResponse
 from app.schemas.auth import (

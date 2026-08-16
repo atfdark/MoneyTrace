@@ -105,9 +105,9 @@ export const Dashboard: React.FC = () => {
         <div className="glass-panel rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-headline-md text-headline-md text-on-surface">Transaction Volume</h2>
-            <select className="bg-surface-container border border-outline-variant/50 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50">
+            <select defaultValue="7d" className="bg-surface-container border border-outline-variant/50 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50">
               <option value="24h">Last 24 Hours</option>
-              <option value="7d" selected>Last 7 Days</option>
+              <option value="7d">Last 7 Days</option>
               <option value="30d">Last 30 Days</option>
               <option value="90d">Last 90 Days</option>
             </select>

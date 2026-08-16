@@ -3,7 +3,7 @@
 from datetime import datetime
 from uuid import UUID
 from decimal import Decimal
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -31,6 +31,12 @@ class SendTransactionRequest(BaseModel):
         if v <= 0:
             raise ValueError("Amount must be greater than zero")
         return v
+
+
+class SimulateScenarioRequest(BaseModel):
+    """Payload for POST /transactions/simulate-scenario."""
+    scenario: str = Field("mule_chain", description="Scenario type: mule_chain, circular_ring, rapid_drain, high_value")
+    initial_amount: float = Field(100000.0, ge=100.0, le=10000000.0)
 
 
 # ---------------------------------------------------------------------------
@@ -88,3 +94,16 @@ class LiveTransactionResponse(BaseModel):
     receiver_account_number: str
     amount: Decimal
     timestamp: datetime
+    risk_score: Optional[float] = None
+    is_flagged: Optional[bool] = False
+
+
+class SimulateScenarioResponse(BaseModel):
+    """Response returned when a fraud scenario is simulated."""
+    scenario: str
+    description: str
+    total_hops: int
+    transactions_created: List[Dict[str, Any]]
+    alerts_generated: int
+    recovery_cases_generated: int
+    message: str
