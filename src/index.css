@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
 @tailwind base;
@@ -7,40 +7,51 @@
 
 @layer base {
   :root {
-    --background: #0B0F19;
-    --surface: #111827;
-    --surface-variant: #1E293B;
-    --surface-container: #1E293B;
-    --surface-container-high: #334155;
-    --on-surface: #F8FAFC;
-    --on-surface-variant: #94A3B8;
-    --outline: #64748B;
-    --outline-variant: #475569;
-    --primary: #3B82F6;
-    --primary-container: #1E3A8A;
+    --background: #F8FAFC;
+    --surface: #FFFFFF;
+    --surface-variant: #F1F5F9;
+    --surface-container: #F1F5F9;
+    --surface-container-high: #E2E8F0;
+    --on-surface: #0F172A;
+    --on-surface-variant: #64748B;
+    --outline: #94A3B8;
+    --outline-variant: #CBD5E1;
+    --primary: #2563EB;
+    --primary-container: #DBEAFE;
     --on-primary: #FFFFFF;
-    --secondary: #8B5CF6;
-    --secondary-container: #4C1D95;
+    --on-primary-container: #1E40AF;
+    --secondary: #0EA5E9;
+    --secondary-container: #E0F2FE;
     --on-secondary: #FFFFFF;
+    --on-secondary-container: #0369A1;
     --tertiary: #10B981;
     --error: #EF4444;
+    --error-container: #FEF2F2;
+    --on-error-container: #DC2626;
     --warning: #F59E0B;
+    --warning-container: #FFFBEB;
+    --on-warning-container: #D97706;
+    --success: #10B981;
+    --success-container: #ECFDF5;
+    --on-success-container: #059669;
   }
 
   body {
     background-color: var(--background);
     color: var(--on-surface);
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
     margin: 0;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   code, pre, .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
 
-  /* Global Accessible Form Input Rules */
+  /* Global Form Input Styles */
   input[type="text"],
   input[type="email"],
   input[type="password"],
@@ -49,8 +60,9 @@
   input[type="date"],
   select,
   textarea {
-    color: #FFFFFF !important;
-    background-color: #1E293B;
+    color: #0F172A !important;
+    background-color: #FFFFFF;
+    border: 1px solid #E5E7EB;
   }
 
   input::placeholder,
@@ -63,39 +75,52 @@
   select:focus,
   textarea:focus {
     outline: none;
-    border-color: #A855F7 !important;
+    border-color: #2563EB !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
 }
 
+/* Enterprise Card — replaces glass-panel everywhere */
 .glass-panel {
-  background: rgba(17, 24, 39, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(75, 85, 99, 0.35);
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .glass-panel-subtle {
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(75, 85, 99, 0.25);
+  background: #F8FAFC;
+  border: 1px solid #F1F5F9;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar — Light Theme */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0F19;
+  background: #F8FAFC;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #374151;
+  background: #CBD5E1;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4B5563;
+  background: #94A3B8;
+}
+
+/* Subtle financial intelligence background pattern */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.02;
+  background-image:
+    linear-gradient(rgba(37, 99, 235, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.3) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
 }

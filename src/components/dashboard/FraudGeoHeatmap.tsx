@@ -17,45 +17,45 @@ export const FraudGeoHeatmap: React.FC = () => {
   ];
 
   return (
-    <div className="glass-panel bg-[#0B1020]/90 border border-slate-800 rounded-2xl p-4 shadow-xl text-white">
-      <div className="flex items-center justify-between mb-3">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-card">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-purple-400 text-lg">public</span>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-            Geographic Fraud Velocity
-          </h3>
+          <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
+            <span className="material-symbols-outlined text-purple-600 text-[18px]">public</span>
+          </div>
+          <h3 className="text-[13px] font-semibold text-gray-900">Geographic Fraud Velocity</h3>
         </div>
-        <span className="text-[10px] font-mono text-slate-400">Top Regional Corridors</span>
+        <span className="text-[11px] text-gray-400">Top Regional Corridors</span>
       </div>
 
-      <div className="space-y-2.5">
+      <div className="space-y-3">
         {cities.map((c) => {
           const barColor = c.riskTier === 'CRITICAL'
-            ? 'from-rose-600 to-red-500'
+            ? 'bg-red-500'
             : c.riskTier === 'HIGH'
-            ? 'from-amber-600 to-orange-500'
-            : 'from-blue-600 to-cyan-500';
+            ? 'bg-amber-500'
+            : 'bg-blue-500';
 
           const badgeColor = c.riskTier === 'CRITICAL'
-            ? 'text-rose-400 bg-rose-500/20'
+            ? 'text-red-700 bg-red-50 border border-red-200'
             : c.riskTier === 'HIGH'
-            ? 'text-amber-400 bg-amber-500/20'
-            : 'text-blue-400 bg-blue-500/20';
+            ? 'text-amber-700 bg-amber-50 border border-amber-200'
+            : 'text-blue-700 bg-blue-50 border border-blue-200';
 
           return (
-            <div key={c.city} className="space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium text-slate-200">{c.city}</span>
+            <div key={c.city} className="space-y-1.5">
+              <div className="flex items-center justify-between text-[12px]">
+                <span className="font-medium text-gray-900">{c.city}</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-slate-400 text-[11px]">{c.count} Incidents</span>
-                  <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded ${badgeColor}`}>
+                  <span className="font-mono text-gray-400 text-[11px]">{c.count} incidents</span>
+                  <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded ${badgeColor}`}>
                     {c.riskTier}
                   </span>
                 </div>
               </div>
-              <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+              <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all duration-500`}
+                  className={`h-full ${barColor} rounded-full transition-all duration-500`}
                   style={{ width: `${c.percentage}%` }}
                 />
               </div>

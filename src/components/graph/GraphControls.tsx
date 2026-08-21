@@ -27,12 +27,12 @@ const LAYOUT_OPTIONS: Array<{ id: LayoutMode; label: string; icon: string }> = [
 ];
 
 const NODE_TYPES: Array<{ id: string; label: string; color: string; border: string }> = [
-  { id: 'victim', label: 'Victim', color: 'text-blue-400', border: 'border-blue-500/50' },
+  { id: 'victim', label: 'Victim', color: 'text-blue-600', border: 'border-blue-500/50' },
   { id: 'normal', label: 'Normal', color: 'text-green-400', border: 'border-green-500/50' },
   { id: 'mule', label: 'Mule', color: 'text-orange-400', border: 'border-orange-500/50' },
   { id: 'high_risk', label: 'High Risk', color: 'text-red-400', border: 'border-red-500/50' },
-  { id: 'collector', label: 'Collector', color: 'text-purple-400', border: 'border-purple-500/50' },
-  { id: 'frozen', label: 'Frozen', color: 'text-cyan-400', border: 'border-cyan-500/50' },
+  { id: 'collector', label: 'Collector', color: 'text-blue-600', border: 'border-blue-200' },
+  { id: 'frozen', label: 'Frozen', color: 'text-sky-600', border: 'border-cyan-500/50' },
 ];
 
 export const GraphControls: React.FC<GraphControlsProps> = ({
@@ -51,9 +51,9 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
   onToggleTypeFilter,
 }) => {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 p-3 glass-panel rounded-2xl border border-slate-700/50 text-xs">
+    <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border border-gray-200 rounded-xl shadow-card border border-gray-200 text-xs">
       {/* ───── Left: Layout Switcher ───── */}
-      <div className="flex items-center gap-1.5 bg-[#0F172A] p-1 rounded-xl border border-slate-800">
+      <div className="flex items-center gap-1.5 bg-[#0F172A] p-1 rounded-xl border border-gray-200">
         {LAYOUT_OPTIONS.map(opt => {
           const isActive = layoutMode === opt.id;
           return (
@@ -62,8 +62,8 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               onClick={() => onLayoutModeChange(opt.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/40'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-blue-600 text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50/60'
               }`}
             >
               <span className="material-symbols-outlined text-sm">{opt.icon}</span>
@@ -75,7 +75,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
 
       {/* ───── Middle: Type Filter Pills ───── */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mr-1 hidden sm:inline">
+        <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mr-1 hidden sm:inline">
           Filter:
         </span>
         {NODE_TYPES.map(t => {
@@ -86,8 +86,8 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               onClick={() => onToggleTypeFilter(t.id)}
               className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold uppercase transition-all flex items-center gap-1 cursor-pointer ${
                 isSelected
-                  ? `bg-slate-800 ${t.border} ${t.color}`
-                  : 'bg-transparent border-slate-800 text-slate-600 line-through'
+                  ? `bg-gray-100 ${t.border} ${t.color}`
+                  : 'bg-transparent border-gray-200 text-slate-600 line-through'
               }`}
             >
               <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'currentColor' }} />
@@ -103,7 +103,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
         <select
           value={minAmountFilter}
           onChange={e => onMinAmountChange(Number(e.target.value))}
-          className="bg-[#0F172A] border border-slate-700/60 rounded-xl px-2.5 py-1.5 text-slate-300 font-mono text-[11px] focus:outline-none focus:border-purple-500 cursor-pointer"
+          className="bg-[#0F172A] border border-gray-200/60 rounded-xl px-2.5 py-1.5 text-gray-600 font-mono text-[11px] focus:outline-none focus:border-purple-500 cursor-pointer"
         >
           <option value={0}>All Amounts</option>
           <option value={5000}>≥ ₹5,000</option>
@@ -113,32 +113,32 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
         </select>
 
         {/* Viewport Zoom / Pan Controls */}
-        <div className="flex items-center bg-[#0F172A] p-0.5 rounded-xl border border-slate-800">
+        <div className="flex items-center bg-[#0F172A] p-0.5 rounded-xl border border-gray-200">
           <button
             onClick={onZoomIn}
             title="Zoom In"
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-50 cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">add</span>
           </button>
           <button
             onClick={onZoomOut}
             title="Zoom Out"
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-50 cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">remove</span>
           </button>
           <button
             onClick={onFitView}
             title="Fit to Screen"
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-50 cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">fit_screen</span>
           </button>
           <button
             onClick={onResetView}
             title="Reset View"
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-50 cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">refresh</span>
           </button>
@@ -146,7 +146,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             <button
               onClick={onReheatPhysics}
               title="Re-stabilize Physics"
-              className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-purple-400 hover:bg-slate-800 cursor-pointer"
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:text-blue-600 hover:bg-gray-50 cursor-pointer"
             >
               <span className="material-symbols-outlined text-base">flare</span>
             </button>

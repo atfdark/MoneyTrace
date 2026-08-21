@@ -74,16 +74,16 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, title = 'Dashboard'
     window.location.href = '/settings';
   };
 
-  const badgeCount = emergencyAlert ? 1 : toasts.length > 0 ? toasts.length : 3;
+  const badgeCount = emergencyAlert ? 1 : toasts.length;
 
   return (
     <>
-      <header className="fixed left-0 top-0 right-0 h-16 glass-panel border-b border-outline-variant/20 flex items-center justify-between px-4 lg:ml-0 lg:pl-6 lg:pr-6 z-30 transition-all duration-300">
+      <header className="fixed left-0 top-0 right-0 h-16 bg-white border-b border-gray-200 shadow-nav flex items-center justify-between px-4 lg:ml-64 lg:pl-6 lg:pr-6 z-30 transition-all duration-300">
         {/* Left Section - Menu Button & Page Title */}
         <div className="flex items-center gap-4">
           <button
             onClick={onMenuClick}
-            className="lg:hidden p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors"
+            className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors"
             aria-label="Open menu"
           >
             <span className="material-symbols-outlined text-[24px]">menu</span>
@@ -91,23 +91,23 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, title = 'Dashboard'
 
           <div className="hidden lg:block">
             <div className="flex items-center gap-2.5">
-              <h1 className="font-headline-lg text-headline-lg text-on-surface">{title}</h1>
-              {/* Presence Telemetry Pill */}
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                <span>{activeUsers.length || 17} Nodes Active</span>
+              <h1 className="text-[17px] font-bold text-gray-900">{title}</h1>
+              {/* System Health Pill */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-[11px] font-semibold text-green-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span>{activeUsers.length > 0 ? `${activeUsers.length} Online` : 'Connected'}</span>
               </div>
             </div>
             {subtitle && (
-              <p className="font-body-sm text-body-sm text-on-surface-variant">{subtitle}</p>
+              <p className="text-[12px] text-gray-500 mt-0.5">{subtitle}</p>
             )}
           </div>
         </div>
 
         {/* Center Section - Search */}
-        <div className="hidden md:flex flex-1 max-w-xl mx-8 relative">
+        <div className="hidden md:flex flex-1 max-w-lg mx-8 relative">
           <form onSubmit={handleSearchSubmit} className="w-full relative">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant">
+            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">
               search
             </span>
             <input
@@ -116,13 +116,13 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, title = 'Dashboard'
               value={searchQuery}
               onChange={handleSearchChange}
               onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
-              placeholder="Search transactions, accounts (ACC1001), alerts..."
-              className="w-full bg-surface-container/50 border border-outline-variant/50 rounded-full py-2 pl-12 pr-4 text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary/50 transition-all font-body-sm"
+              placeholder="Search transactions, accounts, alerts..."
+              className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 pl-11 pr-4 text-gray-900 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all placeholder:text-gray-400"
               aria-label="Global search"
               autoComplete="off"
             />
             {isSearching && (
-              <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-secondary animate-spin">
+              <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-blue-500 animate-spin text-[18px]">
                 refresh
               </span>
             )}
@@ -134,10 +134,10 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, title = 'Dashboard'
                   setShowSearchResults(false);
                   if (searchInputRef.current) searchInputRef.current.focus();
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-outline-variant hover:text-on-surface transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 aria-label="Clear search"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             )}
           </form>
@@ -146,18 +146,18 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, title = 'Dashboard'
           {showSearchResults && searchResults.length > 0 && (
             <div
               ref={searchResultsRef}
-              className="absolute top-full left-0 right-0 mt-2 glass-panel rounded-xl shadow-xl border border-outline-variant/20 overflow-hidden z-50 animate-in slide-in-from-top-2"
+              className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl shadow-elevated border border-gray-200 overflow-hidden z-50"
             >
-              <div className="p-2">
+              <div className="p-1.5">
                 {searchResults.map((result) => (
                   <button
                     key={result.id}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface hover:bg-surface-container-high transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-left"
                   >
-                    <span className="material-symbols-outlined text-secondary">{result.icon}</span>
+                    <span className="material-symbols-outlined text-blue-500 text-[20px]">{result.icon}</span>
                     <div>
-                      <p className="font-body-sm text-body-sm">{result.title}</p>
-                      <p className="font-body-xs text-body-xs text-on-surface-variant">{result.subtitle}</p>
+                      <p className="text-[13px] font-medium text-gray-900">{result.title}</p>
+                      <p className="text-[11px] text-gray-500">{result.subtitle}</p>
                     </div>
                   </button>
                 ))}
@@ -167,49 +167,48 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, title = 'Dashboard'
         </div>
 
         {/* Right Section - Notifications & User */}
-        <div className="flex items-center gap-2">
-          {/* Emergency Alert Drawer Bell Button */}
+        <div className="flex items-center gap-1.5">
+          {/* Notifications */}
           <button
             onClick={() => setAlertDrawerOpen(true)}
-            className="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer"
+            className="relative p-2 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer"
             aria-label="Notifications"
           >
-            <span className="material-symbols-outlined text-[24px]">notifications</span>
-            <span className={`absolute -top-1 -right-1 w-5 h-5 text-[10px] font-black rounded-full flex items-center justify-center ${
-              emergencyAlert
-                ? 'bg-rose-600 text-white animate-ping'
-                : 'bg-rose-600 text-white'
-            }`}>
-              {badgeCount}
-            </span>
+            <span className="material-symbols-outlined text-[22px]">notifications</span>
+            {badgeCount > 0 && (
+              <span className={`absolute top-1 right-1 w-4.5 h-4.5 min-w-[18px] text-[10px] font-bold rounded-full flex items-center justify-center ${
+                emergencyAlert
+                  ? 'bg-red-500 text-gray-900 animate-pulse'
+                  : 'bg-red-500 text-gray-900'
+              }`}>
+                {badgeCount}
+              </span>
+            )}
           </button>
 
-          {/* Theme Toggle */}
-          <button
-            className="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors"
-            aria-label="Toggle theme"
-          >
-            <span className="material-symbols-outlined text-[24px]">dark_mode</span>
-          </button>
+          {/* Divider */}
+          <div className="w-px h-6 bg-gray-200 mx-1 hidden lg:block" />
 
           {/* User Menu */}
-          <div className="relative ml-2">
+          <div className="relative">
             <button
               onClick={handleProfileClick}
-              className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-surface-container-high transition-colors cursor-pointer"
+              className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
               aria-label="User menu"
             >
               <div className="relative">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-secondary to-secondary-container flex items-center justify-center shadow-md">
-                  <span className="material-symbols-outlined text-on-secondary text-[18px]">person</span>
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <span className="text-blue-700 text-xs font-bold">
+                    {user?.full_name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() || 'AD'}
+                  </span>
                 </div>
-                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#070B14]" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-white" />
               </div>
               <div className="hidden lg:block text-left">
-                <p className="font-body-sm text-body-sm text-on-surface truncate max-w-[120px] font-bold">
+                <p className="text-[13px] font-semibold text-gray-900 truncate max-w-[120px]">
                   {user?.full_name || 'Investigator'}
                 </p>
-                <p className="font-body-xs text-body-xs text-on-surface-variant uppercase text-[10px] font-mono">
+                <p className="text-[11px] text-gray-500 capitalize">
                   {user?.role || 'Admin'}
                 </p>
               </div>

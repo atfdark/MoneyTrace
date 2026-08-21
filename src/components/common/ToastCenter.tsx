@@ -14,12 +14,12 @@ export const ToastCenter: React.FC = () => {
         const isSuccess = toast.type === 'success';
 
         const borderColor = isError
-          ? 'border-rose-500/80 bg-rose-950/90 shadow-rose-950/80'
+          ? 'border-l-red-500'
           : isWarning
-          ? 'border-amber-500/80 bg-amber-950/90 shadow-amber-950/80'
+          ? 'border-l-amber-500'
           : isSuccess
-          ? 'border-emerald-500/80 bg-emerald-950/90 shadow-emerald-950/80'
-          : 'border-blue-500/70 bg-[#0B132B]/95 shadow-blue-950/80';
+          ? 'border-l-green-500'
+          : 'border-l-blue-500';
 
         const icon = isError
           ? 'gpp_bad'
@@ -30,35 +30,35 @@ export const ToastCenter: React.FC = () => {
           : 'info';
 
         const iconColor = isError
-          ? 'text-rose-400 animate-pulse'
+          ? 'text-red-500'
           : isWarning
-          ? 'text-amber-400'
+          ? 'text-amber-500'
           : isSuccess
-          ? 'text-emerald-400'
-          : 'text-blue-400';
+          ? 'text-green-500'
+          : 'text-blue-500';
 
         return (
           <div
             key={toast.id}
-            className={`pointer-events-auto p-3.5 rounded-2xl border backdrop-blur-xl shadow-2xl flex items-start gap-3 transition-all duration-300 animate-in slide-in-from-right-4 fade-in ${borderColor}`}
+            className={`pointer-events-auto p-3.5 bg-white rounded-xl border border-gray-200 border-l-[3px] ${borderColor} shadow-elevated flex items-start gap-3 transition-all duration-300 animate-in slide-in-from-right-4 fade-in`}
           >
             <span className={`material-symbols-outlined text-xl flex-shrink-0 mt-0.5 ${iconColor}`}>
               {icon}
             </span>
 
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white leading-snug">{toast.title}</p>
-              <p className="text-[11px] text-slate-300 mt-0.5 leading-tight line-clamp-2">
+              <p className="text-[13px] font-semibold text-gray-900 leading-snug">{toast.title}</p>
+              <p className="text-[12px] text-gray-500 mt-0.5 leading-tight line-clamp-2">
                 {toast.message}
               </p>
             </div>
 
             <button
               onClick={() => dismissToast(toast.id)}
-              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+              className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-50 transition-colors"
               aria-label="Dismiss notification"
             >
-              <span className="material-symbols-outlined text-xs">close</span>
+              <span className="material-symbols-outlined text-[16px]">close</span>
             </button>
           </div>
         );

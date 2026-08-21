@@ -41,40 +41,41 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { class: string; label: string }> = {
-      confirmed: { class: 'bg-success-container text-on-success-container', label: 'Confirmed' },
-      pending: { class: 'bg-warning-container text-on-warning-container', label: 'Pending' },
-      failed: { class: 'bg-error-container text-on-error-container', label: 'Failed' },
-      flagged: { class: 'bg-error-container text-on-error-container', label: 'Flagged' },
+      confirmed: { class: 'bg-green-50 text-green-700 border border-green-200', label: 'Confirmed' },
+      completed: { class: 'bg-green-50 text-green-700 border border-green-200', label: 'Completed' },
+      pending: { class: 'bg-amber-50 text-amber-700 border border-amber-200', label: 'Pending' },
+      failed: { class: 'bg-red-50 text-red-700 border border-red-200', label: 'Failed' },
+      flagged: { class: 'bg-red-50 text-red-700 border border-red-200', label: 'Flagged' },
     };
-    const config = statusConfig[status] || { class: 'bg-surface-container-high text-on-surface', label: status };
+    const config = statusConfig[status] || { class: 'bg-gray-50 text-gray-700 border border-gray-200', label: status };
     return (
-      <span className={`px-2 py-0.5 rounded-full font-label-caps text-label-caps ${config.class}`}>
+      <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase ${config.class}`}>
         {config.label}
       </span>
     );
   };
 
   const getRiskBadge = (score: number) => {
-    let color = 'success';
+    let color = 'bg-green-500';
+    let textColor = 'text-green-700';
     let label = 'Low';
     if (score >= 80) {
-      color = 'error';
+      color = 'bg-red-500';
+      textColor = 'text-red-700';
       label = 'Critical';
     } else if (score >= 60) {
-      color = 'warning';
+      color = 'bg-amber-500';
+      textColor = 'text-amber-700';
       label = 'High';
     } else if (score >= 40) {
-      color = 'secondary';
+      color = 'bg-blue-500';
+      textColor = 'text-blue-700';
       label = 'Medium';
     }
     return (
-      <div className="flex items-center justify-center gap-1">
-        <span
-          className={`w-2 h-2 rounded-full ${
-            color === 'error' ? 'bg-error' : color === 'warning' ? 'bg-warning' : color === 'secondary' ? 'bg-secondary' : 'bg-success'
-          }`}
-        />
-        <span className="font-body-xs text-body-xs font-medium">{label}</span>
+      <div className="flex items-center justify-center gap-1.5">
+        <span className={`w-2 h-2 rounded-full ${color}`} />
+        <span className={`text-[12px] font-medium ${textColor}`}>{label}</span>
       </div>
     );
   };
@@ -83,25 +84,25 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
     switch (column.key) {
       case 'hash':
         return (
-          <span className="font-mono text-body-sm text-on-surface-variant" title={tx.hash}>
+          <span className="font-mono text-[12px] text-gray-500" title={tx.hash}>
             {formatTxHash(tx.hash, 8)}
           </span>
         );
       case 'amount':
         return (
-          <span className="font-body-md text-body-md text-on-surface tabular-nums font-medium">
+          <span className="text-[13px] text-gray-900 tabular-nums font-semibold">
             {formatCurrency(tx.amount, tx.currency)}
           </span>
         );
       case 'from_address':
         return (
-          <span className="font-mono text-body-sm text-on-surface-variant truncate block max-w-[180px]" title={tx.from_address}>
+          <span className="font-mono text-[12px] text-gray-500 truncate block max-w-[180px]" title={tx.from_address}>
             {formatAddress(tx.from_address)}
           </span>
         );
       case 'to_address':
         return (
-          <span className="font-mono text-body-sm text-on-surface-variant truncate block max-w-[180px]" title={tx.to_address}>
+          <span className="font-mono text-[12px] text-gray-500 truncate block max-w-[180px]" title={tx.to_address}>
             {formatAddress(tx.to_address)}
           </span>
         );
@@ -111,7 +112,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         return getRiskBadge(tx.risk_score || 0);
       case 'timestamp':
         return (
-          <span className="font-body-sm text-body-sm text-on-surface-variant whitespace-nowrap">
+          <span className="text-[12px] text-gray-400 whitespace-nowrap">
             {formatDate(tx.timestamp, 'short')}
           </span>
         );
@@ -126,31 +127,31 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   };
 
   return (
-    <div className="glass-panel rounded-xl overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-card">
       {/* Filters */}
       {showFilters && (
-        <div className="p-4 border-b border-outline-variant/20 bg-surface-container/30">
+        <div className="p-4 border-b border-gray-100 bg-gray-50/50">
           <div className="flex flex-wrap gap-4 items-end">
             <div className="flex-1 min-w-[200px]">
-              <label className="font-label-caps text-label-caps text-on-surface-variant mb-1 block">Search</label>
+              <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Search</label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant">search</span>
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
                 <input
                   type="text"
                   placeholder="Search by hash, address, amount..."
                   value={mergedFilters.search || ''}
                   onChange={(e) => setFilters({ search: e.target.value, page: 1 })}
-                  className="w-full bg-surface-container border border-outline-variant/50 rounded-lg py-2 pl-10 pr-4 text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 font-body-sm"
+                  className="w-full bg-white border border-gray-200 rounded-lg py-2 pl-10 pr-4 text-gray-900 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
                 />
               </div>
             </div>
 
             <div className="min-w-[150px]">
-              <label className="font-label-caps text-label-caps text-on-surface-variant mb-1 block">Status</label>
+              <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Status</label>
               <select
                 value={mergedFilters.status || ''}
                 onChange={(e) => setFilters({ status: e.target.value || undefined, page: 1 })}
-                className="w-full bg-surface-container border border-outline-variant/50 rounded-lg py-2 px-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 font-body-sm"
+                className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-gray-900 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
               >
                 <option value="">All Statuses</option>
                 <option value="confirmed">Confirmed</option>
@@ -161,11 +162,11 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             </div>
 
             <div className="min-w-[150px]">
-              <label className="font-label-caps text-label-caps text-on-surface-variant mb-1 block">Risk Level</label>
+              <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Risk Level</label>
               <select
                 value={mergedFilters.risk_level || ''}
                 onChange={(e) => setFilters({ risk_level: e.target.value || undefined, page: 1 })}
-                className="w-full bg-surface-container border border-outline-variant/50 rounded-lg py-2 px-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 font-body-sm"
+                className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-gray-900 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
               >
                 <option value="">All Levels</option>
                 <option value="critical">Critical (80+)</option>
@@ -176,19 +177,19 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             </div>
 
             <div className="min-w-[180px]">
-              <label className="font-label-caps text-label-caps text-on-surface-variant mb-1 block">Date Range</label>
+              <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Date Range</label>
               <div className="flex gap-2">
                 <input
                   type="date"
                   value={mergedFilters.date_from || ''}
                   onChange={(e) => setFilters({ date_from: e.target.value || undefined, page: 1 })}
-                  className="flex-1 bg-surface-container border border-outline-variant/50 rounded-lg py-2 px-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 font-body-sm"
+                  className="flex-1 bg-white border border-gray-200 rounded-lg py-2 px-3 text-gray-900 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
                 />
                 <input
                   type="date"
                   value={mergedFilters.date_to || ''}
                   onChange={(e) => setFilters({ date_to: e.target.value || undefined, page: 1 })}
-                  className="flex-1 bg-surface-container border border-outline-variant/50 rounded-lg py-2 px-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 font-body-sm"
+                  className="flex-1 bg-white border border-gray-200 rounded-lg py-2 px-3 text-gray-900 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
                 />
               </div>
             </div>
@@ -196,7 +197,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="px-4 py-2 text-secondary hover:text-secondary-container font-label-caps text-label-caps transition-colors"
+                className="px-4 py-2 text-blue-600 hover:text-blue-800 text-[12px] font-semibold transition-colors"
               >
                 Clear Filters
               </button>
@@ -208,12 +209,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full" role="grid">
-          <thead className="bg-surface-container/50">
-            <tr className="text-left text-on-surface-variant">
+          <thead className="bg-gray-50 border-b border-gray-100">
+            <tr className="text-left text-gray-500">
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`p-4 font-label-caps text-label-caps cursor-pointer hover:text-on-surface transition-colors ${col.align ? `text-${col.align}` : ''}`}
+                  className={`p-4 text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:text-gray-700 transition-colors ${col.align ? `text-${col.align}` : ''}`}
                   style={{ width: col.width }}
                   onClick={() => handleSort(col.key)}
                   aria-sort="none"
@@ -228,13 +229,13 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               Array.from({ length: 5 }).map((_, i) => <TableRowSkeleton key={i} columns={columns.length} />)
             ) : ((data as any)?.transactions || (data as any)?.data?.transactions || []).length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="p-8 text-center text-on-surface-variant">
-                  <span className="material-symbols-outlined text-outline-variant text-[48px] block mb-2">receipt_long</span>
+                <td colSpan={columns.length} className="p-8 text-center text-gray-400">
+                  <span className="material-symbols-outlined text-gray-300 text-[48px] block mb-2">receipt_long</span>
                   No transactions found
                   {hasActiveFilters && (
                     <button
                       onClick={clearFilters}
-                      className="mt-2 text-secondary hover:text-secondary-container font-medium"
+                      className="mt-2 text-blue-600 hover:text-blue-800 font-medium block mx-auto"
                     >
                       Clear filters
                     </button>
@@ -245,7 +246,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               ((data as any)?.transactions || (data as any)?.data?.transactions || []).map((tx: any) => (
                 <tr
                   key={tx.id}
-                  className="border-t border-outline-variant/20 hover:bg-surface-container/50 transition-colors cursor-pointer"
+                  className="border-t border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
                   onClick={() => onRowClick?.(tx)}
                 >
                   {columns.map((col) => (
@@ -273,10 +274,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       )}
 
       {error && (
-        <div className="p-4 bg-error-container/20 border border-error/30 text-error rounded-lg font-body-sm flex items-center gap-2">
-          <span className="material-symbols-outlined">error</span>
-          Failed to load transactions. {' '}
-          <button onClick={() => refetch()} className="underline hover:no-underline">
+        <div className="p-4 bg-red-50 border-t border-red-200 text-red-700 text-[13px] flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          Failed to load transactions.{' '}
+          <button onClick={() => refetch()} className="underline hover:no-underline font-medium">
             Retry
           </button>
         </div>

@@ -26,12 +26,12 @@ const formatValue = (value: number | string, format: 'currency' | 'number' | 'pe
   }
 };
 
-const colorClasses = {
-  secondary: 'bg-secondary-container text-on-secondary-container',
-  error: 'bg-error-container text-on-error-container',
-  warning: 'bg-warning-container text-on-warning-container',
-  success: 'bg-success-container text-on-success-container',
-  primary: 'bg-primary-container text-on-primary-container',
+const iconBgClasses: Record<string, string> = {
+  secondary: 'bg-blue-50 text-blue-600',
+  error: 'bg-red-50 text-red-600',
+  warning: 'bg-amber-50 text-amber-600',
+  success: 'bg-green-50 text-green-600',
+  primary: 'bg-blue-50 text-blue-600',
 };
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -46,10 +46,10 @@ export const StatCard: React.FC<StatCardProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="glass-panel rounded-xl p-6 animate-pulse">
-        <div className="h-4 w-1/3 bg-surface-container-high rounded mb-4"></div>
-        <div className="h-8 w-1/2 bg-surface-container-high rounded mb-2"></div>
-        <div className="h-3 w-2/3 bg-surface-container-high rounded"></div>
+      <div className="bg-white border border-gray-200 rounded-xl p-5 animate-pulse shadow-card">
+        <div className="h-3 w-1/3 bg-gray-100 rounded mb-4"></div>
+        <div className="h-7 w-1/2 bg-gray-100 rounded mb-2"></div>
+        <div className="h-3 w-2/3 bg-gray-100 rounded"></div>
       </div>
     );
   }
@@ -59,30 +59,30 @@ export const StatCard: React.FC<StatCardProps> = ({
   const isNegative = change && change < 0;
 
   return (
-    <div className="glass-panel rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-card-hover transition-shadow duration-200 shadow-card">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="font-label-caps text-label-caps text-on-surface-variant">{title}</p>
-          <p className="font-headline-lg text-headline-lg text-on-surface mt-1 tabular-nums">
+          <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
+          <p className="text-[22px] font-bold text-gray-900 mt-1 tabular-nums leading-tight">
             {formattedValue}
           </p>
           {change !== undefined && changeLabel && (
-            <div className="flex items-center gap-1 mt-2">
+            <div className="flex items-center gap-1.5 mt-2">
               <span
-                className={`font-body-xs text-body-xs ${
-                  isPositive ? 'text-success' : isNegative ? 'text-error' : 'text-on-surface-variant'
+                className={`text-[12px] font-semibold ${
+                  isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-400'
                 }`}
               >
                 {isPositive ? '↑' : isNegative ? '↓' : '→'} {Math.abs(change || 0).toFixed(1)}%
               </span>
-              <span className="font-body-xs text-body-xs text-on-surface-variant">{changeLabel}</span>
+              <span className="text-[11px] text-gray-400">{changeLabel}</span>
             </div>
           )}
         </div>
         <div
-          className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${colorClasses[color]}`}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${iconBgClasses[color]}`}
         >
-          <span className="material-symbols-outlined text-[24px]">{icon}</span>
+          <span className="material-symbols-outlined text-[20px]">{icon}</span>
         </div>
       </div>
     </div>

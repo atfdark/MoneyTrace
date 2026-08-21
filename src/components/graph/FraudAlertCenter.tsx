@@ -113,7 +113,7 @@ export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
         return (
           <div
             key={alert.id}
-            className={`p-4 rounded-2xl backdrop-blur-xl border shadow-2xl animate-in slide-in-from-right-5 duration-300 ${
+            className={`p-4 rounded-xl  border shadow-card animate-in slide-in-from-right-5 duration-300 ${
               isCritical
                 ? 'bg-[#180808]/95 border-red-500/80 shadow-red-950/60 ring-2 ring-red-500/50'
                 : 'bg-[#1A1005]/95 border-amber-500/80 shadow-amber-950/60'
@@ -128,8 +128,8 @@ export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
                   }`}
                 />
                 <h4
-                  className={`text-xs font-black uppercase tracking-wider ${
-                    isCritical ? 'text-red-400' : 'text-amber-400'
+                  className={`text-xs font-bold uppercase tracking-wider ${
+                    isCritical ? 'text-red-400' : 'text-amber-600'
                   }`}
                 >
                   {isCritical ? '🚨 CRITICAL FRAUD EVENT' : '⚠️ SUSPICIOUS ACTIVITY'}
@@ -137,7 +137,7 @@ export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
               </div>
               <button
                 onClick={() => dismissAlert(alert.id)}
-                className="text-slate-400 hover:text-white p-0.5 rounded cursor-pointer"
+                className="text-gray-500 hover:text-gray-900 p-0.5 rounded cursor-pointer"
                 title="Dismiss alert"
               >
                 <span className="material-symbols-outlined text-sm">close</span>
@@ -147,25 +147,25 @@ export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
             {/* Account & Amount info */}
             <div className="flex items-center justify-between text-xs mb-2">
               <div>
-                <span className="text-[10px] text-slate-400 uppercase tracking-wide block">Flagged Account</span>
-                <span className="font-mono font-bold text-white text-sm">{alert.account}</span>
+                <span className="text-[10px] text-gray-500 uppercase tracking-wide block">Flagged Account</span>
+                <span className="font-mono font-bold text-gray-900 text-sm">{alert.account}</span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-slate-400 uppercase tracking-wide block">Amount At Risk</span>
+                <span className="text-[10px] text-gray-500 uppercase tracking-wide block">Amount At Risk</span>
                 <span className="font-mono font-bold text-red-400 text-sm">{formatCurrency(alert.amount)}</span>
               </div>
             </div>
 
             {/* Rules Triggered */}
             <div className="mb-3 space-y-1">
-              <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold block">
+              <span className="text-[9px] uppercase tracking-wider text-gray-500 font-bold block">
                 Rules Triggered:
               </span>
               <div className="flex flex-wrap gap-1">
                 {alert.rules_triggered.map((rule, idx) => (
                   <span
                     key={idx}
-                    className="text-[8px] font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300"
+                    className="text-[8px] font-bold px-2 py-0.5 rounded bg-gray-50 border border-gray-200 text-gray-600"
                   >
                     {rule}
                   </span>
@@ -174,14 +174,14 @@ export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
             </div>
 
             {/* Recovery Status */}
-            <div className="flex items-center justify-between text-[10px] mb-3 bg-slate-950/60 p-2 rounded-xl border border-slate-800">
-              <span className="text-slate-400">Recovery Probability:</span>
+            <div className="flex items-center justify-between text-[10px] mb-3 bg-slate-950/60 p-2 rounded-xl border border-gray-200">
+              <span className="text-gray-500">Recovery Probability:</span>
               <span
-                className={`font-mono font-extrabold ${
+                className={`font-mono font-bold ${
                   alert.recovery_probability === 'HIGH'
-                    ? 'text-emerald-400'
+                    ? 'text-green-600'
                     : alert.recovery_probability === 'MEDIUM'
-                    ? 'text-amber-400'
+                    ? 'text-amber-600'
                     : 'text-red-400'
                 }`}
               >
@@ -196,7 +196,7 @@ export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
                   onInvestigateAccount(alert.account);
                   dismissAlert(alert.id);
                 }}
-                className="flex-1 py-1.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold text-[11px] rounded-xl shadow-lg transition-all cursor-pointer"
+                className="flex-1 py-1.5 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-gray-900 font-bold text-[11px] rounded-xl shadow-lg transition-all cursor-pointer"
               >
                 Investigate Now
               </button>
@@ -207,7 +207,7 @@ export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
                     onFreezeAccount(alert.account);
                     dismissAlert(alert.id);
                   }}
-                  className="px-3 py-1.5 bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 font-bold text-[11px] rounded-xl transition-all cursor-pointer"
+                  className="px-3 py-1.5 bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/50 text-sky-600 font-bold text-[11px] rounded-xl transition-all cursor-pointer"
                 >
                   Freeze
                 </button>

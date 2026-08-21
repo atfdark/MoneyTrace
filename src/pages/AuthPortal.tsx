@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLogin, useRegister } from '../hooks/useAuth';
 import { ApiError } from '../api/errors';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Lazy load the 3D globe to keep initial bundle small
+const IntelligenceGlobe = lazy(() => import('../components/login/IntelligenceGlobe'));
 
 export type PortalType = 'customer' | 'admin';
 export type TabType = 'signin' | 'register';
@@ -18,7 +22,6 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Determine initial portal & tab based on props or current path
   const path = location.pathname;
   const isCustomerPath = path.startsWith('/customer');
   const isRegisterPath = path.includes('register');
@@ -30,7 +33,6 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
     initialTab || (isRegisterPath ? 'register' : 'signin')
   );
 
-  // Sync state if URL changes
   useEffect(() => {
     if (initialPortal) {
       setPortal(initialPortal);
@@ -120,7 +122,6 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
           remember_me: formData.rememberMe,
         });
 
-        // Navigate based on selected portal
         if (portal === 'customer') {
           navigate('/customer/home', { replace: true });
         } else {
@@ -128,7 +129,6 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
           navigate(from, { replace: true });
         }
       } else {
-        // Registering
         const role = portal === 'customer' ? 'customer' : 'investigator';
         await registerMutation.mutateAsync({
           full_name: formData.fullName.trim(),
@@ -157,418 +157,390 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
     }
   };
 
+  // System status ticker values
+  const [liveConnections] = useState(Math.floor(Math.random() * 12) + 4);
+
   return (
-    <div className="min-h-screen bg-[#060913] text-white flex items-center justify-center p-3 sm:p-6 relative overflow-hidden selection:bg-purple-600 selection:text-white">
-      {/* Dynamic Background Glowing Ambient Auras */}
+    <div className="min-h-screen bg-[#F8FAFC] flex relative overflow-hidden selection:bg-blue-500/20">
+      {/* Subtle background grid */}
       <div
-        className={`absolute -top-40 -left-40 w-96 h-96 rounded-full blur-[140px] pointer-events-none transition-all duration-700 ${
-          portal === 'customer'
-            ? 'bg-emerald-500/20'
-            : 'bg-purple-600/25'
-        }`}
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(37,99,235,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(37,99,235,0.03) 1px, transparent 1px)
+          `,
+          backgroundSize: '48px 48px',
+        }}
       />
-      <div
-        className={`absolute -bottom-40 -right-40 w-96 h-96 rounded-full blur-[140px] pointer-events-none transition-all duration-700 ${
-          portal === 'customer'
-            ? 'bg-cyan-500/20'
-            : 'bg-blue-600/25'
-        }`}
-      />
-      <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none" />
 
-      {/* Main Container Card */}
-      <div className="w-full max-w-lg z-10 relative">
-        {/* Top Master Dual-Portal Switcher */}
-        <div className="mb-4 bg-[#0F172A]/90 backdrop-blur-xl p-1.5 rounded-2xl border border-slate-800 shadow-2xl relative">
-          <div className="grid grid-cols-2 gap-1.5 relative">
-            {/* Sliding Highlight Background Pill */}
-            <div
-              className={`absolute top-0 bottom-0 w-1/2 rounded-xl transition-all duration-300 ease-out shadow-lg ${
-                portal === 'customer'
-                  ? 'left-0 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 shadow-emerald-950/50'
-                  : 'left-1/2 bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 shadow-purple-950/50'
-              }`}
-            />
-
-            {/* Customer Portal Button */}
-            <button
-              type="button"
-              onClick={() => {
-                setPortal('customer');
-                setErrorMessage(null);
-              }}
-              className={`relative z-10 py-3 px-2 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                portal === 'customer'
-                  ? 'text-white font-black'
-                  : 'text-slate-400 hover:text-slate-200 font-semibold'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                smartphone
-              </span>
-              <div className="text-left">
-                <span className="block text-xs leading-none font-bold">Customer Portal</span>
-                <span className="text-[10px] opacity-80 font-normal hidden sm:inline">Personal Banking</span>
-              </div>
-            </button>
-
-            {/* Investigator & Admin Portal Button */}
-            <button
-              type="button"
-              onClick={() => {
-                setPortal('admin');
-                setErrorMessage(null);
-              }}
-              className={`relative z-10 py-3 px-2 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                portal === 'admin'
-                  ? 'text-white font-black'
-                  : 'text-slate-400 hover:text-slate-200 font-semibold'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                shield
-              </span>
-              <div className="text-left">
-                <span className="block text-xs leading-none font-bold">Investigator SOC</span>
-                <span className="text-[10px] opacity-80 font-normal hidden sm:inline">Crime Intelligence</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        {/* Form Body Panel */}
-        <div className="bg-[#0B1120]/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-slate-800/90 shadow-2xl transition-all duration-300">
-          {/* Header Branding with Animated Icons */}
-          <div className="text-center mb-6">
-            <div className="relative inline-block mb-3">
-              <div
-                className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-2xl transition-all duration-500 transform ${
-                  portal === 'customer'
-                    ? 'bg-gradient-to-tr from-emerald-600 via-teal-600 to-cyan-500 shadow-emerald-500/30'
-                    : 'bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-600 shadow-purple-500/30'
-                }`}
-              >
-                <span className="material-symbols-outlined text-3xl">
-                  {portal === 'customer' ? 'account_balance_wallet' : 'security'}
-                </span>
-              </div>
-              {portal === 'admin' && (
-                <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-4 w-4 bg-violet-500 border-2 border-[#0B1120]"></span>
-                </span>
-              )}
+      {/* ─────────── LEFT SIDE: Login Form (40%) ─────────── */}
+      <div className="relative z-10 w-full lg:w-[40%] min-h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-14 py-10">
+        {/* Logo & Branding */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-10"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm">
+              <span className="material-symbols-outlined text-white text-[22px]">account_balance</span>
             </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 leading-tight">MoneyTrace</h1>
+              <p className="text-[11px] font-medium text-gray-400 tracking-wide">Financial Crime Intelligence Platform</p>
+            </div>
+          </div>
 
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center justify-center gap-2">
-              <span>MoneyTrace</span>
-              <span
-                className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border ${
-                  portal === 'customer'
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                    : 'bg-purple-500/10 text-purple-400 border-purple-500/30'
-                }`}
-              >
-                {portal === 'customer' ? 'UPI Banking' : 'SOC Command'}
-              </span>
-            </h1>
-
-            <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-              {portal === 'customer'
-                ? 'Send & receive money, check balance, and view instant digital receipts.'
-                : 'Forensic intelligence, financial crime surveillance, and live flow tracing.'}
+          <div className="space-y-1">
+            <p className="text-[28px] lg:text-[32px] font-bold text-gray-900 leading-tight tracking-tight">
+              Monitor.<br />
+              Detect.<br />
+              Trace.<br />
+              <span className="text-blue-600">Recover.</span>
             </p>
           </div>
+        </motion.div>
 
-          {/* Sub-Tab Switcher (Sign In vs Register Account) */}
-          <div className="bg-[#111A2E] p-1 rounded-2xl border border-slate-800/80 mb-5 flex relative">
+        {/* Portal Toggle */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="mb-5"
+        >
+          <div className="flex bg-gray-100 p-1 rounded-lg w-fit">
             <button
-              type="button"
-              onClick={() => {
-                setTab('signin');
-                setErrorMessage(null);
-              }}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                tab === 'signin'
-                  ? portal === 'customer'
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/50'
-                    : 'bg-purple-600 text-white shadow-lg shadow-purple-950/50'
-                  : 'text-slate-400 hover:text-white'
+              onClick={() => setPortal('admin')}
+              className={`px-4 py-2 rounded-md text-[13px] font-semibold transition-all ${
+                portal === 'admin'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <span className="material-symbols-outlined text-sm">login</span>
-              <span>{portal === 'customer' ? 'Banking Sign In' : 'Investigator Sign In'}</span>
+              Investigator
             </button>
-
             <button
-              type="button"
-              onClick={() => {
-                setTab('register');
-                setErrorMessage(null);
-              }}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                tab === 'register'
-                  ? portal === 'customer'
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/50'
-                    : 'bg-purple-600 text-white shadow-lg shadow-purple-950/50'
-                  : 'text-slate-400 hover:text-white'
+              onClick={() => setPortal('customer')}
+              className={`px-4 py-2 rounded-md text-[13px] font-semibold transition-all ${
+                portal === 'customer'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <span className="material-symbols-outlined text-sm">person_add</span>
-              <span>{portal === 'customer' ? 'Open Bank Account' : 'Register Analyst'}</span>
+              Customer
             </button>
           </div>
+        </motion.div>
 
-          {/* Error Banner */}
-          {errorMessage && (
-            <div className="mb-4 p-3.5 bg-rose-950/60 border border-rose-500/50 rounded-2xl text-rose-200 text-xs flex items-center gap-2.5 animate-in fade-in duration-200">
-              <span className="material-symbols-outlined text-rose-400 text-base flex-shrink-0">
-                error
-              </span>
-              <span className="font-medium">{errorMessage}</span>
-            </div>
-          )}
+        {/* Sign In / Register Tabs */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          className="mb-6"
+        >
+          <div className="flex gap-4 border-b border-gray-200">
+            <button
+              onClick={() => setTab('signin')}
+              className={`pb-2.5 text-[14px] font-semibold transition-colors border-b-2 -mb-px ${
+                tab === 'signin'
+                  ? 'text-blue-600 border-blue-600'
+                  : 'text-gray-400 border-transparent hover:text-gray-600'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => setTab('register')}
+              className={`pb-2.5 text-[14px] font-semibold transition-colors border-b-2 -mb-px ${
+                tab === 'register'
+                  ? 'text-blue-600 border-blue-600'
+                  : 'text-gray-400 border-transparent hover:text-gray-600'
+              }`}
+            >
+              Register
+            </button>
+          </div>
+        </motion.div>
 
-          {/* Form Fields */}
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            {/* Full Name for Registration */}
-            {tab === 'register' && (
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                  Full Legal Name
-                </label>
-                <div className="flex items-center gap-2.5 bg-[#111A2E] border border-slate-700/80 rounded-2xl px-4 py-3 focus-within:border-purple-400 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all">
-                  <span className="material-symbols-outlined text-slate-400 text-lg">
-                    badge
-                  </span>
-                  <input
-                    type="text"
-                    name="fullName"
-                    placeholder={portal === 'customer' ? 'e.g. Rahul Sharma' : 'e.g. Det. Alex Cross'}
-                    value={formData.fullName}
-                    onChange={handleInputChange}
-                    required
-                    disabled={isPending}
-                    className="flex-1 bg-transparent text-white text-xs placeholder-slate-500 focus:outline-none"
-                  />
-                </div>
-              </div>
+        {/* Form */}
+        <motion.form
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
+          {/* Error Message */}
+          <AnimatePresence>
+            {errorMessage && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2"
+              >
+                <span className="material-symbols-outlined text-red-500 text-[18px] mt-0.5">error</span>
+                <p className="text-[13px] text-red-700">{errorMessage}</p>
+              </motion.div>
             )}
+          </AnimatePresence>
 
-            {/* Email / Username / Identifier Field */}
-            <div className="space-y-1">
-              <div className="flex justify-between items-center">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                  {tab === 'signin' ? 'Username, Email, or Account #' : 'Email Address'}
-                </label>
-                {tab === 'signin' && portal === 'admin' && (
-                  <span className="text-[10px] text-purple-400 font-mono">
-                    Node: soc-01.mt
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2.5 bg-[#111A2E] border border-slate-700/80 rounded-2xl px-4 py-3 focus-within:border-purple-400 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all">
-                <span className="material-symbols-outlined text-slate-400 text-lg">
-                  account_circle
-                </span>
-                <input
-                  type={tab === 'register' ? 'email' : 'text'}
-                  name="email"
-                  placeholder={
-                    tab === 'signin'
-                      ? portal === 'customer'
-                        ? 'Email, phone, or ACC100200'
-                        : 'admin or admin@moneytrace.dev'
-                      : 'name@example.com'
-                  }
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  disabled={isPending}
-                  autoComplete="username"
-                  className="flex-1 bg-transparent text-white text-xs placeholder-slate-500 focus:outline-none font-sans"
-                />
-              </div>
-            </div>
-
-            {/* Password Field */}
-            <div className="space-y-1">
-              <div className="flex justify-between items-center">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                  {portal === 'customer' ? 'PIN / Password' : 'Password'}
-                </label>
-                {tab === 'signin' && (
-                  <span className="text-[11px] text-slate-400 hover:text-slate-200 cursor-pointer">
-                    Forgot?
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2.5 bg-[#111A2E] border border-slate-700/80 rounded-2xl px-4 py-3 focus-within:border-purple-400 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all">
-                <span className="material-symbols-outlined text-slate-400 text-lg">
-                  lock
-                </span>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  placeholder="••••••••••••"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
-                  disabled={isPending}
-                  autoComplete={tab === 'signin' ? 'current-password' : 'new-password'}
-                  className="flex-1 bg-transparent text-white text-xs placeholder-slate-500 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-slate-400 hover:text-slate-200 cursor-pointer"
-                  tabIndex={-1}
-                >
-                  <span className="material-symbols-outlined text-lg">
-                    {showPassword ? 'visibility' : 'visibility_off'}
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            {/* Confirm Password for Registration */}
+          {/* Full Name (Register only) */}
+          <AnimatePresence>
             {tab === 'register' && (
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <label className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  placeholder="Enter your full legal name"
+                  className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 text-gray-900 text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all placeholder:text-gray-300"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Email / Username */}
+          <div>
+            <label className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
+              {portal === 'customer' ? 'Email or Account Number' : 'Email or Username'}
+            </label>
+            <input
+              type="text"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder={portal === 'customer' ? 'e.g. ACC1001 or email' : 'investigator@moneytrace.gov'}
+              className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 text-gray-900 text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all placeholder:text-gray-300"
+              autoComplete="username"
+            />
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="••••••••"
+                className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 pr-12 text-gray-900 text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all placeholder:text-gray-300"
+                autoComplete={tab === 'signin' ? 'current-password' : 'new-password'}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                tabIndex={-1}
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  {showPassword ? 'visibility_off' : 'visibility'}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Confirm Password (Register only) */}
+          <AnimatePresence>
+            {tab === 'register' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <label className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">
                   Confirm Password
                 </label>
-                <div className="flex items-center gap-2.5 bg-[#111A2E] border border-slate-700/80 rounded-2xl px-4 py-3 focus-within:border-purple-400 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all">
-                  <span className="material-symbols-outlined text-slate-400 text-lg">
-                    lock_reset
-                  </span>
+                <div className="relative">
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     name="confirmPassword"
-                    placeholder="••••••••••••"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    required
-                    disabled={isPending}
+                    placeholder="••••••••"
+                    className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 pr-12 text-gray-900 text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all placeholder:text-gray-300"
                     autoComplete="new-password"
-                    className="flex-1 bg-transparent text-white text-xs placeholder-slate-500 focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="text-slate-400 hover:text-slate-200 cursor-pointer"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                     tabIndex={-1}
                   >
-                    <span className="material-symbols-outlined text-lg">
-                      {showConfirmPassword ? 'visibility' : 'visibility_off'}
+                    <span className="material-symbols-outlined text-[20px]">
+                      {showConfirmPassword ? 'visibility_off' : 'visibility'}
                     </span>
                   </button>
                 </div>
-              </div>
+              </motion.div>
             )}
+          </AnimatePresence>
 
-            {/* Remember Me Checkbox */}
-            {tab === 'signin' && (
-              <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    name="rememberMe"
-                    checked={formData.rememberMe}
-                    onChange={handleInputChange}
-                    className="w-4 h-4 rounded border-slate-700 bg-[#111A2E] text-purple-600 focus:ring-purple-500/30"
-                  />
-                  <span className="text-xs text-slate-400">Keep me signed in</span>
-                </label>
-                {portal === 'admin' && (
-                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/40 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    256-bit Encrypted
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isPending}
-              className={`w-full py-3.5 px-4 font-bold text-xs rounded-2xl shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2 mt-3 disabled:opacity-50 disabled:cursor-not-allowed ${
-                portal === 'customer'
-                  ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white shadow-emerald-950/40'
-                  : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-purple-950/40'
-              }`}
-            >
-              {isPending ? (
-                <>
-                  <span className="material-symbols-outlined text-base animate-spin">
-                    sync
-                  </span>
-                  <span>Authenticating...</span>
-                </>
-              ) : (
-                <>
-                  <span>
-                    {tab === 'signin'
-                      ? portal === 'customer'
-                        ? 'Enter Customer Banking'
-                        : 'Sign In to MoneyTrace SOC'
-                      : portal === 'customer'
-                      ? 'Create Bank Account (₹100,000)'
-                      : 'Enroll Forensic Investigator'}
-                  </span>
-                  <span className="material-symbols-outlined text-base">
-                    arrow_forward
-                  </span>
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Quick Demo Credentials Bar */}
-          <div className="mt-6 pt-5 border-t border-slate-800/80">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                <span className="material-symbols-outlined text-sm text-amber-400">bolt</span>
-                Quick Demo Credentials
-              </span>
-              <span className="text-[10px] text-slate-500 font-mono">1-click fill</span>
+          {/* Remember Me + Quick Fill */}
+          {tab === 'signin' && (
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="rememberMe"
+                  checked={formData.rememberMe}
+                  onChange={handleInputChange}
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-[13px] text-gray-500">Remember session</span>
+              </label>
             </div>
+          )}
 
-            <div className="grid grid-cols-2 gap-2">
-              {/* Admin Chip */}
-              <button
-                type="button"
-                onClick={() => {
-                  setPortal('admin');
-                  setTab('signin');
-                  handleQuickFill('admin', 'Admin123');
-                }}
-                className="p-2 bg-[#111A2E] hover:bg-[#18233C] border border-slate-800 hover:border-purple-500/50 rounded-xl text-left transition-all cursor-pointer group"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-purple-300 group-hover:text-purple-200">
-                  <span>👑 Admin SOC</span>
-                </div>
-                <div className="text-[10px] text-slate-400 font-mono truncate">admin / Admin123</div>
-              </button>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isPending}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 rounded-lg text-[14px] transition-all shadow-sm flex items-center justify-center gap-2"
+          >
+            {isPending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Authenticating...</span>
+              </>
+            ) : (
+              <span>{tab === 'signin' ? 'Sign In' : 'Create Account'}</span>
+            )}
+          </button>
 
-              {/* Customer Chip */}
-              <button
-                type="button"
-                onClick={() => {
-                  setPortal('customer');
-                  setTab('signin');
-                  handleQuickFill('alice.johnson@moneytrace.dev', 'Customer123');
-                }}
-                className="p-2 bg-[#111A2E] hover:bg-[#18233C] border border-slate-800 hover:border-emerald-500/50 rounded-xl text-left transition-all cursor-pointer group"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-300 group-hover:text-emerald-200">
-                  <span>📱 Customer</span>
-                </div>
-                <div className="text-[10px] text-slate-400 font-mono truncate">alice.j / Customer123</div>
-              </button>
+          {/* Quick Fill for Demo */}
+          {tab === 'signin' && portal === 'admin' && (
+            <div className="pt-2">
+              <p className="text-[11px] text-gray-400 mb-2">Demo Quick Access:</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickFill('admin@moneytrace.com', 'admin123')}
+                  className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-[11px] font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  Admin Login
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickFill('analyst@moneytrace.com', 'analyst123')}
+                  className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-[11px] font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  Analyst Login
+                </button>
+              </div>
+            </div>
+          )}
+        </motion.form>
+
+        {/* System Status Footer */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-10 pt-6 border-t border-gray-100"
+        >
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-gray-400">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="font-medium text-gray-500">System Status:</span>
+              <span className="text-green-600 font-semibold">Operational</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[14px] text-gray-400">link</span>
+              <span>Live Connections: <span className="font-semibold text-gray-600">{liveConnections}</span></span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+              <span>Threat Monitoring: <span className="font-semibold text-blue-600">Active</span></span>
             </div>
           </div>
+
+          <p className="text-[10px] text-gray-300 mt-4">
+            © 2025 MoneyTrace Financial Crime Intelligence Platform. Authorized access only.
+          </p>
+        </motion.div>
+      </div>
+
+      {/* ─────────── RIGHT SIDE: 3D Intelligence Globe (60%) ─────────── */}
+      <div className="hidden lg:flex w-[60%] min-h-screen items-center justify-center relative overflow-hidden bg-[#070C18] border-l border-gray-200/80">
+        {/* Globe Container */}
+        <div className="w-full h-full">
+          <Suspense
+            fallback={
+              <div className="w-full h-full flex items-center justify-center bg-[#070C18]">
+                <div className="text-center space-y-3">
+                  <div className="w-10 h-10 border-2 border-blue-400/30 border-t-blue-500 rounded-full animate-spin mx-auto" />
+                  <p className="text-[12px] text-slate-400 font-mono">Initializing 3D Telemetry Grid...</p>
+                </div>
+              </div>
+            }
+          >
+            <IntelligenceGlobe />
+          </Suspense>
         </div>
+
+        {/* Floating Intelligence Metrics Overlay */}
+        <div className="absolute bottom-8 right-8 z-20 flex gap-3 pointer-events-none">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="bg-[#090E1A]/85 backdrop-blur-md border border-slate-800/90 rounded-xl px-4 py-2.5 shadow-2xl"
+          >
+            <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">Active Nodes</p>
+            <p className="text-[18px] font-bold text-white tabular-nums font-mono">7 Hubs</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+            className="bg-[#090E1A]/85 backdrop-blur-md border border-slate-800/90 rounded-xl px-4 py-2.5 shadow-2xl"
+          >
+            <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">Live Routes</p>
+            <p className="text-[18px] font-bold text-cyan-400 tabular-nums font-mono">12 Corridors</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+            className="bg-[#090E1A]/85 backdrop-blur-md border border-slate-800/90 rounded-xl px-4 py-2.5 shadow-2xl"
+          >
+            <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">Threat Level</p>
+            <p className="text-[18px] font-bold text-amber-400 tabular-nums font-mono">Elevated</p>
+          </motion.div>
+        </div>
+
+        {/* Top-right classification banner */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="absolute top-6 right-8 z-20 pointer-events-none"
+        >
+          <div className="flex items-center gap-2 bg-[#090E1A]/85 backdrop-blur-md border border-slate-800/90 rounded-lg px-3.5 py-1.5 shadow-xl">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[10px] font-mono font-bold text-slate-300 uppercase tracking-wider">
+              Real-Time Financial Telemetry
+            </span>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

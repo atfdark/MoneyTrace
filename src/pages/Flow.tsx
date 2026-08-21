@@ -36,11 +36,25 @@ export const Flow: React.FC = () => {
   const { data: alertsData } = useAlerts({ limit: 10 });
 
   // Real-time live graph re-rendering on WebSocket transaction/user events
+  const [livePingTx, setLivePingTx] = useState<{ source: string; target: string; amount: number; isCrit: boolean } | null>(null);
+
   useEffect(() => {
-    const unsubTx = wsService.subscribe('TRANSACTION_CREATED', () => {
+    const unsubTx = wsService.subscribe('TRANSACTION_CREATED', (data: any) => {
       refetchNetwork();
+      if (data?.source && data?.target) {
+        setTraceHighlight(new Set([data.source, data.target]));
+        setLivePingTx({
+          source: data.source_name || data.source,
+          target: data.target_name || data.target,
+          amount: data.amount || 0,
+          isCrit: (data.risk_score || 0) >= 60,
+        });
+        setTimeout(() => {
+          setLivePingTx(null);
+        }, 7000);
+      }
     });
-    const unsubUser = wsService.subscribe('USER_REGISTERED', () => {
+    const unsubUser = wsService.subscribe('USER_CONNECTED', () => {
       refetchNetwork();
     });
     return () => {
@@ -315,7 +329,7 @@ export const Flow: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] min-h-[720px] gap-3 text-white">
+    <div className="flex flex-col h-[calc(100vh-100px)] min-h-[720px] gap-3 text-gray-900">
       {/* ═══════════════════════════════════════════════════════════════════
           1. TOP DASHBOARD KPI ROW (Palantir / Gotham Style)
       ═══════════════════════════════════════════════════════════════════ */}
@@ -327,7 +341,7 @@ export const Flow: React.FC = () => {
               ? dashboardStats.total_transactions.toLocaleString()
               : (rawEdges.length > 0 ? `${rawEdges.length}` : '0'),
             icon: 'sync_alt',
-            color: 'text-blue-400',
+            color: 'text-blue-600',
             border: 'border-blue-500/20',
           },
           {
@@ -338,7 +352,7 @@ export const Flow: React.FC = () => {
                 (Array.isArray(alertsData) ? alertsData.length : 0)
             ),
             icon: 'warning',
-            color: 'text-amber-400',
+            color: 'text-amber-600',
             border: 'border-amber-500/20',
           },
           {
@@ -354,7 +368,7 @@ export const Flow: React.FC = () => {
               ? formatCurrency(dashboardStats.money_at_risk)
               : formatCurrency(0),
             icon: 'monetization_on',
-            color: 'text-rose-400',
+            color: 'text-red-600',
             border: 'border-rose-500/20',
           },
           {
@@ -363,29 +377,29 @@ export const Flow: React.FC = () => {
               ? `${dashboardStats.recovery_rate}%`
               : '0%',
             icon: 'verified_user',
-            color: 'text-emerald-400',
+            color: 'text-green-600',
             border: 'border-emerald-500/20',
           },
           {
             label: 'Active Rings',
             value: `${cycles.length} Laundering Rings`,
             icon: 'all_inclusive',
-            color: 'text-purple-400',
+            color: 'text-blue-600',
             border: 'border-purple-500/20',
           },
         ].map((kpi, idx) => (
           <div
             key={idx}
-            className={`glass-panel rounded-xl p-3 border ${kpi.border} flex items-center gap-3 shadow-lg relative overflow-hidden`}
+            className={`bg-white border border-gray-200 rounded-xl shadow-card p-3 border ${kpi.border} flex items-center gap-3 shadow-lg relative overflow-hidden`}
           >
-            <div className={`p-2 rounded-lg bg-slate-900/80 ${kpi.color}`}>
+            <div className={`p-2 rounded-lg bg-gray-50 ${kpi.color}`}>
               <span className="material-symbols-outlined text-xl">{kpi.icon}</span>
             </div>
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 leading-tight">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-500 leading-tight">
                 {kpi.label}
               </p>
-              <p className="font-mono text-sm font-extrabold text-white">{kpi.value}</p>
+              <p className="font-mono text-sm font-bold text-gray-900">{kpi.value}</p>
             </div>
           </div>
         ))}
@@ -394,11 +408,11 @@ export const Flow: React.FC = () => {
       {/* ═══════════════════════════════════════════════════════════════════
           2. SEARCH & FORENSICS TRACE BAR
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="glass-panel rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 border border-slate-700/50 shadow-xl relative z-40">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-card p-3 flex flex-wrap items-center justify-between gap-3 border border-gray-200 shadow-card relative z-40">
         {/* Search Input with Live Suggestions */}
         <div className="relative flex-1 min-w-[280px]">
-          <div className="flex items-center gap-2 bg-[#0F172A] border border-slate-700/80 rounded-xl px-3 py-2 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/30 transition-all">
-            <span className="material-symbols-outlined text-purple-400 text-lg">search</span>
+          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+            <span className="material-symbols-outlined text-blue-600 text-lg">search</span>
             <input
               type="text"
               placeholder="Search Account (ACC1001), User Name (Rahul), or TXN Hash..."
@@ -409,12 +423,12 @@ export const Flow: React.FC = () => {
               }}
               onFocus={() => setSearchDropdownOpen(true)}
               onKeyDown={e => e.key === 'Enter' && handleTraceSubmit()}
-              className="flex-1 bg-transparent text-white placeholder-slate-500 text-xs font-mono focus:outline-none"
+              className="flex-1 bg-transparent text-gray-900 placeholder-slate-500 text-xs font-mono focus:outline-none"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="text-slate-500 hover:text-white"
+                className="text-gray-400 hover:text-gray-900"
               >
                 <span className="material-symbols-outlined text-sm">close</span>
               </button>
@@ -423,24 +437,24 @@ export const Flow: React.FC = () => {
 
           {/* Live Suggestions Dropdown */}
           {searchDropdownOpen && searchSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-[#090D16]/95 backdrop-blur-xl border border-purple-500/40 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in duration-200">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white  border border-blue-200 rounded-xl shadow-card overflow-hidden z-50 animate-in fade-in duration-200">
               <div className="p-1.5 space-y-1">
                 {searchSuggestions.map(s => (
                   <div
                     key={s.id}
                     onClick={() => handleSelectSuggestion(s)}
-                    className="flex items-center justify-between p-2 rounded-lg hover:bg-purple-950/40 hover:border-purple-500/40 border border-transparent cursor-pointer transition-all text-xs"
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50 hover:border-blue-200 border border-transparent cursor-pointer transition-all text-xs"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-purple-400 text-sm">
+                      <span className="material-symbols-outlined text-blue-600 text-sm">
                         {s.category === 'Account' ? 'account_circle' : 'receipt_long'}
                       </span>
                       <div>
-                        <p className="font-mono font-bold text-white text-[11px]">{s.id}</p>
-                        <p className="text-[9px] text-slate-400">{s.name}</p>
+                        <p className="font-mono font-bold text-gray-900 text-[11px]">{s.id}</p>
+                        <p className="text-[9px] text-gray-500">{s.name}</p>
                       </div>
                     </div>
-                    <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
+                    <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">
                       {s.category}
                     </span>
                   </div>
@@ -454,7 +468,7 @@ export const Flow: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleTraceSubmit()}
-            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-purple-900/30 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-gray-900 font-bold rounded-xl text-xs shadow-lg shadow-purple-900/30 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">route</span>
             Trace Money
@@ -466,7 +480,7 @@ export const Flow: React.FC = () => {
                 setTraceStep(0);
                 setTraceIsPlaying(true);
               }}
-              className="px-4 py-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-bold rounded-xl text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer animate-pulse"
+              className="px-4 py-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-gray-900 font-bold rounded-xl text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer animate-pulse"
             >
               <span className="material-symbols-outlined text-base">play_arrow</span>
               Animate Trail
@@ -474,13 +488,13 @@ export const Flow: React.FC = () => {
           )}
 
           {/* View Mode Toggle */}
-          <div className="flex items-center bg-[#0F172A] p-1 rounded-xl border border-slate-800">
+          <div className="flex items-center bg-white p-1 rounded-xl border border-gray-200">
             <button
               onClick={() => setViewMode('graph')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                 viewMode === 'graph'
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-blue-600 text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-900'
               }`}
             >
               🔗 Network
@@ -489,8 +503,8 @@ export const Flow: React.FC = () => {
               onClick={() => setViewMode('timeline')}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                 viewMode === 'timeline'
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-blue-600 text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-900'
               }`}
             >
               ⏱ Timeline
@@ -529,21 +543,31 @@ export const Flow: React.FC = () => {
         {/* Central Graph Panel */}
         <div
           ref={containerRef}
-          className="flex-1 glass-panel rounded-2xl overflow-hidden border border-slate-700/50 relative shadow-2xl"
+          className="flex-1 bg-white border border-gray-200 rounded-xl shadow-card overflow-hidden border border-gray-200 relative shadow-card"
         >
           {netLoading ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <span className="material-symbols-outlined text-purple-400 text-6xl animate-spin block mb-3">
+                <span className="material-symbols-outlined text-blue-600 text-6xl animate-spin block mb-3">
                   sync
                 </span>
-                <p className="text-slate-400 text-sm font-mono">
+                <p className="text-gray-500 text-sm font-mono">
                   Loading Cyber Financial Graph Telemetry...
                 </p>
               </div>
             </div>
           ) : viewMode === 'graph' ? (
             <>
+              {/* Floating Real-Time Transaction Telemetry Ping Banner */}
+              {livePingTx && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 px-4 py-2 rounded-xl bg-white border border-blue-300 shadow-elevated  flex items-center gap-3 animate-in slide-in-from-top duration-300">
+                  <span className={`w-2.5 h-2.5 rounded-full ${livePingTx.isCrit ? 'bg-rose-500' : 'bg-green-500'} animate-ping`} />
+                  <span className="text-xs font-bold text-gray-900">
+                    Live Telemetry: <span className="text-blue-600 font-mono">{livePingTx.source}</span> → <span className="text-sky-600 font-mono">{livePingTx.target}</span> ({formatCurrency(livePingTx.amount)})
+                  </span>
+                </div>
+              )}
+
               {/* Interactive SVG + Canvas Renderer */}
               <GraphCanvas
                 nodes={nodes}
@@ -584,35 +608,35 @@ export const Flow: React.FC = () => {
             <div className="p-6 overflow-auto h-full space-y-6">
               {(traceData as any)?.hops?.length ? (
                 <div className="max-w-2xl mx-auto space-y-4">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-purple-400">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-blue-600">
                     Chronological Fund Hop Sequence
                   </h3>
                   {(traceData as any).hops.map((hop: any, i: number) => (
                     <div
                       key={i}
-                      className="p-4 rounded-xl glass-panel border border-slate-700/50 flex items-center justify-between"
+                      className="p-4 rounded-xl bg-white border border-gray-200 shadow-card border border-gray-200 flex items-center justify-between"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center font-mono font-bold text-white text-xs">
+                        <span className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-mono font-bold text-gray-900 text-xs">
                           #{hop.hop_number}
                         </span>
                         <div>
-                          <p className="font-mono text-sm text-white">
-                            <span className="text-blue-400">{hop.from_account}</span> →{' '}
+                          <p className="font-mono text-sm text-gray-900">
+                            <span className="text-blue-600">{hop.from_account}</span> →{' '}
                             <span className="text-red-400">{hop.to_account}</span>
                           </p>
-                          <p className="text-[10px] text-slate-500 font-mono">TXN: {hop.transaction_id}</p>
+                          <p className="text-[10px] text-gray-400 font-mono">TXN: {hop.transaction_id}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-mono font-bold text-white">{formatCurrency(hop.amount)}</p>
-                        <p className="text-[10px] text-slate-400">{formatDate(hop.timestamp)}</p>
+                        <p className="font-mono font-bold text-gray-900">{formatCurrency(hop.amount)}</p>
+                        <p className="text-[10px] text-gray-500">{formatDate(hop.timestamp)}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full text-slate-500 text-sm">
+                <div className="flex items-center justify-center h-full text-gray-400 text-sm">
                   Search a Transaction ID or Account above to inspect timeline hops.
                 </div>
               )}
@@ -669,10 +693,10 @@ export const Flow: React.FC = () => {
       {/* Floating "Ask Copilot" Button */}
       <button
         onClick={() => setCopilotOpen(true)}
-        className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-2xl shadow-purple-900/60 flex items-center gap-2.5 border border-purple-400/40 hover:scale-105 transition-all cursor-pointer"
+        className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-gray-900 font-bold rounded-xl shadow-card shadow-purple-900/60 flex items-center gap-2.5 border border-purple-400/40 hover:scale-105 transition-all cursor-pointer"
       >
         <span className="material-symbols-outlined text-xl">psychology</span>
-        <span className="text-xs uppercase tracking-wider font-extrabold">Ask Copilot</span>
+        <span className="text-xs uppercase tracking-wider font-bold">Ask Copilot</span>
       </button>
 
       {/* AI Copilot Slide-over Drawer */}

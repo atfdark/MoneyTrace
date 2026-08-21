@@ -286,7 +286,7 @@ export function useLiveTelemetry() {
     // 3. User Connected / Presence
     const unsubUser = wsService.subscribe('USER_CONNECTED', (payload: any) => {
       const user = payload?.user;
-      if (user) {
+      if (user && user.user_id !== 'anonymous') {
         const existingIdx = sharedActiveUsers.findIndex(u => u.account_number === user.account_number);
         if (existingIdx >= 0) {
           sharedActiveUsers[existingIdx] = user;
@@ -304,6 +304,15 @@ export function useLiveTelemetry() {
         sharedToasts = [loginToast, ...sharedToasts.slice(0, 5)];
       }
       notifyTelemetryListeners();
+    });
+
+    // 3b. User Disconnected
+    const unsubUserDisconn = wsService.subscribe('USER_DISCONNECTED', (payload: any) => {
+      const user = payload?.user;
+      if (user) {
+        sharedActiveUsers = sharedActiveUsers.filter(u => u.account_number !== user.account_number && u.user_id !== user.user_id);
+        notifyTelemetryListeners();
+      }
     });
 
     // 4. Account Frozen
@@ -328,6 +337,7 @@ export function useLiveTelemetry() {
       unsubTx();
       unsubAlert();
       unsubUser();
+      unsubUserDisconn();
       unsubFreeze();
     };
   }, [queryClient]);

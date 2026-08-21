@@ -107,25 +107,25 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-96 max-w-full bg-[#090D16]/95 backdrop-blur-2xl border-l border-purple-500/30 flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+    <div className="fixed inset-y-0 right-0 z-50 w-96 max-w-full bg-[#090D16]/95  border-l border-blue-200 flex flex-col shadow-card animate-in slide-in-from-right duration-300">
       {/* ───── Header ───── */}
-      <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-purple-950/20">
+      <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-purple-950/20">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-purple-900/40">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-gray-900 shadow-sm">
             <span className="material-symbols-outlined text-lg">psychology</span>
           </div>
           <div>
-            <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-900 flex items-center gap-1.5">
               AI Investigator Copilot
-              <span className="text-[9px] bg-purple-500/20 text-purple-300 px-1.5 py-0.2 rounded font-mono">v2.0</span>
+              <span className="text-[9px] bg-purple-500/20 text-blue-600 px-1.5 py-0.2 rounded font-mono">v2.0</span>
             </h3>
-            <p className="text-[10px] text-slate-400">Contextual Graph Intelligence</p>
+            <p className="text-[10px] text-gray-500">Contextual Graph Intelligence</p>
           </div>
         </div>
 
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+          className="text-gray-500 hover:text-gray-900 p-1 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
         >
           <span className="material-symbols-outlined text-lg">close</span>
         </button>
@@ -139,22 +139,22 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
             className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}
           >
             <div
-              className={`max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed ${
+              className={`max-w-[85%] rounded-xl p-3 text-xs leading-relaxed ${
                 m.role === 'user'
-                  ? 'bg-purple-600 text-white rounded-br-none shadow-lg shadow-purple-900/30'
-                  : 'bg-[#131B2E] border border-slate-800 text-slate-200 rounded-bl-none shadow-md'
+                  ? 'bg-blue-600 text-gray-900 rounded-br-none shadow-lg shadow-purple-900/30'
+                  : 'bg-[#131B2E] border border-gray-200 text-gray-700 rounded-bl-none shadow-sm'
               }`}
             >
               <div className="whitespace-pre-wrap">{m.content}</div>
             </div>
-            <span className="text-[8px] text-slate-500 mt-1 font-mono">
+            <span className="text-[8px] text-gray-400 mt-1 font-mono">
               {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
         ))}
 
         {loading && (
-          <div className="flex items-center gap-2 text-xs text-purple-400 p-2">
+          <div className="flex items-center gap-2 text-xs text-blue-600 p-2">
             <span className="material-symbols-outlined text-base animate-spin">sync</span>
             <span>Synthesizing topological graph evidence...</span>
           </div>
@@ -162,8 +162,8 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
       </div>
 
       {/* ───── Suggested Chips ───── */}
-      <div className="p-3 border-t border-slate-800 bg-slate-950/40">
-        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
+      <div className="p-3 border-t border-gray-200 bg-slate-950/40">
+        <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 block mb-1.5">
           Suggested Queries
         </span>
         <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
@@ -171,7 +171,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
             <button
               key={idx}
               onClick={() => handleSend(s)}
-              className="text-[9px] text-purple-300 bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/30 px-2 py-1 rounded-lg text-left transition-colors cursor-pointer"
+              className="text-[9px] text-blue-600 bg-blue-50 hover:bg-purple-900/60 border border-blue-200 px-2 py-1 rounded-lg text-left transition-colors cursor-pointer"
             >
               {s}
             </button>
@@ -180,19 +180,19 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
       </div>
 
       {/* ───── Input Footer ───── */}
-      <div className="p-3 border-t border-slate-800 bg-[#0F172A] flex items-center gap-2">
+      <div className="p-3 border-t border-gray-200 bg-[#0F172A] flex items-center gap-2">
         <input
           type="text"
           placeholder="Ask Copilot about any account, hop, or pattern..."
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSend()}
-          className="flex-1 bg-[#1E293B] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 font-sans"
+          className="flex-1 bg-[#1E293B] border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 placeholder-slate-500 focus:outline-none focus:border-purple-500 font-sans"
         />
         <button
           onClick={() => handleSend()}
           disabled={!input.trim() || loading}
-          className="w-9 h-9 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white flex items-center justify-center shadow-lg transition-all cursor-pointer"
+          className="w-9 h-9 rounded-xl bg-blue-600 hover:bg-purple-500 disabled:opacity-40 text-gray-900 flex items-center justify-center shadow-lg transition-all cursor-pointer"
         >
           <span className="material-symbols-outlined text-base">send</span>
         </button>

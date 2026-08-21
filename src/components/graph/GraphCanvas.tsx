@@ -14,11 +14,11 @@ export const NODE_THEMES: Record<string, { bg: string; glow: string; border: str
 };
 
 export const BADGE_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
-  mule:        { label: 'Mule', bg: 'bg-orange-500/20 border-orange-500/50', text: 'text-orange-400' },
-  circular:    { label: 'Cycle Ring', bg: 'bg-red-500/20 border-red-500/50', text: 'text-red-400' },
-  high_vel:    { label: 'High Velocity', bg: 'bg-amber-500/20 border-amber-500/50', text: 'text-amber-400' },
-  rapid:       { label: 'Rapid Layering', bg: 'bg-purple-500/20 border-purple-500/50', text: 'text-purple-400' },
-  collector:   { label: 'Collector Hub', bg: 'bg-violet-500/20 border-violet-500/50', text: 'text-violet-400' },
+  mule:        { label: 'Mule', bg: 'bg-orange-50 border-orange-200', text: 'text-orange-700' },
+  circular:    { label: 'Cycle Ring', bg: 'bg-red-50 border-red-200', text: 'text-red-700' },
+  high_vel:    { label: 'High Velocity', bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700' },
+  rapid:       { label: 'Rapid Layering', bg: 'bg-blue-50 border-blue-200', text: 'text-blue-700' },
+  collector:   { label: 'Collector Hub', bg: 'bg-violet-50 border-violet-200', text: 'text-violet-700' },
 };
 
 /* ─────────────────────── Helper: Quadratic Bezier Curve ─────────────────────── */
@@ -636,7 +636,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
               {/* Pulsing Aura for Traced / High Risk Nodes */}
               {(isTraced || n.type === 'high_risk') && (
                 <div
-                  className="absolute inset-0 -m-3 rounded-2xl animate-pulse pointer-events-none"
+                  className="absolute inset-0 -m-3 rounded-xl animate-pulse pointer-events-none"
                   style={{
                     boxShadow: `0 0 28px 8px ${theme.glow}`,
                   }}
@@ -648,30 +648,30 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
                 <div
                   className={`relative flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-md transition-all duration-150 ${
                     isSelected
-                      ? 'ring-2 ring-purple-400 shadow-xl bg-[#0F172A]'
+                      ? 'ring-2 ring-purple-400 shadow-card bg-[#0F172A]'
                       : isHovered
                       ? 'shadow-lg bg-[#1E293B]'
-                      : 'bg-[#0F172A]/90 shadow-md'
+                      : 'bg-[#0F172A]/90 shadow-sm'
                   }`}
                   style={{
                     border: `1.5px solid ${isTraced ? '#A855F7' : isSelected ? '#38BDF8' : theme.border}`,
                   }}
                 >
                   <div
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white flex-shrink-0 text-[10px]"
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-gray-900 flex-shrink-0 text-[10px]"
                     style={{ backgroundColor: theme.bg }}
                   >
                     <span className="material-symbols-outlined text-[13px]">{theme.icon}</span>
                   </div>
-                  <span className="text-[10px] font-bold text-white font-mono truncate max-w-[80px]">{n.id}</span>
+                  <span className="text-[10px] font-bold text-gray-900 font-mono truncate max-w-[80px]">{n.id}</span>
                 </div>
               ) : (
                 <div
                   className={`relative flex flex-col rounded-xl p-2.5 backdrop-blur-md transition-all duration-200 ${
                     isSelected
-                      ? 'ring-2 ring-purple-400 scale-105 shadow-2xl bg-[#0F172A]'
+                      ? 'ring-2 ring-purple-400 scale-105 shadow-card bg-[#0F172A]'
                       : isHovered
-                      ? 'scale-105 shadow-xl bg-[#1E293B]/95'
+                      ? 'scale-105 shadow-card bg-[#1E293B]/95'
                       : 'bg-[#0F172A]/90 shadow-lg hover:border-slate-500'
                   }`}
                   style={{
@@ -684,15 +684,15 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
                   {/* Top Row: Icon + Classification Label */}
                   <div className="flex items-center gap-2 mb-1.5">
                     <div
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-md"
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-900 flex-shrink-0 shadow-sm"
                       style={{ backgroundColor: theme.bg }}
                     >
                       <span className="material-symbols-outlined text-base">{theme.icon}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-bold text-white truncate font-mono">{n.id}</p>
+                      <p className="text-[10px] font-bold text-gray-900 truncate font-mono">{n.id}</p>
                       <span
-                        className="text-[8px] font-extrabold uppercase tracking-wider block truncate"
+                        className="text-[8px] font-bold uppercase tracking-wider block truncate"
                         style={{ color: theme.border }}
                       >
                         {theme.label.split('/')[0]}
@@ -702,14 +702,14 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
 
                   {/* Holder Name */}
                   {n.user_name && (
-                    <p className="text-[9px] text-slate-300 font-medium truncate mb-1">
+                    <p className="text-[9px] text-gray-600 font-medium truncate mb-1">
                       {n.user_name}
                     </p>
                   )}
 
                   {/* Balance & Risk Score */}
-                  <div className="flex items-center justify-between text-[9px] pt-1 border-t border-slate-800">
-                    <span className="text-slate-400 font-mono">
+                  <div className="flex items-center justify-between text-[9px] pt-1 border-t border-gray-200">
+                    <span className="text-gray-500 font-mono">
                       {formatCurrency(n.balance ?? 0)}
                     </span>
                     <span
@@ -718,7 +718,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
                           ? 'bg-red-500/20 text-red-400'
                           : (n.risk_score ?? 0) >= 45
                           ? 'bg-orange-500/20 text-orange-400'
-                          : 'bg-emerald-500/20 text-emerald-400'
+                          : 'bg-green-50 text-green-600'
                       }`}
                     >
                       {n.risk_score ?? 0}%
@@ -751,16 +751,16 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
 
       {/* ───── Interactive Minimap (Bottom-Right Radar) ───── */}
       <div
-        className="absolute bottom-4 right-4 w-40 h-28 glass-panel rounded-xl border border-slate-700/60 p-1.5 overflow-hidden shadow-2xl z-30"
+        className="absolute bottom-4 right-4 w-40 h-28 bg-white border border-gray-200 rounded-xl shadow-card border border-gray-200/60 p-1.5 overflow-hidden shadow-card z-30"
       >
         <div className="flex items-center justify-between px-1 mb-1">
-          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1">
+          <span className="text-[8px] font-bold uppercase tracking-widest text-gray-500 flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-ping" />
             Radar Minimap
           </span>
-          <span className="text-[8px] font-mono text-slate-500">{nodes.length} N</span>
+          <span className="text-[8px] font-mono text-gray-400">{nodes.length} N</span>
         </div>
-        <div className="relative w-full h-[calc(100%-18px)] bg-slate-950/80 rounded-lg overflow-hidden border border-slate-800">
+        <div className="relative w-full h-[calc(100%-18px)] bg-slate-950/80 rounded-lg overflow-hidden border border-gray-200">
           <svg className="w-full h-full" viewBox={`${minimapBounds.minX} ${minimapBounds.minY} ${minimapBounds.width} ${minimapBounds.height}`}>
             {/* Edges in minimap */}
             {visibleEdges.map((e, i) => {

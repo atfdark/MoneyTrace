@@ -72,12 +72,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       <div className="space-y-1 group">
         <label
           htmlFor="email"
-          className="text-xs font-bold uppercase tracking-wider text-purple-300 group-focus-within:text-purple-400 transition-colors block"
+          className="text-xs font-bold uppercase tracking-wider text-blue-600 group-focus-within:text-blue-600 transition-colors block"
         >
           Username / Email Address
         </label>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors text-[20px]">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-600 transition-colors text-[20px]">
             account_circle
           </span>
           <input
@@ -87,7 +87,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             value={credentials.email}
             onChange={handleChange}
             placeholder="admin or admin@moneytrace.dev"
-            className="w-full bg-[#1E293B] border border-slate-600 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400 transition-all text-sm font-medium shadow-inner font-sans"
+            className="w-full bg-[#1E293B] border border-slate-600 rounded-xl py-3 pl-12 pr-4 text-gray-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400 transition-all text-sm font-medium shadow-inner font-sans"
             disabled={isPending}
             autoComplete="username"
             required
@@ -100,16 +100,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         <div className="flex justify-between items-center">
           <label
             htmlFor="password"
-            className="text-xs font-bold uppercase tracking-wider text-purple-300 group-focus-within:text-purple-400 transition-colors block"
+            className="text-xs font-bold uppercase tracking-wider text-blue-600 group-focus-within:text-blue-600 transition-colors block"
           >
             Password
           </label>
-          <span className="text-[11px] text-purple-400 hover:text-purple-300 font-medium cursor-pointer">
+          <span className="text-[11px] text-blue-600 hover:text-blue-600 font-medium cursor-pointer">
             Forgot Password?
           </span>
         </div>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors text-[20px]">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-600 transition-colors text-[20px]">
             lock
           </span>
           <input
@@ -119,7 +119,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             value={credentials.password}
             onChange={handleChange}
             placeholder="••••••••••••"
-            className="w-full bg-[#1E293B] border border-slate-600 rounded-xl py-3 pl-12 pr-11 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400 transition-all text-sm font-medium shadow-inner"
+            className="w-full bg-[#1E293B] border border-slate-600 rounded-xl py-3 pl-12 pr-11 text-gray-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400 transition-all text-sm font-medium shadow-inner"
             disabled={isPending}
             autoComplete="current-password"
             required
@@ -127,7 +127,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors cursor-pointer"
             disabled={isPending}
             tabIndex={-1}
           >
@@ -146,9 +146,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             onChange={handleChange}
             className="w-4 h-4 rounded border-slate-600 bg-[#1E293B] text-purple-600 focus:ring-purple-500/40"
           />
-          <span className="text-xs text-slate-300">Remember session</span>
+          <span className="text-xs text-gray-600">Remember session</span>
         </label>
-        <span className="text-xs font-mono text-purple-400 font-semibold bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800/40">
+        <span className="text-xs font-mono text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded border border-purple-800/40">
           SOC Node Active
         </span>
       </div>
@@ -157,7 +157,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold rounded-xl text-sm shadow-lg shadow-purple-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2 cursor-pointer"
+        className="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-gray-900 font-bold rounded-xl text-sm shadow-lg shadow-purple-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2 cursor-pointer"
       >
         {isPending ? (
           <>
@@ -174,9 +174,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
 
       {/* Register Link */}
       <div className="text-center pt-2">
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-gray-500">
           Need an investigator account?{' '}
-          <Link to="/register" className="text-purple-400 hover:text-purple-300 font-bold transition-colors">
+          <Link to="/register" className="text-blue-600 hover:text-blue-600 font-bold transition-colors">
             Register Here
           </Link>
         </p>

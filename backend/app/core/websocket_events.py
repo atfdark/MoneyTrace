@@ -57,30 +57,10 @@ class ConnectedUser:
 
 
 class CentralizedWebSocketManager:
-    """Manages WebSocket connections, presence monitoring, and event distribution."""
+    """Manages real-time WebSocket connections, presence monitoring, and event distribution."""
 
     def __init__(self):
         self.connections: List[ConnectedUser] = []
-        # Predefined demo presence pool so 15-20 users appear active during demo
-        self.demo_presence_pool: List[Dict[str, Any]] = [
-            {"user_id": "u-rahul", "username": "Rahul Sharma", "account_number": "ACC1001", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-sneha", "username": "Sneha Patel", "account_number": "ACC1002", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-aman", "username": "Aman Verma", "account_number": "ACC1003", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-priya", "username": "Priya Nair", "account_number": "ACC1004", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-karan", "username": "Karan Malhotra", "account_number": "ACC1005", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-vikram", "username": "Vikram Singh", "account_number": "ACC1006", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-neha", "username": "Neha Gupta", "account_number": "ACC1007", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-rohit", "username": "Rohit Joshi", "account_number": "ACC1008", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-anita", "username": "Anita Desai", "account_number": "ACC1009", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-rajesh", "username": "Rajesh Kumar", "account_number": "ACC1010", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-suresh", "username": "Suresh Reddy", "account_number": "ACC1011", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-pooja", "username": "Pooja Shah", "account_number": "ACC1012", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-sanjay", "username": "Sanjay Mehta", "account_number": "ACC1013", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-meera", "username": "Meera Iyer", "account_number": "ACC1014", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-arjun", "username": "Arjun Kapoor", "account_number": "ACC1015", "role": "CUSTOMER", "online_status": "online"},
-            {"user_id": "u-admin", "username": "Lead Investigator (Admin)", "account_number": "ACC_ADMIN", "role": "ADMIN", "online_status": "online"},
-            {"user_id": "u-analyst", "username": "Senior SOC Analyst", "account_number": "ACC_ANALYST", "role": "ANALYST", "online_status": "online"},
-        ]
 
     async def connect(
         self,
@@ -112,7 +92,7 @@ class CentralizedWebSocketManager:
         )
         return conn
 
-    def disconnect(self, websocket: WebSocket):
+    async def disconnect(self, websocket: WebSocket):
         target = None
         for conn in self.connections:
             if conn.websocket == websocket:
@@ -122,6 +102,15 @@ class CentralizedWebSocketManager:
         if target:
             self.connections.remove(target)
             logger.info(f"WebSocket disconnected: {target.username}. Total active: {len(self.connections)}")
+            # Broadcast disconnection event
+            await self.broadcast(
+                WSEventTypes.USER_DISCONNECTED,
+                {
+                    "user": target.to_dict(),
+                    "total_active_sessions": len(self.connections),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                },
+            )
 
     async def update_activity(self, websocket: WebSocket):
         for conn in self.connections:
@@ -131,20 +120,8 @@ class CentralizedWebSocketManager:
                 break
 
     def get_active_users(self) -> List[Dict[str, Any]]:
-        """Return combined list of live connected users and demo pool users."""
-        live_users = [c.to_dict() for c in self.connections if c.user_id != "anonymous"]
-        live_account_numbers = {u["account_number"] for u in live_users}
-
-        # Merge with demo pool (avoid duplicates)
-        result = list(live_users)
-        for demo in self.demo_presence_pool:
-            if demo["account_number"] not in live_account_numbers:
-                demo_copy = dict(demo)
-                demo_copy["connected_at"] = datetime.now(timezone.utc).isoformat()
-                demo_copy["last_activity"] = datetime.now(timezone.utc).isoformat()
-                result.append(demo_copy)
-
-        return result
+        """Return list of currently active connected users."""
+        return [c.to_dict() for c in self.connections]
 
     async def broadcast(self, event_type: str, data: Dict[str, Any]):
         """Broadcast structured event to all active WebSocket clients."""

@@ -57,14 +57,14 @@ export const OnlineUsersPanel: React.FC<OnlineUsersPanelProps> = () => {
   }, [investigatorsList, currentUser]);
 
   return (
-    <div className="glass-panel rounded-2xl border border-slate-700/50 p-3.5 shadow-xl flex flex-col gap-2.5 relative overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-xl shadow-card border border-gray-200 p-3.5 shadow-card flex flex-col gap-2.5 relative overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <h4 className="text-xs font-bold uppercase tracking-wider text-white">Active Investigators</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900">Active Investigators</h4>
         </div>
-        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+        <span className="text-[10px] font-mono text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-emerald-500/20">
           {isLoading ? '...' : `${users.length} Online`}
         </span>
       </div>
@@ -72,18 +72,18 @@ export const OnlineUsersPanel: React.FC<OnlineUsersPanelProps> = () => {
       {/* Users List */}
       <div className="space-y-1.5 max-h-52 overflow-y-auto">
         {users.length === 0 ? (
-          <div className="text-center py-4 text-slate-500 text-[11px]">
+          <div className="text-center py-4 text-gray-400 text-[11px]">
             No active investigators detected.
           </div>
         ) : (
           users.map(u => (
             <div
               key={u.id}
-              className="flex items-center justify-between p-2 rounded-xl bg-slate-900/50 border border-slate-800/80 hover:border-slate-700 transition-all"
+              className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100 hover:border-gray-200 transition-all"
             >
               <div className="flex items-center gap-2.5">
                 <div
-                  className={`w-7 h-7 rounded-lg bg-gradient-to-br ${u.avatarColor} flex items-center justify-center text-white text-[10px] font-bold shadow-md`}
+                  className={`w-7 h-7 rounded-lg bg-gradient-to-br ${u.avatarColor} flex items-center justify-center text-gray-900 text-[10px] font-bold shadow-sm`}
                 >
                   {u.name
                     .split(' ')
@@ -93,10 +93,10 @@ export const OnlineUsersPanel: React.FC<OnlineUsersPanelProps> = () => {
                     .toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white leading-none mb-0.5 truncate max-w-[130px]" title={u.name}>
+                  <p className="text-xs font-bold text-gray-900 leading-none mb-0.5 truncate max-w-[130px]" title={u.name}>
                     {u.name}
                   </p>
-                  <p className="text-[9px] text-slate-400 leading-none">{u.role}</p>
+                  <p className="text-[9px] text-gray-500 leading-none">{u.role}</p>
                 </div>
               </div>
 
@@ -106,11 +106,11 @@ export const OnlineUsersPanel: React.FC<OnlineUsersPanelProps> = () => {
                     u.status === 'investigating'
                       ? 'bg-purple-400 animate-ping'
                       : u.status === 'active'
-                      ? 'bg-emerald-400'
+                      ? 'bg-green-500'
                       : 'bg-slate-500'
                   }`}
                 />
-                <span className="text-[9px] font-mono uppercase text-slate-400 capitalize">
+                <span className="text-[9px] font-mono uppercase text-gray-500 capitalize">
                   {u.status}
                 </span>
               </div>

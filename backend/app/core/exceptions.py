@@ -51,3 +51,8 @@ class ConflictError(AppException):
 
     def __init__(self, message: str = "Conflict", details: Optional[Any] = None) -> None:
         super().__init__(message, status_code=409, details=details)
+
+
+# Aliases for compatibility
+UnauthorizedError = AuthenticationError
+ForbiddenError = AuthorizationError

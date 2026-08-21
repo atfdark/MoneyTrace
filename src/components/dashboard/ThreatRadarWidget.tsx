@@ -7,59 +7,43 @@ export const ThreatRadarWidget: React.FC = () => {
   const { emergencyAlert } = useLiveTelemetry();
 
   const criticalCount = stats?.critical_alerts ?? (emergencyAlert ? 1 : 0);
-  const highRiskCount = stats?.active_alerts ?? 8;
-  const openCasesCount = stats?.open_cases ?? 4;
-  const muleCount = 7;
-  const frozenCount = 3;
+  const highRiskCount = stats?.active_alerts ?? (emergencyAlert ? 1 : 0);
+  const openCasesCount = stats?.open_cases ?? 0;
+  const muleCount = (stats as any)?.mule_accounts ?? (stats as any)?.risky_accounts?.length ?? 0;
+  const frozenCount = (stats as any)?.frozen_accounts ?? 0;
+
+  const metrics = [
+    { label: 'Critical', value: criticalCount, color: 'bg-red-50 text-red-700 border-red-200' },
+    { label: 'High Risk', value: highRiskCount, color: 'bg-amber-50 text-amber-700 border-amber-200' },
+    { label: 'Open Cases', value: openCasesCount, color: 'bg-blue-50 text-blue-700 border-blue-200' },
+    { label: 'Mule Nodes', value: muleCount, color: 'bg-purple-50 text-purple-700 border-purple-200' },
+    { label: 'Frozen', value: frozenCount, color: 'bg-gray-50 text-gray-700 border-gray-200' },
+  ];
 
   return (
-    <div className="glass-panel bg-[#0C0B18]/90 border border-slate-800 rounded-2xl p-4 shadow-xl text-white relative overflow-hidden">
-      {/* Background Radar Scanning Animation */}
-      <div className="absolute top-0 right-0 w-36 h-36 pointer-events-none opacity-20 flex items-center justify-center">
-        <div className="w-28 h-28 rounded-full border border-purple-500/40 animate-ping absolute" />
-        <div className="w-20 h-20 rounded-full border border-red-500/50 absolute" />
-        <div className="w-10 h-10 rounded-full bg-red-500/20 absolute" />
-      </div>
-
+    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-card">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3 relative z-10">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-rose-400 text-lg">radar</span>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-            Threat Radar Telemetry
-          </h3>
+          <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+            <span className="material-symbols-outlined text-red-600 text-[18px]">radar</span>
+          </div>
+          <h3 className="text-[13px] font-semibold text-gray-900">Threat Intelligence</h3>
         </div>
-        <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-rose-950 border border-rose-500/50 text-rose-300 animate-pulse">
-          LIVE SHIELD
+        <span className="text-[10px] font-semibold uppercase px-2 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+          Active
         </span>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 relative z-10">
-        <div className="p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/40 text-center">
-          <p className="text-[9px] font-bold uppercase tracking-wider text-rose-400">Critical Alerts</p>
-          <p className="text-lg font-black font-mono text-rose-300 mt-0.5">{criticalCount}</p>
-        </div>
-
-        <div className="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/40 text-center">
-          <p className="text-[9px] font-bold uppercase tracking-wider text-amber-400">High Risk</p>
-          <p className="text-lg font-black font-mono text-amber-300 mt-0.5">{highRiskCount}</p>
-        </div>
-
-        <div className="p-2.5 rounded-xl bg-blue-950/40 border border-blue-500/40 text-center">
-          <p className="text-[9px] font-bold uppercase tracking-wider text-blue-400">Open Cases</p>
-          <p className="text-lg font-black font-mono text-blue-300 mt-0.5">{openCasesCount}</p>
-        </div>
-
-        <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/40 text-center">
-          <p className="text-[9px] font-bold uppercase tracking-wider text-purple-400">Mule Nodes</p>
-          <p className="text-lg font-black font-mono text-purple-300 mt-0.5">{muleCount}</p>
-        </div>
-
-        <div className="p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/40 text-center col-span-2 sm:col-span-1">
-          <p className="text-[9px] font-bold uppercase tracking-wider text-cyan-400">Frozen Nodes</p>
-          <p className="text-lg font-black font-mono text-cyan-300 mt-0.5">{frozenCount}</p>
-        </div>
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {metrics.map((m) => (
+          <div key={m.label} className={`p-3 rounded-lg border text-center ${m.color}`}>
+            <p className="text-[10px] font-semibold uppercase tracking-wider opacity-70">{m.label}</p>
+            <p className="text-xl font-bold font-mono mt-0.5">{m.value}</p>
+          </div>
+        ))}
       </div>
     </div>
   );

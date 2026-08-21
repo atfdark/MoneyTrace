@@ -36,13 +36,13 @@ const LoadingFallback = () => (
 
 const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="min-h-screen bg-background flex items-center justify-center p-4">
-    <div className="w-full max-w-md glass-panel rounded-2xl p-8 lg:p-10 shadow-2xl">
+    <div className="w-full max-w-md bg-white border border-gray-200 rounded-xl shadow-card p-8 lg:p-10 shadow-card">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-secondary to-secondary-container flex items-center justify-center mx-auto mb-4">
-          <span className="material-symbols-outlined text-on-secondary text-[32px]">account_balance</span>
+        <div className="w-16 h-16 rounded-xl bg-blue-100 flex items-center justify-center mx-auto mb-4">
+          <span className="material-symbols-outlined text-white text-[32px]">account_balance</span>
         </div>
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">MoneyTrace</h1>
-        <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Financial Crime Intelligence</p>
+        <h1 className="text-[17px] font-bold text-gray-900">MoneyTrace</h1>
+        <p className="text-[13px] text-gray-500 mt-1">Financial Crime Intelligence</p>
       </div>
       {children}
     </div>

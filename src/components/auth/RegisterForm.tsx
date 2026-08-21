@@ -134,12 +134,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       <div className="space-y-1 group">
         <label
           htmlFor="full_name"
-          className="text-xs font-bold uppercase tracking-wider text-purple-300 group-focus-within:text-purple-400 transition-colors block"
+          className="text-xs font-bold uppercase tracking-wider text-blue-600 group-focus-within:text-blue-600 transition-colors block"
         >
           Full Name
         </label>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors text-[20px]">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-600 transition-colors text-[20px]">
             badge
           </span>
           <input
@@ -150,7 +150,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="John Doe"
-            className={`w-full bg-[#1E293B] border rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-sm font-medium shadow-inner ${
+            className={`w-full bg-[#1E293B] border rounded-xl py-3 pl-12 pr-4 text-gray-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-sm font-medium shadow-inner ${
               fieldErrors.full_name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/50' : 'border-slate-600 focus:border-purple-400'
             }`}
             disabled={isPending}
@@ -167,12 +167,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       <div className="space-y-1 group">
         <label
           htmlFor="email"
-          className="text-xs font-bold uppercase tracking-wider text-purple-300 group-focus-within:text-purple-400 transition-colors block"
+          className="text-xs font-bold uppercase tracking-wider text-blue-600 group-focus-within:text-blue-600 transition-colors block"
         >
           Email Address
         </label>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors text-[20px]">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-600 transition-colors text-[20px]">
             account_circle
           </span>
           <input
@@ -183,7 +183,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="investigator@agency.gov"
-            className={`w-full bg-[#1E293B] border rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-sm font-medium shadow-inner ${
+            className={`w-full bg-[#1E293B] border rounded-xl py-3 pl-12 pr-4 text-gray-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-sm font-medium shadow-inner ${
               fieldErrors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/50' : 'border-slate-600 focus:border-purple-400'
             }`}
             disabled={isPending}
@@ -200,12 +200,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       <div className="space-y-1 group">
         <label
           htmlFor="password"
-          className="text-xs font-bold uppercase tracking-wider text-purple-300 group-focus-within:text-purple-400 transition-colors block"
+          className="text-xs font-bold uppercase tracking-wider text-blue-600 group-focus-within:text-blue-600 transition-colors block"
         >
           Password
         </label>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors text-[20px]">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-600 transition-colors text-[20px]">
             lock
           </span>
           <input
@@ -216,7 +216,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="••••••••••••"
-            className={`w-full bg-[#1E293B] border rounded-xl py-3 pl-12 pr-11 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-sm font-medium shadow-inner ${
+            className={`w-full bg-[#1E293B] border rounded-xl py-3 pl-12 pr-11 text-gray-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-sm font-medium shadow-inner ${
               fieldErrors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/50' : 'border-slate-600 focus:border-purple-400'
             }`}
             disabled={isPending}
@@ -226,7 +226,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors cursor-pointer"
             disabled={isPending}
             tabIndex={-1}
           >
@@ -242,12 +242,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       <div className="space-y-1 group">
         <label
           htmlFor="confirm_password"
-          className="text-xs font-bold uppercase tracking-wider text-purple-300 group-focus-within:text-purple-400 transition-colors block"
+          className="text-xs font-bold uppercase tracking-wider text-blue-600 group-focus-within:text-blue-600 transition-colors block"
         >
           Confirm Password
         </label>
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-400 transition-colors text-[20px]">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-600 transition-colors text-[20px]">
             lock_reset
           </span>
           <input
@@ -258,7 +258,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="••••••••••••"
-            className={`w-full bg-[#1E293B] border rounded-xl py-3 pl-12 pr-11 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-sm font-medium shadow-inner ${
+            className={`w-full bg-[#1E293B] border rounded-xl py-3 pl-12 pr-11 text-gray-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-sm font-medium shadow-inner ${
               fieldErrors.confirm_password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/50' : 'border-slate-600 focus:border-purple-400'
             }`}
             disabled={isPending}
@@ -268,7 +268,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors cursor-pointer"
             disabled={isPending}
             tabIndex={-1}
           >
@@ -284,7 +284,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold rounded-xl text-sm shadow-lg shadow-purple-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2 cursor-pointer"
+        className="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-gray-900 font-bold rounded-xl text-sm shadow-lg shadow-purple-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2 cursor-pointer"
       >
         {isPending ? (
           <>
@@ -301,9 +301,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
 
       {/* Login Link */}
       <div className="text-center pt-2">
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-gray-500">
           Already have an account?{' '}
-          <Link to="/login" className="text-purple-400 hover:text-purple-300 font-bold transition-colors">
+          <Link to="/login" className="text-blue-600 hover:text-blue-600 font-bold transition-colors">
             Sign In Here
           </Link>
         </p>
