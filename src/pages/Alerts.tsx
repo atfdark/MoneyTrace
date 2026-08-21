@@ -97,31 +97,31 @@ export const Alerts: React.FC = () => {
         <div className="glass-panel rounded-xl p-4">
           <p className="font-label-caps text-label-caps text-on-surface-variant">Total Alerts</p>
           <p className="font-headline-lg text-headline-lg text-on-surface mt-1 tabular-nums">
-            {data?.total?.toLocaleString() || '—'}
+            {(data as any)?.total?.toLocaleString() || '—'}
           </p>
         </div>
         <div className="glass-panel rounded-xl p-4">
           <p className="font-label-caps text-label-caps text-on-surface-variant">Critical</p>
           <p className="font-headline-lg text-headline-lg text-error mt-1 tabular-nums">
-            {data?.critical_count || 0}
+            {(data as any)?.critical_count || 0}
           </p>
         </div>
         <div className="glass-panel rounded-xl p-4">
           <p className="font-label-caps text-label-caps text-on-surface-variant">High</p>
           <p className="font-headline-lg text-headline-lg text-warning mt-1 tabular-nums">
-            {data?.high_count || 0}
+            {(data as any)?.high_count || 0}
           </p>
         </div>
         <div className="glass-panel rounded-xl p-4">
           <p className="font-label-caps text-label-caps text-on-surface-variant">Acknowledged</p>
           <p className="font-headline-lg text-headline-lg text-secondary mt-1 tabular-nums">
-            {data?.acknowledged_count || 0}
+            {(data as any)?.acknowledged_count || 0}
           </p>
         </div>
         <div className="glass-panel rounded-xl p-4">
           <p className="font-label-caps text-label-caps text-on-surface-variant">New (24h)</p>
           <p className="font-headline-lg text-headline-lg text-success mt-1 tabular-nums">
-            {data?.new_24h || 0}
+            {(data as any)?.new_24h || 0}
           </p>
         </div>
       </div>
@@ -222,7 +222,7 @@ export const Alerts: React.FC = () => {
                   <div className="h-3 w-1/2 bg-surface-container-high rounded mt-1"></div>
                 </div>
               ))
-            ) : data?.alerts?.length === 0 ? (
+            ) : ((data as any)?.alerts || (data as any)?.data?.alerts || []).length === 0 ? (
               <div className="p-8 text-center">
                 <span className="material-symbols-outlined text-outline-variant text-[48px] block mb-2">notifications_off</span>
                 <h3 className="font-headline-md text-headline-md text-on-surface mb-1">No alerts found</h3>
@@ -234,7 +234,7 @@ export const Alerts: React.FC = () => {
                 )}
               </div>
             ) : (
-              data?.alerts?.map((alert: any) => (
+              ((data as any)?.alerts || (data as any)?.data?.alerts || []).map((alert: any) => (
                 <AlertCard
                   key={alert.id}
                   alert={alert}
@@ -257,7 +257,7 @@ export const Alerts: React.FC = () => {
                   </div>
                 ))}
               </div>
-            ) : data?.alerts?.length === 0 ? (
+            ) : ((data as any)?.alerts || (data as any)?.data?.alerts || []).length === 0 ? (
               <div className="p-8 text-center">
                 <span className="material-symbols-outlined text-outline-variant text-[48px] block mb-2">notifications_off</span>
                 <h3 className="font-headline-md text-headline-md text-on-surface mb-1">No alerts found</h3>
@@ -265,7 +265,7 @@ export const Alerts: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {data?.alerts?.map((alert: any) => (
+                {((data as any)?.alerts || (data as any)?.data?.alerts || []).map((alert: any) => (
                   <AlertCard
                     key={alert.id}
                     alert={alert}
@@ -283,10 +283,10 @@ export const Alerts: React.FC = () => {
         {/* Pagination */}
         {data && !isLoading && (
           <Pagination
-            currentPage={data.page}
-            totalPages={data.total_pages}
-            totalItems={data.total}
-            pageSize={data.page_size}
+            currentPage={(data as any)?.page || (data as any)?.data?.page || 1}
+            totalPages={(data as any)?.total_pages || (data as any)?.data?.total_pages || 1}
+            totalItems={(data as any)?.total || (data as any)?.data?.total || 0}
+            pageSize={(data as any)?.page_size || (data as any)?.data?.page_size || 10}
             onPageChange={(page) => setFilters({ page })}
             onPageSizeChange={(size) => setFilters({ page: 1, limit: size })}
           />
@@ -297,7 +297,7 @@ export const Alerts: React.FC = () => {
         <div className="glass-panel rounded-xl p-6 text-center">
           <span className="material-symbols-outlined text-error text-[48px] block mb-2">error</span>
           <h3 className="font-headline-md text-headline-md text-on-surface mb-1">Failed to load alerts</h3>
-          <p className="font-body-md text-on-surface-variant mb-4">{error}</p>
+          <p className="font-body-md text-on-surface-variant mb-4">{(error as any)?.message || String(error)}</p>
           <button onClick={() => refetch()} className="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-body-sm font-medium hover:bg-secondary-container/80 transition-colors">
             Try Again
           </button>

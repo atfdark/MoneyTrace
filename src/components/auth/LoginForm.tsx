@@ -81,15 +81,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             account_circle
           </span>
           <input
-            type="email"
+            type="text"
             name="email"
             id="email"
             value={credentials.email}
             onChange={handleChange}
-            placeholder="admin@moneytrace.dev"
-            className="w-full bg-[#1E293B] border border-slate-600 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400 transition-all text-sm font-medium shadow-inner"
+            placeholder="admin or admin@moneytrace.dev"
+            className="w-full bg-[#1E293B] border border-slate-600 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-400 transition-all text-sm font-medium shadow-inner font-sans"
             disabled={isPending}
-            autoComplete="email"
+            autoComplete="username"
             required
           />
         </div>

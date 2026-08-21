@@ -137,19 +137,19 @@ export const Investigation: React.FC = () => {
         <div className="glass-panel rounded-xl p-4">
           <p className="font-label-caps text-label-caps text-on-surface-variant">Open</p>
           <p className="font-headline-lg text-headline-lg text-secondary mt-1 tabular-nums">
-            {data?.open_count || 0}
+            {(data as any)?.open_count || (data as any)?.total || 0}
           </p>
         </div>
         <div className="glass-panel rounded-xl p-4">
           <p className="font-label-caps text-label-caps text-on-surface-variant">In Progress</p>
           <p className="font-headline-lg text-headline-lg text-warning mt-1 tabular-nums">
-            {data?.in_progress_count || 0}
+            {(data as any)?.in_progress_count || 0}
           </p>
         </div>
         <div className="glass-panel rounded-xl p-4">
           <p className="font-label-caps text-label-caps text-on-surface-variant">Closed (30d)</p>
           <p className="font-headline-lg text-headline-lg text-success mt-1 tabular-nums">
-            {data?.closed_30d || 0}
+            {(data as any)?.closed_30d || 0}
           </p>
         </div>
       </div>
@@ -364,7 +364,7 @@ export const Investigation: React.FC = () => {
         <div className="glass-panel rounded-xl p-6 text-center">
           <span className="material-symbols-outlined text-error text-[48px] block mb-2">error</span>
           <h3 className="font-headline-md text-headline-md text-on-surface mb-1">Failed to load cases</h3>
-          <p className="font-body-md text-on-surface-variant mb-4">{error}</p>
+          <p className="font-body-md text-on-surface-variant mb-4">{(error as any)?.message || String(error)}</p>
           <button onClick={() => refetch()} className="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-body-sm font-medium hover:bg-secondary-container/80 transition-colors">
             Try Again
           </button>

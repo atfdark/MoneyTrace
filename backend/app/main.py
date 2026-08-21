@@ -58,15 +58,37 @@ app.add_middleware(
 
 @app.websocket("/ws/live")
 @app.websocket("/api/v1/ws/live")
-async def websocket_live_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for broadcasting live transactions, alerts & recovery cases."""
-    await ws_manager.connect(websocket)
+async def websocket_live_endpoint(
+    websocket: WebSocket,
+    user_id: str | None = None,
+    username: str | None = None,
+    account_number: str | None = None,
+    role: str | None = None,
+):
+    """WebSocket endpoint for broadcasting live transactions, alerts, recovery cases & presence."""
+    # Query parameters can also be extracted from URL query string if not parsed by FastAPI
+    query_params = websocket.query_params
+    uid = user_id or query_params.get("user_id") or "anonymous"
+    uname = username or query_params.get("username") or "Investigator / Client"
+    acc = account_number or query_params.get("account_number") or "ACC_NODE"
+    user_role = role or query_params.get("role") or "ANALYST"
+
+    await ws_manager.connect(
+        websocket=websocket,
+        user_id=uid,
+        username=uname,
+        account_number=acc,
+        role=user_role,
+    )
     try:
         while True:
-            # Keep connection open & handle incoming client pings or heartbeats
+            # Keep connection open & handle incoming client pings, heartbeats, or events
             data = await websocket.receive_text()
             if data == "ping":
                 await websocket.send_text("pong")
+                await ws_manager.update_activity(websocket)
+            elif data.startswith("{"):
+                await ws_manager.update_activity(websocket)
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket)
     except Exception:

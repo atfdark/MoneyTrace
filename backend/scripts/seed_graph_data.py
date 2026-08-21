@@ -44,23 +44,33 @@ async def seed_graph_data():
 
         print("Seeding Phase 6 Multi-Hop Money Flow Graph Data...")
 
-        # ------------------------------------------------------------------
-        # SCENARIO A: Multi-Hop Money Flow Trail
-        # ACC_VICTIM_101 -> ACC_MULE_102 -> ACC_MULE_103 -> ACC_HOLDER_104
-        # ------------------------------------------------------------------
-        u_victim = User(id=uuid4(), full_name="Victim Alice", email=f"victim_{random.randint(100,999)}@moneytrace.dev", password_hash=hash_password("Pass123"))
-        u_mule1 = User(id=uuid4(), full_name="Mule Bob", email=f"mule1_{random.randint(100,999)}@moneytrace.dev", password_hash=hash_password("Pass123"))
-        u_mule2 = User(id=uuid4(), full_name="Mule Charlie", email=f"mule2_{random.randint(100,999)}@moneytrace.dev", password_hash=hash_password("Pass123"))
-        u_holder = User(id=uuid4(), full_name="Holder David", email=f"holder_{random.randint(100,999)}@moneytrace.dev", password_hash=hash_password("Pass123"))
-        session.add_all([u_victim, u_mule1, u_mule2, u_holder])
-        await session.flush()
+        async def get_or_create_acc(acc_num, full_name, bal, dt_offset=0):
+            res_acc = await session.execute(select(Account).where(Account.account_number == acc_num))
+            existing = res_acc.scalar_one_or_none()
+            if existing:
+                return existing
+            u = User(id=uuid4(), full_name=full_name, email=f"{acc_num.lower()}_{random.randint(100,999)}@moneytrace.dev", password_hash=hash_password("Pass123"))
+            session.add(u)
+            await session.flush()
+            acc = Account(
+                id=uuid4(),
+                account_number=acc_num,
+                user_id=u.id,
+                balance=Decimal(str(bal)),
+                created_at=datetime.now(timezone.utc) - timedelta(days=dt_offset),
+            )
+            session.add(acc)
+            await session.flush()
+            return acc
 
-        acc_victim = Account(id=uuid4(), account_number="ACC1001", user_id=u_victim.id, balance=Decimal("500000.00"))
-        acc_mule1 = Account(id=uuid4(), account_number="ACC1002", user_id=u_mule1.id, balance=Decimal("100000.00"), created_at=datetime.now(timezone.utc) - timedelta(days=2))
-        acc_mule2 = Account(id=uuid4(), account_number="ACC1003", user_id=u_mule2.id, balance=Decimal("100000.00"), created_at=datetime.now(timezone.utc) - timedelta(days=1))
-        acc_holder = Account(id=uuid4(), account_number="ACC1004", user_id=u_holder.id, balance=Decimal("250000.00"))
-        session.add_all([acc_victim, acc_mule1, acc_mule2, acc_holder])
-        await session.flush()
+        acc_victim = await get_or_create_acc("ACC1001", "Victim Alice", 500000.00)
+        acc_mule1 = await get_or_create_acc("ACC1002", "Mule Bob", 100000.00, 2)
+        acc_mule2 = await get_or_create_acc("ACC1003", "Mule Charlie", 100000.00, 1)
+        acc_holder = await get_or_create_acc("ACC1004", "Holder David", 250000.00)
+
+        # Clear prior seed graph transactions if present
+        await session.execute(text("DELETE FROM transactions WHERE transaction_id LIKE 'TXN_TRACE_%' OR transaction_id LIKE 'TXN_RING_%' OR transaction_id LIKE 'TXN_RAND_%'"))
+        await session.commit()
 
         base_t = datetime.now(timezone.utc) - timedelta(hours=2)
 
@@ -115,17 +125,9 @@ async def seed_graph_data():
         # SCENARIO B: Circular Money Laundering Ring
         # ACC_RING_A -> ACC_RING_B -> ACC_RING_C -> ACC_RING_A
         # ------------------------------------------------------------------
-        u_ring_a = User(id=uuid4(), full_name="Ring User A", email=f"ring_a_{random.randint(100,999)}@moneytrace.dev", password_hash=hash_password("Pass123"))
-        u_ring_b = User(id=uuid4(), full_name="Ring User B", email=f"ring_b_{random.randint(100,999)}@moneytrace.dev", password_hash=hash_password("Pass123"))
-        u_ring_c = User(id=uuid4(), full_name="Ring User C", email=f"ring_c_{random.randint(100,999)}@moneytrace.dev", password_hash=hash_password("Pass123"))
-        session.add_all([u_ring_a, u_ring_b, u_ring_c])
-        await session.flush()
-
-        acc_ring_a = Account(id=uuid4(), account_number="ACC_RING_A", user_id=u_ring_a.id, balance=Decimal("150000.00"))
-        acc_ring_b = Account(id=uuid4(), account_number="ACC_RING_B", user_id=u_ring_b.id, balance=Decimal("150000.00"))
-        acc_ring_c = Account(id=uuid4(), account_number="ACC_RING_C", user_id=u_ring_c.id, balance=Decimal("150000.00"))
-        session.add_all([acc_ring_a, acc_ring_b, acc_ring_c])
-        await session.flush()
+        acc_ring_a = await get_or_create_acc("ACC_RING_A", "Ring User A", 150000.00)
+        acc_ring_b = await get_or_create_acc("ACC_RING_B", "Ring User B", 150000.00)
+        acc_ring_c = await get_or_create_acc("ACC_RING_C", "Ring User C", 150000.00)
 
         t_ring_1 = Transaction(
             id=uuid4(),

@@ -107,7 +107,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       onError: (err) => {
         if (err instanceof ApiError) {
           setFormError(err.getUserMessage());
-          if (err.status === 409) {
+          if (err.statusCode === 409 || (err as any).status === 409) {
             setFieldErrors((prev) => ({
               ...prev,
               email: 'An account with this email already exists',

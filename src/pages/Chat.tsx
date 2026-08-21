@@ -113,7 +113,7 @@ I can assist you with real-time financial crime triage, asset recovery evaluatio
     setIsLoading(true);
 
     try {
-      const res = await api.post('/assistant/chat', { message: query });
+      const res = await api.post<any>('/assistant/chat', { message: query });
       const data = res.data;
 
       const aiMsg: Message = {
@@ -163,8 +163,8 @@ I can assist you with real-time financial crime triage, asset recovery evaluatio
     if (!ragQuery.trim()) return;
     setIsSearchingRag(true);
     try {
-      const res = await api.get(`/assistant/rag-search?query=${encodeURIComponent(ragQuery)}`);
-      setRagResults(res.data);
+      const res = await api.get<any>(`/assistant/rag-search?query=${encodeURIComponent(ragQuery)}`);
+      setRagResults(res.data?.citations || res.data || []);
     } catch (err) {
       console.error('RAG search error:', err);
     } finally {

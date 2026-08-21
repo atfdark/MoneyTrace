@@ -1,0 +1,58 @@
+Account Number,User Name,User Email,Balance (INR),Status,Created At
+ACC1020,Kunal Bose,kunal@moneytrace.dev,500000.0,active,2026-08-21T15:03:22.692764
+ACC1019,Tanvi Sen,tanvi@moneytrace.dev,275000.0,active,2026-08-21T15:03:22.485096
+ACC1018,Ritu Verma,ritu@moneytrace.dev,185000.0,active,2026-08-21T15:03:22.273014
+ACC1017,Aditya Roy,aditya@moneytrace.dev,340000.0,active,2026-08-21T15:03:22.054264
+ACC1016,Deepa Sharma,deepa@moneytrace.dev,210000.0,active,2026-08-21T15:03:21.834351
+ACC1015,Arjun Kapoor,arjun@moneytrace.dev,450000.0,active,2026-08-21T15:03:21.620168
+ACC1014,Meera Iyer,meera@moneytrace.dev,165000.0,active,2026-08-21T15:03:21.404090
+ACC1013,Sanjay Mehta,sanjay@moneytrace.dev,310000.0,active,2026-08-21T15:03:21.185112
+ACC1012,Pooja Shah,pooja@moneytrace.dev,260000.0,active,2026-08-21T15:03:20.965979
+ACC1011,Suresh Reddy,suresh@moneytrace.dev,195000.0,active,2026-08-21T15:03:20.750734
+ACC1010,Rajesh Kumar,rajesh@moneytrace.dev,380000.0,active,2026-08-21T15:03:20.533782
+ACC1009,Anita Desai,anita@moneytrace.dev,220000.0,active,2026-08-21T15:03:20.308157
+ACC1008,Rohit Joshi,rohit@moneytrace.dev,175000.0,active,2026-08-21T15:03:20.085981
+ACC1007,Neha Gupta,neha@moneytrace.dev,290000.0,active,2026-08-21T15:03:19.867158
+ACC1006,Vikram Singh,vikram@moneytrace.dev,410000.0,active,2026-08-21T15:03:19.650308
+ACC1005,Karan Malhotra,karan@moneytrace.dev,95000.0,active,2026-08-21T15:03:19.431673
+ACC528659,alok,amol@gmail.com,100000.0,active,2026-08-20T17:13:41.312478
+ACC355642,Alok Khatri,alok1@gmail.com,100000.0,active,2026-08-16T08:04:31.791013
+ACC548319,Alok Khatri,alok_test_100@gmail.com,100000.0,active,2026-08-16T08:03:23.274761
+ACC_RING_C,Ring User C,ring_c_313@moneytrace.dev,150000.0,active,2026-08-16T05:41:25.806770
+ACC_RING_B,Ring User B,ring_b_617@moneytrace.dev,150000.0,active,2026-08-16T05:41:25.806769
+ACC_RING_A,Ring User A,ring_a_285@moneytrace.dev,150000.0,active,2026-08-16T05:41:25.806765
+ACC1004,Priya Nair,priya@moneytrace.dev,140000.0,active,2026-08-16T05:41:25.152794
+ACC1001,Rahul Sharma,rahul@moneytrace.dev,250000.0,active,2026-08-16T05:41:25.151796
+ACC59760987,Layering Mule Account,layer_mule_940@moneytrace.dev,200000.0,active,2026-08-16T05:14:07.639826
+ACC74473089,Device Switcher Customer,dev_switch_226@moneytrace.dev,150000.0,active,2026-08-16T05:14:07.423071
+ACC65809811,Traveler Customer,traveler_475@moneytrace.dev,200000.0,active,2026-08-16T05:14:07.209019
+ACC43467724,Tina Clark,tina.clark@moneytrace.dev,339716.03,active,2026-08-15T20:12:44.767771
+ACC66777666,Sam Robinson,sam.robinson@moneytrace.dev,326158.71,active,2026-08-15T20:12:44.767770
+ACC39727090,Ruby Martinez,ruby.martinez@moneytrace.dev,40901.34,active,2026-08-15T20:12:44.767769
+ACC36297523,Quinn Garcia,quinn.garcia@moneytrace.dev,403479.89,active,2026-08-15T20:12:44.767768
+ACC75311120,Paul Thompson,paul.thompson@moneytrace.dev,350220.74,active,2026-08-15T20:12:44.767767
+ACC86445636,Olivia Martin,olivia.martin@moneytrace.dev,351183.91,active,2026-08-15T20:12:44.767766
+ACC40593754,Nathan Harris,nathan.harris@moneytrace.dev,380956.02,active,2026-08-15T20:12:44.767765
+ACC10897161,Mia White,mia.white@moneytrace.dev,206295.99,active,2026-08-15T20:12:44.767764
+ACC25189145,Leo Jackson,leo.jackson@moneytrace.dev,81419.28,active,2026-08-15T20:12:44.767763
+ACC57029336,Karen Thomas,karen.thomas@moneytrace.dev,323197.24,active,2026-08-15T20:12:44.767762
+ACC61076366,Jack Anderson,jack.anderson@moneytrace.dev,200003.92,active,2026-08-15T20:12:44.767760
+ACC15211290,Henry Moore,henry.moore@moneytrace.dev,166549.87,active,2026-08-15T20:12:44.767758
+ACC82456100,Ivy Taylor,ivy.taylor@moneytrace.dev,115120.04,active,2026-08-15T20:12:44.767758
+ACC91181015,Grace Wilson,grace.wilson@moneytrace.dev,440213.23,active,2026-08-15T20:12:44.767757
+ACC72717142,Frank Miller,frank.miller@moneytrace.dev,131151.27,active,2026-08-15T20:12:44.767756
+ACC64246741,Eva Davis,eva.davis@moneytrace.dev,403629.43,active,2026-08-15T20:12:44.767755
+ACC11706152,David Brown,david.brown@moneytrace.dev,340784.78,active,2026-08-15T20:12:44.767754
+ACC75385116,Carol Williams,carol.williams@moneytrace.dev,411622.18,active,2026-08-15T20:12:44.767753
+ACC15373430,Bob Smith,bob.smith@moneytrace.dev,124479.11,active,2026-08-15T20:12:44.767751
+ACC20858654,Alice Johnson,alice.johnson@moneytrace.dev,78206.15,active,2026-08-15T20:12:44.767750
+ACC43249524,Investigator User,investigator@moneytrace.dev,100000.0,active,2026-08-15T20:12:44.767749
+ACC16314613,Admin User,admin@moneytrace.dev,100000.0,active,2026-08-15T20:12:44.767745
+ACC1003,Aman Verma,aman@moneytrace.dev,320000.0,active,2026-08-15T05:41:25.150983
+ACC50081547,High Risk Mule User,mule_776@moneytrace.dev,5000.0,active,2026-08-15T05:14:06.986175
+ACC43907404,High Risk Mule User,mule_566@moneytrace.dev,5000.0,active,2026-08-15T05:11:49.041985
+ACC1002,Sneha Patel,sneha@moneytrace.dev,180000.0,active,2026-08-14T05:41:25.150959
+ACC97828025,Suspicious New Customer,suspicious_new_793@moneytrace.dev,250000.0,active,2026-08-14T05:14:06.537308
+ACC92107699,Suspicious New Customer,suspicious_new_312@moneytrace.dev,250000.0,active,2026-08-14T05:11:48.594691
+ACC70103438,Target Account User,drain_target_573@moneytrace.dev,10000.0,active,2026-07-17T05:14:06.764781
+ACC57224534,Target Account User,drain_target_568@moneytrace.dev,10000.0,active,2026-07-17T05:11:48.827097

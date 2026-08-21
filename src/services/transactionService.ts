@@ -97,7 +97,7 @@ export const transactionService = {
    * Export transactions
    */
   async exportTransactions(params: TransactionHistoryParams, format: 'csv' | 'excel' = 'csv'): Promise<Blob> {
-    const response = await api.get(`${TRANSACTION_BASE}/export`, {
+    const response = await api.get<Blob>(`${TRANSACTION_BASE}/export`, {
       params: { ...params, format },
       responseType: 'blob',
     });

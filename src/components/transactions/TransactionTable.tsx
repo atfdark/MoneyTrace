@@ -226,7 +226,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           <tbody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => <TableRowSkeleton key={i} columns={columns.length} />)
-            ) : data?.transactions?.length === 0 ? (
+            ) : ((data as any)?.transactions || (data as any)?.data?.transactions || []).length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="p-8 text-center text-on-surface-variant">
                   <span className="material-symbols-outlined text-outline-variant text-[48px] block mb-2">receipt_long</span>
@@ -242,7 +242,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                 </td>
               </tr>
             ) : (
-              data?.transactions?.map((tx: any) => (
+              ((data as any)?.transactions || (data as any)?.data?.transactions || []).map((tx: any) => (
                 <tr
                   key={tx.id}
                   className="border-t border-outline-variant/20 hover:bg-surface-container/50 transition-colors cursor-pointer"
@@ -263,10 +263,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       {/* Pagination */}
       {data && !isLoading && (
         <Pagination
-          currentPage={data.page}
-          totalPages={data.total_pages}
-          totalItems={data.total}
-          pageSize={data.page_size}
+          currentPage={(data as any)?.page || (data as any)?.data?.page || 1}
+          totalPages={(data as any)?.total_pages || (data as any)?.data?.total_pages || 1}
+          totalItems={(data as any)?.total || (data as any)?.data?.total || 0}
+          pageSize={(data as any)?.page_size || (data as any)?.data?.page_size || 25}
           onPageChange={(page) => setFilters({ page })}
           onPageSizeChange={(size) => setFilters({ page: 1, limit: size })}
         />

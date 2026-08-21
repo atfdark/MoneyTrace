@@ -45,13 +45,15 @@ function getBezierControlPoint(
 
 function getBezierPoint(
   p0: { x: number; y: number },
-  p1: { x: number; y: number },
+  p1: { x?: number; y?: number; cx?: number; cy?: number },
   p2: { x: number; y: number },
   t: number
 ) {
+  const p1x = p1.x ?? p1.cx ?? 0;
+  const p1y = p1.y ?? p1.cy ?? 0;
   const invT = 1 - t;
-  const x = invT * invT * p0.x + 2 * invT * t * p1.x + t * t * p2.x;
-  const y = invT * invT * p0.y + 2 * invT * t * p1.y + t * t * p2.y;
+  const x = invT * invT * p0.x + 2 * invT * t * p1x + t * t * p2.x;
+  const y = invT * invT * p0.y + 2 * invT * t * p1y + t * t * p2.y;
   return { x, y };
 }
 
@@ -225,7 +227,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
     onTransformChange({ x: nextX, y: nextY, zoom: nextZoom });
   };
 
-  /* ─────────────────────── Canvas Money Packets System ─────────────────────── */
+  /* ─────────────────────── Canvas Money Packets System (High Perf) ─────────────────────── */
   const particlesRef = useRef<Array<{
     source: string;
     target: string;
@@ -235,36 +237,47 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
     size: number;
     amount: number;
     curveOffset: number;
+    isLarge: boolean;
   }>>([]);
 
   useEffect(() => {
-    // Generate money packet particles along visible edges
+    // Generate money packet particles along visible edges (budget capped for 60-120 FPS)
     const particles: typeof particlesRef.current = [];
-    visibleEdges.forEach((e, idx) => {
+    const maxParticles = 30;
+    let budget = maxParticles;
+
+    visibleEdges.slice(0, 20).forEach((e, idx) => {
+      if (budget <= 0) return;
       const isTraced = traceHighlight.has(e.source) && traceHighlight.has(e.target);
-      const isHighRisk = e.maxRisk >= 75;
-      const count = isTraced ? 5 : isHighRisk ? 3 : Math.min(Math.ceil(e.count / 2), 3);
+      const isLarge = e.totalAmount >= 80000;
+      const count = isTraced ? 3 : isLarge ? 2 : 1;
+      
       const color = isTraced
         ? '#C084FC'
         : e.maxRisk >= 75
         ? '#EF4444'
         : e.maxRisk >= 45
         ? '#F97316'
+        : isLarge
+        ? '#38BDF8'
         : '#22C55E';
 
       const curveOffset = (idx % 2 === 0 ? 1 : -1) * (20 + (idx % 3) * 12);
+      const baseSize = isLarge ? 5.5 : isTraced ? 4.5 : 3.2;
 
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < count && budget > 0; i++) {
         particles.push({
           source: e.source,
           target: e.target,
-          t: (i / count + Math.random() * 0.2) % 1,
-          speed: isTraced ? 0.008 : 0.003 + (e.maxRisk / 100) * 0.004,
+          t: (i / count + Math.random() * 0.3) % 1,
+          speed: isTraced ? 0.009 : isLarge ? 0.006 : 0.0035 + (e.maxRisk / 100) * 0.003,
           color,
-          size: isTraced ? 4.5 : Math.max(3, Math.min(6, Math.log10(e.totalAmount + 1))),
+          size: baseSize,
           amount: e.totalAmount,
           curveOffset,
+          isLarge,
         });
+        budget--;
       }
     });
     particlesRef.current = particles;
@@ -278,14 +291,14 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
       if (!running) return;
       const canvas = canvasRef.current;
       if (canvas) {
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: true });
         if (ctx) {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.save();
           ctx.translate(transform.x, transform.y);
           ctx.scale(transform.zoom, transform.zoom);
 
-          // Render moving money packets
+          // Fast render moving money packets with high-glow aura
           for (const p of particlesRef.current) {
             const sn = nodeMap.get(p.source);
             const tn = nodeMap.get(p.target);
@@ -297,22 +310,26 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
             const ctrl = getBezierControlPoint(sn.x, sn.y, tn.x, tn.y, p.curveOffset);
             const pt = getBezierPoint(sn, ctrl, tn, p.t);
 
-            // Glow aura
+            // Outer Aura
             ctx.beginPath();
-            ctx.arc(pt.x, pt.y, p.size * 2.2, 0, Math.PI * 2);
+            ctx.arc(pt.x, pt.y, p.isLarge ? p.size * 3.2 : p.size * 2.2, 0, Math.PI * 2);
             ctx.fillStyle = p.color;
-            ctx.globalAlpha = 0.25;
+            ctx.globalAlpha = p.isLarge ? 0.45 : 0.25;
             ctx.fill();
 
-            // Core packet
+            // Inner Core Packet
             ctx.beginPath();
             ctx.arc(pt.x, pt.y, p.size, 0, Math.PI * 2);
-            ctx.fillStyle = p.color;
+            ctx.fillStyle = p.isLarge ? '#FFFFFF' : p.color;
             ctx.globalAlpha = 0.95;
-            ctx.shadowBlur = 12;
-            ctx.shadowColor = p.color;
             ctx.fill();
-            ctx.shadowBlur = 0;
+
+            // Core border
+            if (p.isLarge) {
+              ctx.lineWidth = 1.5;
+              ctx.strokeStyle = p.color;
+              ctx.stroke();
+            }
           }
 
           ctx.restore();
@@ -415,57 +432,60 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
         </defs>
 
         <g transform={`translate(${transform.x}, ${transform.y}) scale(${transform.zoom})`}>
-          {/* 1. Laundering Ring Highlight Loops */}
-          {cycles.map((cycle, cIdx) => {
-            if (cycle.length < 2) return null;
-            const cycleNodes = cycle.map(id => nodeMap.get(id)).filter(Boolean) as LayoutResultNode[];
-            if (cycleNodes.length < 2) return null;
+          {/* 1. Laundering Ring Highlight Loop (Only render for selected or focused cycle) */}
+          {cycles.length > 0 && (
+            (() => {
+              // Only render the highlighted cycle, or at most the 1st cycle if highlighted
+              const activeCycle = highlightedCycle || (cycles.length > 0 ? cycles[0] : null);
+              if (!activeCycle || activeCycle.length < 2) return null;
 
-            // Center of cycle
-            const avgX = cycleNodes.reduce((s, n) => s + n.x, 0) / cycleNodes.length;
-            const avgY = cycleNodes.reduce((s, n) => s + n.y, 0) / cycleNodes.length;
-            const maxDist = Math.max(...cycleNodes.map(n => Math.hypot(n.x - avgX, n.y - avgY)), 80);
+              const cycleNodes = activeCycle.map(id => nodeMap.get(id)).filter(Boolean) as LayoutResultNode[];
+              if (cycleNodes.length < 2) return null;
 
-            const isSelectedRing = highlightedCycle && highlightedCycle.every((id, i) => cycle[i] === id);
+              const avgX = cycleNodes.reduce((s, n) => s + n.x, 0) / cycleNodes.length;
+              const avgY = cycleNodes.reduce((s, n) => s + n.y, 0) / cycleNodes.length;
+              const maxDist = Math.max(...cycleNodes.map(n => Math.hypot(n.x - avgX, n.y - avgY)), 70);
 
-            return (
-              <g key={`cycle-ring-${cIdx}`} className="transition-all duration-300">
-                <circle
-                  cx={avgX}
-                  cy={avgY}
-                  r={maxDist + 50}
-                  fill={isSelectedRing ? 'rgba(239, 68, 68, 0.08)' : 'rgba(239, 68, 68, 0.03)'}
-                  stroke="#EF4444"
-                  strokeWidth={isSelectedRing ? 2.5 : 1.2}
-                  strokeDasharray="8 6"
-                  className="animate-spin"
-                  style={{ transformOrigin: `${avgX}px ${avgY}px`, animationDuration: '24s' }}
-                />
-                {/* Ring Tag */}
-                <rect
-                  x={avgX - 85}
-                  y={avgY - maxDist - 65}
-                  width="170"
-                  height="22"
-                  rx="11"
-                  fill="#7F1D1D"
-                  stroke="#EF4444"
-                  strokeWidth="1"
-                />
-                <text
-                  x={avgX}
-                  y={avgY - maxDist - 50}
-                  textAnchor="middle"
-                  fill="#FEE2E2"
-                  fontSize="9"
-                  fontWeight="bold"
-                  letterSpacing="0.05em"
-                >
-                  🚨 LAUNDERING RING #{cIdx + 1}
-                </text>
-              </g>
-            );
-          })}
+              return (
+                <g key="focused-cycle-ring" className="transition-opacity duration-300">
+                  <circle
+                    cx={avgX}
+                    cy={avgY}
+                    r={maxDist + 35}
+                    fill="rgba(239, 68, 68, 0.04)"
+                    stroke="#EF4444"
+                    strokeWidth={highlightedCycle ? 2 : 1}
+                    strokeDasharray="6 4"
+                    strokeOpacity={0.6}
+                  />
+                  {highlightedCycle && (
+                    <g transform={`translate(${avgX}, ${avgY - maxDist - 45})`}>
+                      <rect
+                        x="-70"
+                        y="-10"
+                        width="140"
+                        height="20"
+                        rx="10"
+                        fill="#7F1D1D"
+                        stroke="#EF4444"
+                        strokeWidth="1"
+                      />
+                      <text
+                        textAnchor="middle"
+                        y="3.5"
+                        fill="#FEE2E2"
+                        fontSize="9"
+                        fontWeight="bold"
+                        letterSpacing="0.05em"
+                      >
+                        🚨 LAUNDERING RING
+                      </text>
+                    </g>
+                  )}
+                </g>
+              );
+            })()
+          )}
 
           {/* 2. Transaction Edges (Quadratic Bezier Curves) */}
           {visibleEdges.map((e, idx) => {
@@ -623,80 +643,107 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
                 />
               )}
 
-              {/* Main Node Card Container */}
-              <div
-                className={`relative flex flex-col rounded-xl p-2.5 backdrop-blur-md transition-all duration-200 ${
-                  isSelected
-                    ? 'ring-2 ring-purple-400 scale-105 shadow-2xl bg-[#0F172A]'
-                    : isHovered
-                    ? 'scale-105 shadow-xl bg-[#1E293B]/95'
-                    : 'bg-[#0F172A]/90 shadow-lg hover:border-slate-500'
-                }`}
-                style={{
-                  minWidth: '135px',
-                  maxWidth: '160px',
-                  border: `1.5px solid ${isTraced ? '#A855F7' : isSelected ? '#38BDF8' : theme.border}`,
-                  boxShadow: isSelected || isTraced ? `0 0 20px ${theme.glow}` : undefined,
-                }}
-              >
-                {/* Top Row: Icon + Classification Label */}
-                <div className="flex items-center gap-2 mb-1.5">
+              {/* Main Node Card Container with LOD */}
+              {transform.zoom < 0.65 ? (
+                <div
+                  className={`relative flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-md transition-all duration-150 ${
+                    isSelected
+                      ? 'ring-2 ring-purple-400 shadow-xl bg-[#0F172A]'
+                      : isHovered
+                      ? 'shadow-lg bg-[#1E293B]'
+                      : 'bg-[#0F172A]/90 shadow-md'
+                  }`}
+                  style={{
+                    border: `1.5px solid ${isTraced ? '#A855F7' : isSelected ? '#38BDF8' : theme.border}`,
+                  }}
+                >
                   <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-md"
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-white flex-shrink-0 text-[10px]"
                     style={{ backgroundColor: theme.bg }}
                   >
-                    <span className="material-symbols-outlined text-base">{theme.icon}</span>
+                    <span className="material-symbols-outlined text-[13px]">{theme.icon}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-bold text-white truncate font-mono">{n.id}</p>
-                    <span
-                      className="text-[8px] font-extrabold uppercase tracking-wider block truncate"
-                      style={{ color: theme.border }}
+                  <span className="text-[10px] font-bold text-white font-mono truncate max-w-[80px]">{n.id}</span>
+                </div>
+              ) : (
+                <div
+                  className={`relative flex flex-col rounded-xl p-2.5 backdrop-blur-md transition-all duration-200 ${
+                    isSelected
+                      ? 'ring-2 ring-purple-400 scale-105 shadow-2xl bg-[#0F172A]'
+                      : isHovered
+                      ? 'scale-105 shadow-xl bg-[#1E293B]/95'
+                      : 'bg-[#0F172A]/90 shadow-lg hover:border-slate-500'
+                  }`}
+                  style={{
+                    minWidth: '135px',
+                    maxWidth: '160px',
+                    border: `1.5px solid ${isTraced ? '#A855F7' : isSelected ? '#38BDF8' : theme.border}`,
+                    boxShadow: isSelected || isTraced ? `0 0 20px ${theme.glow}` : undefined,
+                  }}
+                >
+                  {/* Top Row: Icon + Classification Label */}
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-md"
+                      style={{ backgroundColor: theme.bg }}
                     >
-                      {theme.label.split('/')[0]}
+                      <span className="material-symbols-outlined text-base">{theme.icon}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold text-white truncate font-mono">{n.id}</p>
+                      <span
+                        className="text-[8px] font-extrabold uppercase tracking-wider block truncate"
+                        style={{ color: theme.border }}
+                      >
+                        {theme.label.split('/')[0]}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Holder Name */}
+                  {n.user_name && (
+                    <p className="text-[9px] text-slate-300 font-medium truncate mb-1">
+                      {n.user_name}
+                    </p>
+                  )}
+
+                  {/* Balance & Risk Score */}
+                  <div className="flex items-center justify-between text-[9px] pt-1 border-t border-slate-800">
+                    <span className="text-slate-400 font-mono">
+                      {formatCurrency(n.balance ?? 0)}
+                    </span>
+                    <span
+                      className={`font-mono font-bold px-1.5 py-0.5 rounded text-[8px] ${
+                        (n.risk_score ?? 0) >= 75
+                          ? 'bg-red-500/20 text-red-400'
+                          : (n.risk_score ?? 0) >= 45
+                          ? 'bg-orange-500/20 text-orange-400'
+                          : 'bg-emerald-500/20 text-emerald-400'
+                      }`}
+                    >
+                      {n.risk_score ?? 0}%
                     </span>
                   </div>
+
+                  {/* Badges */}
+                  {badges.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {badges.map(b => {
+                        const cfg = BADGE_CONFIG[b];
+                        if (!cfg) return null;
+                        return (
+                          <span
+                            key={b}
+                            className={`text-[7.5px] font-bold px-1.5 py-0.5 rounded border ${cfg.bg} ${cfg.text} leading-none`}
+                          >
+                            {cfg.label}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-
-                {/* Holder Name */}
-                {n.user_name && (
-                  <p className="text-[9px] text-slate-300 font-medium truncate mb-1">
-                    {n.user_name}
-                  </p>
-                )}
-
-                {/* Balance & Risk Score */}
-                <div className="flex items-center justify-between text-[9px] pt-1 border-t border-slate-800">
-                  <span className="text-slate-400 font-mono">
-                    {formatCurrency(n.balance ?? 0)}
-                  </span>
-                  <span
-                    className={`font-mono font-bold px-1.5 py-0.5 rounded text-[8px] ${
-                      (n.risk_score ?? 0) >= 75
-                        ? 'bg-red-500/20 text-red-400'
-                        : (n.risk_score ?? 0) >= 40
-                        ? 'bg-orange-500/20 text-orange-400'
-                        : 'bg-green-500/20 text-green-400'
-                    }`}
-                  >
-                    {n.risk_score ?? 0}%
-                  </span>
-                </div>
-
-                {/* Badges Container */}
-                {badges.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1.5">
-                    {badges.map(b => (
-                      <span
-                        key={b}
-                        className={`text-[7px] font-bold uppercase tracking-wider px-1 py-0.2 rounded border ${BADGE_CONFIG[b]?.bg} ${BADGE_CONFIG[b]?.text}`}
-                      >
-                        {BADGE_CONFIG[b]?.label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
+              )}
             </div>
           );
         })}

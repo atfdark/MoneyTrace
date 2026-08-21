@@ -33,25 +33,25 @@ export const Transactions: React.FC = () => {
         <div className="glass-panel rounded-xl p-4">
           <p className="font-label-caps text-label-caps text-on-surface-variant">Total Transactions</p>
           <p className="font-headline-lg text-headline-lg text-on-surface mt-1 tabular-nums">
-            {data?.total?.toLocaleString() || '—'}
+            {(data as any)?.total?.toLocaleString() || '—'}
           </p>
         </div>
         <div className="glass-panel rounded-xl p-4">
           <p className="font-label-caps text-label-caps text-on-surface-variant">Total Volume</p>
           <p className="font-headline-lg text-headline-lg text-on-surface mt-1 tabular-nums">
-            {data?.total_volume ? `$${(data.total_volume / 1e6).toFixed(1)}M` : '—'}
+            {(data as any)?.total_volume ? `₹${((data as any).total_volume / 1e6).toFixed(1)}M` : '—'}
           </p>
         </div>
         <div className="glass-panel rounded-xl p-4">
           <p className="font-label-caps text-label-caps text-on-surface-variant">Flagged</p>
           <p className="font-headline-lg text-headline-lg text-error mt-1 tabular-nums">
-            {data?.flagged_count || 0}
+            {(data as any)?.flagged_count || 0}
           </p>
         </div>
         <div className="glass-panel rounded-xl p-4">
           <p className="font-label-caps text-label-caps text-on-surface-variant">Avg Risk Score</p>
           <p className="font-headline-lg text-headline-lg text-warning mt-1 tabular-nums">
-            {data?.avg_risk_score || 0}%
+            {(data as any)?.avg_risk_score || 0}%
           </p>
         </div>
       </div>
@@ -71,7 +71,7 @@ export const Transactions: React.FC = () => {
         <div className="glass-panel rounded-xl p-6 text-center">
           <span className="material-symbols-outlined text-error text-[48px] block mb-2">error</span>
           <h3 className="font-headline-md text-headline-md text-on-surface mb-1">Failed to load transactions</h3>
-          <p className="font-body-md text-on-surface-variant mb-4">{error}</p>
+          <p className="font-body-md text-on-surface-variant mb-4">{(error as any)?.message || String(error)}</p>
           <button onClick={() => refetch()} className="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-body-sm font-medium hover:bg-secondary-container/80 transition-colors">
             Try Again
           </button>

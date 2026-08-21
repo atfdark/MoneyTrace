@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLogout } from '../../hooks/useAuth';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
@@ -15,7 +16,8 @@ const navigation = [
 
 export const Sidebar: React.FC = () => {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const logoutMutation = useLogout();
 
   return (
     <aside className="fixed left-0 top-0 h-full w-64 glass-panel border-r border-outline-variant/20 flex flex-col z-40 lg:w-64 transition-all duration-300">
@@ -71,7 +73,7 @@ export const Sidebar: React.FC = () => {
           </div>
         )}
         <button
-          onClick={logout}
+          onClick={() => logoutMutation.mutate()}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-body-sm text-body-sm text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all duration-200"
         >
           <span className="material-symbols-outlined text-[20px]">logout</span>

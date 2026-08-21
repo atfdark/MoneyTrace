@@ -45,8 +45,8 @@ class RegisterRequest(BaseModel):
 
 class LoginRequest(BaseModel):
     """Payload for POST /auth/login."""
-    email: EmailStr
-    password: str
+    email: str = Field(..., min_length=1, description="Email address, username, or account number")
+    password: str = Field(..., min_length=1)
     # Optional — used to return a longer-lived token
     remember_me: bool = False
 

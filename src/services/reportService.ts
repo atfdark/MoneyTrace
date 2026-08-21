@@ -43,7 +43,7 @@ export const reportService = {
    * Download report
    */
   async downloadReport(id: string): Promise<Blob> {
-    const response = await api.get(`${REPORT_BASE}/${id}/download`, {
+    const response = await api.get<Blob>(`${REPORT_BASE}/${id}/download`, {
       responseType: 'blob',
     });
     return response.data;

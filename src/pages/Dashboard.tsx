@@ -3,18 +3,35 @@ import { Link } from 'react-router-dom';
 import { useDashboardStats, useRecentTransactions, useRecentAlerts } from '../hooks/useDashboard';
 import { useUser } from '../hooks/useAuth';
 import { StatCard } from '../components/dashboard/StatCard';
-import { TransactionTable } from '../components/transactions/TransactionTable';
-import { AlertCard } from '../components/alerts/AlertCard';
 import { LoadingSpinner, StatCardSkeleton } from '../components/common/LoadingSpinner';
 import { formatCurrency, formatDate } from '../utils/formatters';
 
+// Live Operations & Demo Widgets
+import { LiveTicker } from '../components/dashboard/LiveTicker';
+import { ThreatRadarWidget } from '../components/dashboard/ThreatRadarWidget';
+import { ActiveUsersWidget } from '../components/dashboard/ActiveUsersWidget';
+import { FraudGeoHeatmap } from '../components/dashboard/FraudGeoHeatmap';
+import { LiveRecoveryTracker } from '../components/dashboard/LiveRecoveryTracker';
+import { DemoControlPanel } from '../components/dashboard/DemoControlPanel';
+import { EmergencyInvestigationOverlay } from '../components/alerts/EmergencyInvestigationOverlay';
+import { ToastCenter } from '../components/common/ToastCenter';
+
 export const Dashboard: React.FC = () => {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
-  const { data: recentTransactions, isLoading: txLoading } = useRecentTransactions(5);
+  const { data: recentTransactions, isLoading: txLoading } = useRecentTransactions(6);
   const { data: recentAlerts, isLoading: alertsLoading } = useRecentAlerts(5);
-  const { data: user } = useUser();
+  const { data: userData } = useUser();
+  const user = (userData as any)?.data || userData;
 
-  const statCards = [
+  const statCards: Array<{
+    title: string;
+    value: number;
+    format: 'currency' | 'number' | 'percent';
+    change?: number;
+    changeLabel: string;
+    icon: string;
+    color: 'error' | 'warning' | 'secondary' | 'success' | 'primary';
+  }> = [
     {
       title: 'Total Volume',
       value: stats?.total_volume || 0,
@@ -54,40 +71,60 @@ export const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6 animate-in fade-in">
-      {/* Welcome Section */}
-      <div className="glass-panel rounded-xl p-6 lg:p-8">
+    <div className="space-y-5 animate-in fade-in pb-12">
+      {/* ───── Toast Center & Emergency Investigation Siren Overlay ───── */}
+      <ToastCenter />
+      <EmergencyInvestigationOverlay />
+
+      {/* ───── 1. Live Continuous Scrolling Ticker ───── */}
+      <LiveTicker />
+
+      {/* ───── 2. Welcome & Command Center Header ───── */}
+      <div className="glass-panel bg-[#0A0E1A]/90 border border-slate-800 rounded-3xl p-6 lg:p-7 shadow-2xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <h1 className="font-headline-lg text-headline-lg text-on-surface">
-              Welcome back, {user?.full_name?.split(' ')[0] || 'Analyst'}
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-400">
+                SOC COMMAND CENTER ACTIVE • 20 NODES ONLINE
+              </span>
+            </div>
+            <h1 className="text-xl lg:text-2xl font-black text-white">
+              Welcome, {user?.full_name?.split(' ')[0] || 'Investigator'}
             </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-              Here's your financial crime intelligence overview
+            <p className="text-xs text-slate-400">
+              Live multi-node banking telemetry, automated fraud scoring, and asset recovery
             </p>
           </div>
-          <div className="flex items-center gap-3 lg:ml-auto">
+
+          <div className="flex items-center gap-2.5 lg:ml-auto">
             <Link
-              to="/reports/new"
-              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-body-sm font-medium hover:bg-secondary-container/80 transition-colors"
+              to="/flow"
+              className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold rounded-2xl text-xs shadow-lg shadow-purple-900/40 flex items-center gap-1.5 transition-all"
             >
-              <span className="material-symbols-outlined">add</span>
-              New Report
+              <span className="material-symbols-outlined text-base">route</span>
+              Live Flow Visualizer
             </Link>
             <Link
-              to="/investigation/new"
-              className="flex items-center gap-2 px-4 py-2 glass-panel border border-outline-variant/50 text-on-surface rounded-lg font-body-sm font-medium hover:bg-surface-container-high transition-colors"
+              to="/alerts"
+              className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold rounded-2xl text-xs flex items-center gap-1.5 transition-colors"
             >
-              <span className="material-symbols-outlined">add</span>
-              New Case
+              <span className="material-symbols-outlined text-base text-rose-400">gpp_bad</span>
+              Alert Center
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Stat Cards */}
+      {/* ───── 3. Live Threat Radar & Active Users Telemetry Row ───── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ThreatRadarWidget />
+        <ActiveUsersWidget />
+      </div>
+
+      {/* ───── 4. KPI Stat Cards Row ───── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat, index) => (
+        {statCards.map((stat) => (
           <StatCard
             key={stat.title}
             {...stat}
@@ -99,297 +136,213 @@ export const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Charts Row */}
+      {/* ───── 5. Live Recovery & Regional Heatmap Row ───── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Transaction Volume Chart */}
-        <div className="glass-panel rounded-xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-headline-md text-headline-md text-on-surface">Transaction Volume</h2>
-            <select defaultValue="7d" className="bg-surface-container border border-outline-variant/50 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50">
-              <option value="24h">Last 24 Hours</option>
-              <option value="7d">Last 7 Days</option>
-              <option value="30d">Last 30 Days</option>
-              <option value="90d">Last 90 Days</option>
-            </select>
-          </div>
-          <div className="h-64 flex items-end justify-center gap-2" style={{ height: '256px' }}>
-            {stats?.volume_chart_data?.map((point, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center justify-end min-w-0">
-                <div
-                  className="w-full bg-secondary rounded-t transition-all duration-300 hover:bg-secondary-container"
-                  style={{
-                    height: `${Math.max(4, (point.value / Math.max(...stats.volume_chart_data.map(d => d.value))) * 100)}%`,
-                    minHeight: '4px',
-                  }}
-                  title={`${formatCurrency(point.value)} on ${formatDate(point.date)}`}
-                />
-                <span className="font-body-xs text-body-xs text-on-surface-variant mt-2 text-center whitespace-nowrap">
-                  {formatDate(point.date, 'MMM d')}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Alert Severity Distribution */}
-        <div className="glass-panel rounded-xl p-6">
-          <h2 className="font-headline-md text-headline-md text-on-surface mb-4">Alert Severity Distribution</h2>
-          <div className="h-64 flex items-center justify-center gap-8">
-            {/* Donut Chart Placeholder */}
-            <div className="relative w-48 h-48 flex items-center justify-center">
-              <svg width="192" height="192" viewBox="0 0 192 192">
-                <circle
-                  cx="96"
-                  cy="96"
-                  r="70"
-                  stroke="#E8EAF6"
-                  strokeWidth="20"
-                  fill="none"
-                />
-                {stats?.alert_severity_data?.map((item, i) => {
-                  const total = stats.alert_severity_data.reduce((sum, d) => sum + d.value, 0);
-                  const percentage = item.value / total;
-                  const strokeDasharray = 2 * Math.PI * 70;
-                  const strokeDashoffset = strokeDasharray * (1 - percentage);
-                  const startAngle = stats.alert_severity_data
-                    .slice(0, i)
-                    .reduce((sum, d) => sum + (d.value / total) * 360, 0);
-                  return (
-                    <circle
-                      key={item.severity}
-                      cx="96"
-                      cy="96"
-                      r="70"
-                      stroke={item.color}
-                      strokeWidth="20"
-                      fill="none"
-                      strokeDasharray={strokeDasharray}
-                      strokeDashoffset={strokeDashoffset}
-                      transform={`rotate(${-90 + startAngle} 96 96)`}
-                      style={{ strokeLinecap: 'round' }}
-                    />
-                  );
-                })}
-              </svg>
-              <div className="absolute text-center">
-                <p className="font-headline-lg text-headline-lg text-on-surface">{stats?.active_alerts || 0}</p>
-                <p className="font-body-xs text-body-xs text-on-surface-variant">Total Alerts</p>
-              </div>
-            </div>
-
-            {/* Legend */}
-            <div className="flex flex-col gap-3">
-              {stats?.alert_severity_data?.map((item) => (
-                <div key={item.severity} className="flex items-center gap-3">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <div>
-                    <p className="font-body-sm text-body-sm text-on-surface capitalize">{item.severity}</p>
-                    <p className="font-body-xs text-body-xs text-on-surface-variant">
-                      {item.value} alerts
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <LiveRecoveryTracker />
+        <FraudGeoHeatmap />
       </div>
 
-      {/* Recent Activity Tables */}
+      {/* ───── 6. Demo Presentation Simulation Control Panel ───── */}
+      <DemoControlPanel />
+
+      {/* ───── 7. Recent Transactions & Alerts Tables ───── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Recent Transactions */}
-        <div className="glass-panel rounded-xl overflow-hidden">
-          <div className="p-4 border-b border-outline-variant/20 flex items-center justify-between">
-            <h2 className="font-headline-md text-headline-md text-on-surface">Recent Transactions</h2>
+        {/* Recent Transactions Table */}
+        <div className="glass-panel bg-[#0B1020]/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+          <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-purple-400 text-lg">receipt_long</span>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Recent Ingested Transactions
+              </h2>
+            </div>
             <Link
               to="/transactions"
-              className="font-label-caps text-label-caps text-secondary hover:text-secondary-container transition-colors"
+              className="text-[11px] font-bold text-purple-400 hover:text-purple-300 transition-colors"
             >
-              View All
+              View All Feed
             </Link>
           </div>
+
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-left">
               <thead>
-                <tr className="text-left text-on-surface-variant">
-                  <th className="p-4 font-label-caps text-label-caps">Hash</th>
-                  <th className="p-4 font-label-caps text-label-caps">Amount</th>
-                  <th className="p-4 font-label-caps text-label-caps">From / To</th>
-                  <th className="p-4 font-label-caps text-label-caps">Status</th>
-                  <th className="p-4 font-label-caps text-label-caps">Time</th>
+                <tr className="text-slate-400 border-b border-slate-800/60 text-[10px] uppercase font-bold tracking-wider">
+                  <th className="p-3.5">Hash / ID</th>
+                  <th className="p-3.5">Amount</th>
+                  <th className="p-3.5">Route</th>
+                  <th className="p-3.5">Risk</th>
+                  <th className="p-3.5">Time</th>
                 </tr>
               </thead>
-              <tbody>
-                {recentTransactions?.map((tx) => (
-                  <tr key={tx.id} className="border-t border-outline-variant/20 hover:bg-surface-container/50">
-                    <td className="p-4 font-mono text-body-sm text-on-surface-variant truncate max-w-[120px]">
-                      {tx.hash.slice(0, 12)}...
-                    </td>
-                    <td className="p-4 font-body-md text-body-md text-on-surface">
-                      {formatCurrency(tx.amount)}
-                    </td>
-                    <td className="p-4">
-                      <div className="font-body-sm text-body-sm text-on-surface truncate max-w-[150px]">
-                        {tx.from_address.slice(0, 10)}...
-                      </div>
-                      <div className="font-body-xs text-body-xs text-on-surface-variant truncate max-w-[150px]">
-                        → {tx.to_address.slice(0, 10)}...
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-0.5 rounded-full font-label-caps text-label-caps ${
-                          tx.status === 'confirmed'
-                            ? 'bg-success-container text-on-success-container'
-                            : tx.status === 'pending'
-                            ? 'bg-warning-container text-on-warning-container'
-                            : 'bg-error-container text-on-error-container'
-                        }`}
-                      >
-                        {tx.status}
-                      </span>
-                    </td>
-                    <td className="p-4 font-body-sm text-body-sm text-on-surface-variant">
-                      {formatDate(tx.timestamp, 'relative')}
-                    </td>
-                  </tr>
-                ))}
-                {txLoading && Array.from({ length: 3 }).map((_, i) => (
-                  <tr key={i}>
-                    <td colSpan={5} className="p-4">
-                      <div className="h-4 w-1/4 bg-surface-container-high rounded animate-pulse"></div>
-                    </td>
-                  </tr>
-                ))}
-                {!recentTransactions?.length && !txLoading && (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-on-surface-variant">
-                      No recent transactions
-                    </td>
-                  </tr>
-                )}
+              <tbody className="divide-y divide-slate-800/40 text-xs">
+                {recentTransactions?.map((tx: any) => {
+                  const isHigh = (tx.risk_score || 0) >= 50;
+                  return (
+                    <tr key={tx.id || tx.transaction_id} className="hover:bg-slate-900/50 transition-colors">
+                      <td className="p-3.5 font-mono text-[11px] text-slate-300 truncate max-w-[100px]">
+                        {tx.transaction_id || tx.hash || tx.id}
+                      </td>
+                      <td className="p-3.5 font-mono font-bold text-white">
+                        {formatCurrency(tx.amount)}
+                      </td>
+                      <td className="p-3.5 text-[11px] text-slate-300">
+                        <span className="font-mono text-blue-400">{tx.sender_account_number || tx.from_address || 'ACC1001'}</span>
+                        <span className="text-slate-500 mx-1">→</span>
+                        <span className="font-mono text-purple-400">{tx.receiver_account_number || tx.to_address || 'ACC1002'}</span>
+                      </td>
+                      <td className="p-3.5">
+                        <span
+                          className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-bold ${
+                            isHigh
+                              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                              : 'bg-emerald-500/20 text-emerald-400'
+                          }`}
+                        >
+                          {tx.risk_score ? `${tx.risk_score}%` : 'SAFE'}
+                        </span>
+                      </td>
+                      <td className="p-3.5 text-slate-400 text-[11px]">
+                        {formatDate(tx.timestamp || tx.created_at, 'relative')}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* Recent Alerts */}
-        <div className="glass-panel rounded-xl overflow-hidden">
-          <div className="p-4 border-b border-outline-variant/20 flex items-center justify-between">
-            <h2 className="font-headline-md text-headline-md text-on-surface">Recent Alerts</h2>
+        {/* Recent Alerts Feed */}
+        <div className="glass-panel bg-[#0B1020]/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+          <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-rose-400 text-lg">warning</span>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Live Fraud Alert Stream
+              </h2>
+            </div>
             <Link
               to="/alerts"
-              className="font-label-caps text-label-caps text-secondary hover:text-secondary-container transition-colors"
+              className="text-[11px] font-bold text-purple-400 hover:text-purple-300 transition-colors"
             >
-              View All
+              Alert Center
             </Link>
           </div>
-          <div className="divide-y divide-outline-variant/20">
-            {recentAlerts?.map((alert) => (
-              <Link
-                key={alert.id}
-                to={`/alerts/${alert.id}`}
-                className="p-4 hover:bg-surface-container/50 transition-colors flex items-center gap-4"
-              >
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    alert.severity === 'critical'
-                      ? 'bg-error-container text-error'
-                      : alert.severity === 'high'
-                      ? 'bg-warning-container text-warning'
-                      : 'bg-secondary-container text-secondary'
-                  }`}
+
+          <div className="divide-y divide-slate-800/40">
+            {recentAlerts?.map((alert: any) => {
+              const isCrit = alert.severity === 'critical' || alert.severity === 'CRITICAL';
+              const isHigh = alert.severity === 'high' || alert.severity === 'HIGH';
+
+              return (
+                <Link
+                  key={alert.id || alert.alert_id}
+                  to={`/alerts/${alert.id || alert.alert_id}`}
+                  className="p-3.5 hover:bg-slate-900/60 transition-colors flex items-center gap-3.5"
                 >
-                  <span className="material-symbols-outlined text-[20px]">warning</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-body-md text-body-md text-on-surface truncate">{alert.title}</p>
-                  <p className="font-body-xs text-body-xs text-on-surface-variant truncate">
-                    {alert.description}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span
-                    className={`px-2 py-0.5 rounded-full font-label-caps text-label-caps ${
-                      alert.severity === 'critical'
-                        ? 'bg-error-container text-on-error-container'
-                        : alert.severity === 'high'
-                        ? 'bg-warning-container text-on-warning-container'
-                        : 'bg-secondary-container text-on-secondary-container'
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      isCrit
+                        ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                        : isHigh
+                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                        : 'bg-blue-500/20 text-blue-400'
                     }`}
                   >
-                    {alert.severity}
-                  </span>
-                  <span className="font-body-xs text-body-xs text-on-surface-variant">
-                    {formatDate(alert.created_at, 'relative')}
-                  </span>
-                </div>
-              </Link>
-            ))}
-            {alertsLoading && Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="p-4 animate-pulse">
-                <div className="h-4 w-1/3 bg-surface-container-high rounded"></div>
-                <div className="h-3 w-1/2 bg-surface-container-high rounded mt-1"></div>
-              </div>
-            ))}
-            {!recentAlerts?.length && !alertsLoading && (
-              <div className="p-8 text-center text-on-surface-variant">
-                No recent alerts
-              </div>
-            )}
+                    <span className="material-symbols-outlined text-lg">
+                      {isCrit ? 'emergency' : 'warning'}
+                    </span>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-white truncate">
+                      {alert.alert_type || alert.title || 'Suspicious Transaction Funnel'}
+                    </p>
+                    <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                      {alert.description}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <span
+                      className={`px-2 py-0.5 rounded-md font-mono text-[9px] font-extrabold uppercase ${
+                        isCrit
+                          ? 'bg-rose-500/20 text-rose-300'
+                          : isHigh
+                          ? 'bg-amber-500/20 text-amber-300'
+                          : 'bg-blue-500/20 text-blue-300'
+                      }`}
+                    >
+                      {alert.severity}
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      {formatDate(alert.created_at, 'relative')}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="glass-panel rounded-xl p-6">
-        <h2 className="font-headline-md text-headline-md text-on-surface mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ───── 8. Quick Actions Bar ───── */}
+      <div className="glass-panel bg-[#080D1A]/80 border border-slate-800 rounded-3xl p-5 shadow-xl">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+          Forensic Investigation Actions
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Link
-            to="/transactions/new"
-            className="glass-panel border border-outline-variant/20 rounded-xl p-6 hover:border-secondary/50 hover:bg-surface-container-high transition-all duration-200 flex flex-col items-center text-center group"
+            to="/flow"
+            className="p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-purple-500/50 transition-all flex items-center gap-3 text-left group"
           >
-            <div className="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-secondary text-[28px]">add_circle</span>
+            <div className="w-10 h-10 rounded-xl bg-purple-600/20 flex items-center justify-center text-purple-400 group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-xl">account_tree</span>
             </div>
-            <h3 className="font-headline-sm text-headline-sm text-on-surface mt-4">Add Transaction</h3>
-            <p className="font-body-xs text-body-xs text-on-surface-variant mt-1">Record a new transaction</p>
+            <div>
+              <p className="text-xs font-bold text-white">Map Money Flow</p>
+              <p className="text-[10px] text-slate-400">Inspect graph nodes</p>
+            </div>
           </Link>
 
           <Link
-            to="/investigation/new"
-            className="glass-panel border border-outline-variant/20 rounded-xl p-6 hover:border-secondary/50 hover:bg-surface-container-high transition-all duration-200 flex flex-col items-center text-center group"
+            to="/recovery"
+            className="p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 transition-all flex items-center gap-3 text-left group"
           >
-            <div className="w-12 h-12 rounded-xl bg-warning-container flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-warning text-[28px]">search</span>
+            <div className="w-10 h-10 rounded-xl bg-emerald-600/20 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-xl">verified_user</span>
             </div>
-            <h3 className="font-headline-sm text-headline-sm text-on-surface mt-4">Start Investigation</h3>
-            <p className="font-body-xs text-body-xs text-on-surface-variant mt-1">Open a new case file</p>
+            <div>
+              <p className="text-xs font-bold text-white">Asset Recovery</p>
+              <p className="text-[10px] text-slate-400">Preservation scores</p>
+            </div>
           </Link>
 
           <Link
-            to="/flow/new"
-            className="glass-panel border border-outline-variant/20 rounded-xl p-6 hover:border-secondary/50 hover:bg-surface-container-high transition-all duration-200 flex flex-col items-center text-center group"
+            to="/chat"
+            className="p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-blue-500/50 transition-all flex items-center gap-3 text-left group"
           >
-            <div className="w-12 h-12 rounded-xl bg-success-container flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-success text-[28px]">account_tree</span>
+            <div className="w-10 h-10 rounded-xl bg-blue-600/20 flex items-center justify-center text-blue-400 group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-xl">psychology</span>
             </div>
-            <h3 className="font-headline-sm text-headline-sm text-on-surface mt-4">Map Money Flow</h3>
-            <p className="font-body-xs text-body-xs text-on-surface-variant mt-1">Visualize transaction networks</p>
+            <div>
+              <p className="text-xs font-bold text-white">AI Copilot Pro</p>
+              <p className="text-[10px] text-slate-400">Forensic reasoning</p>
+            </div>
           </Link>
 
           <Link
-            to="/reports/new"
-            className="glass-panel border border-outline-variant/20 rounded-xl p-6 hover:border-secondary/50 hover:bg-surface-container-high transition-all duration-200 flex flex-col items-center text-center group"
+            to="/reports"
+            className="p-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-rose-500/50 transition-all flex items-center gap-3 text-left group"
           >
-            <div className="w-12 h-12 rounded-xl bg-error-container flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined text-error text-[28px]">description</span>
+            <div className="w-10 h-10 rounded-xl bg-rose-600/20 flex items-center justify-center text-rose-400 group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-xl">description</span>
             </div>
-            <h3 className="font-headline-sm text-headline-sm text-on-surface mt-4">Generate Report</h3>
-            <p className="font-body-xs text-body-xs text-on-surface-variant mt-1">Create investigation report</p>
+            <div>
+              <p className="text-xs font-bold text-white">Court Dossiers</p>
+              <p className="text-[10px] text-slate-400">PDF, DOCX & Excel</p>
+            </div>
           </Link>
         </div>
       </div>

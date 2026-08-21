@@ -13,7 +13,7 @@ export interface User {
   updated_at: string;
 }
 
-export type UserRole = 'admin' | 'investigator' | 'analyst' | 'viewer';
+export type UserRole = 'admin' | 'investigator' | 'analyst' | 'viewer' | 'customer';
 
 export interface AuthTokens {
   access_token: string;

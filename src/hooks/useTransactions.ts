@@ -128,7 +128,7 @@ export const useTransactionFilters = () => {
 export const useSearch = () => {
   return useMutation({
     mutationFn: async (query: string) => {
-      const res = await transactionService.getHistory({ search: query, limit: 10 });
+      const res = await transactionService.getHistory({ search: query, limit: 10 } as any);
       return res.data?.transactions || [];
     },
   });

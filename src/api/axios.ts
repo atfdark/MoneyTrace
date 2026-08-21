@@ -143,7 +143,7 @@ apiClient.interceptors.response.use(
 
     // Transform error to ApiError
     if (error.response) {
-      return Promise.reject(ApiError.fromResponse(error.response, error.response.data));
+      return Promise.reject(ApiError.fromResponse(error.response as any, error.response.data));
     } else if (error.request) {
       return Promise.reject(ApiError.fromNetworkError(new Error('No response from server')));
     } else {

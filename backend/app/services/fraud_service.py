@@ -85,31 +85,51 @@ class FraudService:
                 await self.session.flush()
 
                 # Automatically evaluate Recovery Case (Phase 7)
+                rec_case_dict = None
                 try:
                     from app.services.recovery_service import RecoveryService
                     rec_service = RecoveryService(self.session)
                     rec_case = await rec_service.analyze_recovery(alert.alert_id)
-                    
-                    # Broadcast Recovery event
-                    from app.core.websocket import ws_manager
-                    await ws_manager.broadcast("RECOVERY_CASE_CREATED", {
+                    rec_case_dict = {
                         "case_id": rec_case.case_id,
                         "alert_id": alert.alert_id,
                         "recovery_score": rec_case.recovery_score,
                         "recovery_probability": rec_case.recovery_probability,
                         "current_holder_account": rec_case.current_holder_account,
-                        "amount_at_risk": rec_case.amount_at_risk,
+                        "amount_at_risk": float(rec_case.amount_at_risk or 0),
                         "recommended_action": rec_case.recommended_action,
                         "status": rec_case.status,
-                    })
+                    }
+                    
+                    # Broadcast Recovery event
+                    from app.core.websocket_events import ws_events_manager, WSEventTypes
+                    await ws_events_manager.broadcast(WSEventTypes.RECOVERY_CASE_CREATED, rec_case_dict)
                 except Exception as e:
                     # Non-fatal if recovery evaluation fails
                     pass
 
+                # Build AI Copilot Instant Forensic Summary
+                ai_summary = {
+                    "alert_id": alert.alert_id,
+                    "transaction_id": transaction.transaction_id,
+                    "amount": float(transaction.amount),
+                    "risk_score": alert.risk_score,
+                    "severity": alert.severity,
+                    "triggered_rules": result.triggered_rules,
+                    "summary_text": (
+                        f"CRITICAL ANOMALY: Transaction {transaction.transaction_id} of ₹{float(transaction.amount):,.2f} "
+                        f"triggered {len(result.triggered_rules)} fraud rules: {', '.join(result.triggered_rules)}. "
+                        f"Immediate inter-bank intervention recommended."
+                    ),
+                    "recommended_action": "Freeze Account & Issue Section 91 CrPC Notice",
+                    "recovery_score": rec_case_dict.get("recovery_score") if rec_case_dict else 75.0,
+                    "recovery_probability": rec_case_dict.get("recovery_probability") if rec_case_dict else "HIGH",
+                }
+
                 # Broadcast Fraud Alert event
                 try:
-                    from app.core.websocket import ws_manager
-                    await ws_manager.broadcast("FRAUD_ALERT_CREATED", {
+                    from app.core.websocket_events import ws_events_manager, WSEventTypes
+                    await ws_events_manager.broadcast(WSEventTypes.FRAUD_ALERT_CREATED, {
                         "alert_id": alert.alert_id,
                         "alert_type": alert.alert_type,
                         "risk_score": alert.risk_score,
@@ -117,8 +137,12 @@ class FraudService:
                         "description": alert.description,
                         "account_id": str(alert.account_id),
                         "transaction_id": str(alert.transaction_id),
+                        "transaction_code": transaction.transaction_id,
+                        "amount": float(transaction.amount),
+                        "rule_breakdown": alert.rule_breakdown,
                         "status": alert.status,
-                        "created_at": alert.created_at.isoformat() if alert.created_at else None,
+                        "created_at": alert.created_at.isoformat() if alert.created_at else datetime.now(timezone.utc).isoformat(),
+                        "ai_summary": ai_summary,
                     })
                 except Exception:
                     pass

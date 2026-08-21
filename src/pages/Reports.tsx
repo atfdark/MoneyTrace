@@ -19,8 +19,8 @@ export const Reports: React.FC = () => {
 
   const fetchHistory = async () => {
     try {
-      const res = await api.get('/reports/history');
-      setHistory(res.data.reports || []);
+      const res = await api.get<any>('/reports/history');
+      setHistory(res.data?.reports || []);
     } catch (err) {
       console.error('Error fetching report history:', err);
     }
@@ -33,7 +33,7 @@ export const Reports: React.FC = () => {
   const handleDownload = async (endpoint: string, fallbackFilename: string, btnKey: string) => {
     setIsGenerating(btnKey);
     try {
-      const res = await api.get(endpoint, { responseType: 'blob' });
+      const res = await api.get<Blob>(endpoint, { responseType: 'blob' });
       const blob = new Blob([res.data]);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');

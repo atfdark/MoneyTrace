@@ -14,6 +14,7 @@ from app.routes.api_v1.endpoints import (
     reports,
     assistant,
     users,
+    simulation,
 )
 
 api_router = APIRouter()
@@ -30,5 +31,6 @@ api_router.include_router(graph.router, tags=["graph"], prefix="/graph")
 api_router.include_router(recovery.router, tags=["recovery"], prefix="/recovery")
 api_router.include_router(reports.router, tags=["reports"], prefix="/reports")
 api_router.include_router(assistant.router, tags=["assistant"], prefix="/assistant")
+api_router.include_router(simulation.router, tags=["simulation"], prefix="/simulation")
 
 __all__ = ["api_router"]

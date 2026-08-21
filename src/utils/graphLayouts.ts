@@ -152,26 +152,26 @@ export function layoutForceDirected(
   rawEdges: RawEdge[],
   w: number,
   h: number,
-  iterations: number = 220
+  iterations: number = 80
 ): LayoutResultNode[] {
   if (rawNodes.length === 0) return [];
   const { inDeg, outDeg, inflow, outflow } = computeNodeStats(rawNodes, rawEdges);
   const cx = w / 2;
   const cy = h / 2;
 
-  // Node collision radius
-  const NODE_RADIUS = 95;
-  const REPULSION_K = 18000;
-  const SPRING_LENGTH = 160;
-  const SPRING_K = 0.05;
-  const CENTER_GRAVITY = 0.035;
-
-  // Initial circular seeding to break symmetry
+  // Node collision & repulsion constants tuned for optimal card spacing
   const count = rawNodes.length;
-  const radius = Math.min(w, h) * 0.38;
+  const NODE_RADIUS = 110;
+  const REPULSION_K = Math.max(85000, count * 3200);
+  const SPRING_LENGTH = 220;
+  const SPRING_K = 0.035;
+  const CENTER_GRAVITY = 0.005;
+
+  // Initial circular seeding with wide radius
+  const radius = Math.max(Math.min(w, h) * 0.42, 280);
   const nodes: LayoutResultNode[] = rawNodes.map((n, i) => {
     const angle = (i / count) * Math.PI * 2;
-    const jitter = (Math.random() - 0.5) * 40;
+    const jitter = (Math.random() - 0.5) * 60;
     return {
       ...n,
       x: cx + Math.cos(angle) * radius + jitter,
@@ -198,7 +198,7 @@ export function layoutForceDirected(
   for (let iter = 0; iter < iterations; iter++) {
     alpha += (0 - alpha) * alphaDecay;
 
-    // 1. Center gravity
+    // 1. Center gravity (gentle)
     for (const n of nodes) {
       n.vx += (cx - n.x) * CENTER_GRAVITY * alpha;
       n.vy += (cy - n.y) * CENTER_GRAVITY * alpha;
@@ -233,8 +233,8 @@ export function layoutForceDirected(
         const minDist = NODE_RADIUS * 2;
         if (dist < minDist) {
           const overlap = (minDist - dist) * 0.5;
-          const pushX = (dx / dist) * overlap * 0.8;
-          const pushY = (dy / dist) * overlap * 0.8;
+          const pushX = (dx / dist) * overlap * 0.9;
+          const pushY = (dy / dist) * overlap * 0.9;
           n1.x -= pushX;
           n1.y -= pushY;
           n2.x += pushX;
@@ -267,7 +267,7 @@ export function layoutForceDirected(
     }
 
     // 4. Update positions with velocity damping
-    const velocityDamping = 0.65;
+    const velocityDamping = 0.78;
     for (const n of nodes) {
       n.vx *= velocityDamping;
       n.vy *= velocityDamping;

@@ -65,11 +65,14 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
         } as any,
       });
 
+      const resAny = res as any;
       const reply =
-        res?.data?.response ||
-        res?.data?.message ||
-        (res as any)?.response ||
-        (res as any)?.message ||
+        resAny?.data?.answer ||
+        resAny?.data?.message?.content ||
+        resAny?.data?.response ||
+        resAny?.answer ||
+        resAny?.message?.content ||
+        resAny?.response ||
         'No detailed AI response returned from the server.';
 
       setMessages(prev => [

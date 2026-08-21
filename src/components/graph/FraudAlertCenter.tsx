@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { formatCurrency } from '../../utils/formatters';
 import { useCriticalAlerts } from '../../hooks/useAlerts';
+import { wsService } from '../../hooks/useWebSocket';
 
 export interface FraudNotification {
   id: string;
@@ -27,17 +28,40 @@ export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
 }) => {
   const { data: criticalData } = useCriticalAlerts(3);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [liveWebSocketAlerts, setLiveWebSocketAlerts] = useState<FraudNotification[]>([]);
+
+  // Subscribe to real-time FRAUD_ALERT_CREATED events
+  useEffect(() => {
+    const unsub = wsService.subscribe('FRAUD_ALERT_CREATED', (alertData: any) => {
+      const risk = Number(alertData.risk_score || 85);
+      const newAlert: FraudNotification = {
+        id: alertData.alert_id || `ws_alert_${Date.now()}`,
+        account: alertData.account_number || alertData.account_id || 'FLAGGED_ACCOUNT',
+        user_name: alertData.user_name || undefined,
+        amount: Number(alertData.amount || 0),
+        risk_score: risk,
+        rules_triggered: Array.isArray(alertData.triggered_rules)
+          ? alertData.triggered_rules
+          : [alertData.alert_type || alertData.description || 'Behavioral Fraud Pattern'],
+        recovery_probability: risk >= 85 ? 'LOW' : risk >= 60 ? 'MEDIUM' : 'HIGH',
+        timestamp: alertData.created_at || new Date().toISOString(),
+      };
+
+      setLiveWebSocketAlerts(prev => [newAlert, ...prev.filter(a => a.id !== newAlert.id)].slice(0, 3));
+    });
+
+    return () => unsub();
+  }, []);
 
   const activeAlerts: FraudNotification[] = useMemo(() => {
     const rawList = propAlerts || (criticalData as any)?.data || criticalData || [];
     const list = Array.isArray(rawList) ? rawList : (rawList?.items || []);
 
-    return list
+    const queryAlerts = list
       .filter((a: any) => {
         const id = String(a.id || a.alert_id || '');
         return id && !dismissedIds.has(id);
       })
-      .slice(0, 3)
       .map((a: any) => {
         const id = String(a.id || a.alert_id || `alert-${Math.random()}`);
         const risk = Number(a.risk_score || (a.severity === 'CRITICAL' ? 95 : a.severity === 'HIGH' ? 80 : 50));
@@ -61,10 +85,22 @@ export const FraudAlertCenter: React.FC<FraudAlertCenterProps> = ({
           timestamp: a.timestamp || a.created_at || new Date().toISOString(),
         };
       });
-  }, [propAlerts, criticalData, dismissedIds]);
+
+    // Merge WebSocket alerts first, then query alerts
+    const all = [...liveWebSocketAlerts, ...queryAlerts];
+    const uniqueMap = new Map<string, FraudNotification>();
+    all.forEach(item => {
+      if (!dismissedIds.has(item.id) && !uniqueMap.has(item.id)) {
+        uniqueMap.set(item.id, item);
+      }
+    });
+
+    return Array.from(uniqueMap.values()).slice(0, 3);
+  }, [propAlerts, criticalData, dismissedIds, liveWebSocketAlerts]);
 
   const dismissAlert = (id: string) => {
     setDismissedIds(prev => new Set([...prev, id]));
+    setLiveWebSocketAlerts(prev => prev.filter(a => a.id !== id));
   };
 
   if (activeAlerts.length === 0) return null;

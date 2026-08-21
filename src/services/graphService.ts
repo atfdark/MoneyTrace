@@ -58,7 +58,7 @@ export const graphService = {
    * Export graph data
    */
   async exportGraph(transactionId: string, format: 'json' | 'graphml' | 'csv' = 'json'): Promise<Blob> {
-    const response = await api.get(`${GRAPH_BASE}/${transactionId}/export`, {
+    const response = await api.get<Blob>(`${GRAPH_BASE}/${transactionId}/export`, {
       params: { format },
       responseType: 'blob',
     });

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopNav } from './TopNav';
+import { useLiveEvents } from '../../hooks/useWebSocket';
 
 interface AppLayoutProps {
   title?: string;
@@ -12,6 +13,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ title, subtitle }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Enable live WebSocket updates across investigator command center
+  useLiveEvents();
 
   // Check if mobile on mount and resize
   useEffect(() => {

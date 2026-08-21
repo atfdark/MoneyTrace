@@ -47,7 +47,7 @@ class GraphEngine:
         txn_stmt = (
             select(Transaction)
             .where(Transaction.status == TransactionStatus.COMPLETED.value)
-            .order_by(Transaction.timestamp.asc())
+            .order_by(Transaction.timestamp.desc())
             .limit(limit)
             .options(
                 selectinload(Transaction.sender_account).selectinload(Account.user),
@@ -180,6 +180,18 @@ class GraphEngine:
             current_timestamp = datetime.min.replace(tzinfo=timezone.utc)
             current_amount = 0.0
 
+        def _dt_val(dt):
+            if dt is None:
+                return datetime.min
+            if isinstance(dt, str):
+                try:
+                    dt = datetime.fromisoformat(dt)
+                except Exception:
+                    return datetime.min
+            if hasattr(dt, "tzinfo") and dt.tzinfo is not None:
+                return dt.astimezone(timezone.utc).replace(tzinfo=None)
+            return dt
+
         # Multi-hop forward tracking loop
         for hop_idx in range(len(hops) + 1, max_hops + 1):
             if not G.has_node(current_account):
@@ -194,18 +206,18 @@ class GraphEngine:
             valid_next_hops = []
             for u, v, k, data in out_edges:
                 e_time = data.get("timestamp")
-                if e_time and e_time >= current_timestamp and v not in visited_nodes and v != source_acc_num:
+                if e_time and _dt_val(e_time) >= _dt_val(current_timestamp) and v not in visited_nodes and v != source_acc_num:
                     valid_next_hops.append((u, v, k, data))
 
             if not valid_next_hops:
                 break
 
             # Sort by timestamp ascending (earliest next transfer)
-            valid_next_hops.sort(key=lambda x: x[3]["timestamp"])
+            valid_next_hops.sort(key=lambda x: _dt_val(x[3].get("timestamp")))
             next_u, next_v, next_k, next_data = valid_next_hops[0]
 
             # Calculate delay in seconds between hops
-            delay = (next_data["timestamp"] - current_timestamp).total_seconds() if current_timestamp != datetime.min.replace(tzinfo=timezone.utc) else 0.0
+            delay = (_dt_val(next_data["timestamp"]) - _dt_val(current_timestamp)).total_seconds() if _dt_val(current_timestamp) != datetime.min else 0.0
 
             if initial_amount == 0.0:
                 initial_amount = next_data["amount"]
@@ -363,9 +375,24 @@ class GraphEngine:
 
         # 1. Circular Chains (Cycles)
         simple_digraph = nx.DiGraph(G)
-        cycles = list(nx.simple_cycles(simple_digraph))
-        # Filter cycles of length >= 2
-        valid_cycles = [c + [c[0]] for c in cycles if len(c) >= 2 and len(c) <= 6]
+        valid_cycles = []
+        try:
+            for cycle in nx.simple_cycles(simple_digraph, length_bound=6):
+                if 2 <= len(cycle) <= 6:
+                    cycle_set = set(cycle)
+                    # Ensure distinct cycle (not just rotated permutation)
+                    if not any(set(vc[:-1]) == cycle_set for vc in valid_cycles):
+                        valid_cycles.append(cycle + [cycle[0]])
+                if len(valid_cycles) >= 5:
+                    break
+        except Exception:
+            for cycle in nx.simple_cycles(simple_digraph):
+                if 2 <= len(cycle) <= 6:
+                    cycle_set = set(cycle)
+                    if not any(set(vc[:-1]) == cycle_set for vc in valid_cycles):
+                        valid_cycles.append(cycle + [cycle[0]])
+                if len(valid_cycles) >= 5:
+                    break
 
         mule_accounts: List[GraphNode] = []
         collector_accounts: List[GraphNode] = []

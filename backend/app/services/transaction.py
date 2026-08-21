@@ -191,6 +191,40 @@ class TransactionService:
         await self.session.commit()
         await self.session.refresh(transaction)
 
+        # Broadcast live transaction event over WebSocket to investigator dashboards
+        try:
+            from app.core.websocket_events import ws_events_manager, WSEventTypes
+            
+            # Load user details for sender & receiver
+            await self.session.refresh(sender_account, ["user"])
+            await self.session.refresh(receiver_account, ["user"])
+            sender_name = sender_account.user.full_name if sender_account.user else sender_account.account_number
+            receiver_name = receiver_account.user.full_name if receiver_account.user else receiver_account.account_number
+
+            tx_payload = {
+                "id": transaction.transaction_id,
+                "transaction_id": transaction.transaction_id,
+                "source": sender_account.account_number,
+                "target": receiver_account.account_number,
+                "source_name": sender_name,
+                "target_name": receiver_name,
+                "amount": float(transaction.amount),
+                "risk_score": float(transaction.risk_score or 0),
+                "is_flagged": bool(transaction.is_flagged),
+                "status": transaction.status,
+                "remark": transaction.remark or "Instant Transfer",
+                "timestamp": transaction.timestamp.isoformat() if transaction.timestamp else datetime.now(timezone.utc).isoformat(),
+            }
+
+            await ws_events_manager.broadcast(WSEventTypes.TRANSACTION_CREATED, tx_payload)
+
+            # If high risk or critical, broadcast high-risk alert event
+            if (transaction.risk_score or 0) >= 60:
+                await ws_events_manager.broadcast(WSEventTypes.HIGH_RISK_TRANSACTION, tx_payload)
+
+        except Exception as e:
+            pass
+
         return transaction
 
     def _generate_transaction_id(self) -> str:

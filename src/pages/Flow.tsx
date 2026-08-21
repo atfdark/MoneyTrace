@@ -26,6 +26,7 @@ import { NodeInspector } from '../components/graph/NodeInspector';
 import { FraudAlertCenter } from '../components/graph/FraudAlertCenter';
 import { TracePlayback } from '../components/graph/TracePlayback';
 import { AICopilotDrawer } from '../components/graph/AICopilotDrawer';
+import { wsService } from '../hooks/useWebSocket';
 
 export const Flow: React.FC = () => {
   /* ─────────────────────── Backend Data Queries ─────────────────────── */
@@ -33,6 +34,20 @@ export const Flow: React.FC = () => {
   const { data: suspiciousData } = useSuspiciousPatterns();
   const { data: dashboardStats } = useDashboardStats();
   const { data: alertsData } = useAlerts({ limit: 10 });
+
+  // Real-time live graph re-rendering on WebSocket transaction/user events
+  useEffect(() => {
+    const unsubTx = wsService.subscribe('TRANSACTION_CREATED', () => {
+      refetchNetwork();
+    });
+    const unsubUser = wsService.subscribe('USER_REGISTERED', () => {
+      refetchNetwork();
+    });
+    return () => {
+      unsubTx();
+      unsubUser();
+    };
+  }, [refetchNetwork]);
 
   /* ─────────────────────── UI States ─────────────────────── */
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('force');

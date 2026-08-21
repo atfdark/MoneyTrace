@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   allowedRoles,
-  redirectTo = '/login',
+  redirectTo,
 }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
@@ -26,13 +26,22 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!isAuthenticated) {
-    // Store the attempted location for redirect after login
-    return <Navigate to={redirectTo} state={{ from: location }} replace />;
+    const defaultRedirect = location.pathname.startsWith('/customer') ? '/customer/login' : '/login';
+    return <Navigate to={redirectTo || defaultRedirect} state={{ from: location }} replace />;
   }
 
-  // Check role-based access if allowedRoles is specified
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/unauthorized" replace />;
+  // Check role-based access
+  if (allowedRoles && user) {
+    const userRole = (user.role || '').toLowerCase();
+    const isAllowed = allowedRoles.map(r => r.toLowerCase()).includes(userRole);
+
+    if (!isAllowed) {
+      if (userRole === 'customer') {
+        return <Navigate to="/customer/home" replace />;
+      } else {
+        return <Navigate to="/dashboard" replace />;
+      }
+    }
   }
 
   return <>{children}</>;

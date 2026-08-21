@@ -95,7 +95,7 @@ export const alertService = {
    * Export alerts
    */
   async exportAlerts(params: AlertsParams, format: 'csv' | 'excel' = 'csv'): Promise<Blob> {
-    const response = await api.get(`${ALERT_BASE}/export`, {
+    const response = await api.get<Blob>(`${ALERT_BASE}/export`, {
       params: { ...params, format },
       responseType: 'blob',
     });

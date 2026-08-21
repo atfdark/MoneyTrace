@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { wsService } from '../../hooks/useWebSocket';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 
 export interface LiveTxItem {
@@ -25,13 +26,38 @@ export const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({
 }) => {
   const [feed, setFeed] = useState<LiveTxItem[]>([]);
   const [isPaused, setIsPaused] = useState(false);
+  const [latestTxId, setLatestTxId] = useState<string | null>(null);
 
-  // Synchronize with real graph transaction events
+  // Synchronize with initial query data
   useEffect(() => {
     if (!isPaused && initialTransactions && initialTransactions.length > 0) {
       setFeed(initialTransactions.slice(0, 40));
     }
   }, [initialTransactions, isPaused]);
+
+  // Subscribe to live WebSocket TRANSACTION_CREATED events
+  useEffect(() => {
+    const unsub = wsService.subscribe('TRANSACTION_CREATED', (txData: any) => {
+      if (isPaused) return;
+
+      const newTx: LiveTxItem = {
+        id: txData.transaction_id || txData.id || `tx_${Date.now()}`,
+        source: txData.source || 'ACC_SRC',
+        target: txData.target || 'ACC_TGT',
+        source_name: txData.source_name,
+        target_name: txData.target_name,
+        amount: Number(txData.amount || 0),
+        risk_score: Number(txData.risk_score || 0),
+        timestamp: txData.timestamp || new Date().toISOString(),
+        is_flagged: Boolean(txData.is_flagged),
+      };
+
+      setLatestTxId(newTx.id);
+      setFeed(prev => [newTx, ...prev.filter(t => t.id !== newTx.id)].slice(0, 50));
+    });
+
+    return () => unsub();
+  }, [isPaused]);
 
   return (
     <div className="glass-panel rounded-2xl border border-slate-700/50 flex flex-col h-full overflow-hidden shadow-xl">
@@ -71,13 +97,16 @@ export const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({
           feed.map(tx => {
             const isCrit = tx.risk_score >= 80;
             const isHigh = tx.risk_score >= 50;
+            const isBrandNew = tx.id === latestTxId;
 
             return (
               <div
                 key={tx.id}
                 onClick={() => onSelectTx?.(tx.source, tx.target)}
                 className={`group p-2.5 rounded-xl border transition-all cursor-pointer ${
-                  isCrit
+                  isBrandNew
+                    ? 'ring-2 ring-purple-500 bg-purple-950/40 border-purple-400 animate-in zoom-in-95 duration-300'
+                    : isCrit
                     ? 'bg-red-950/30 border-red-500/40 hover:border-red-400 hover:bg-red-950/50'
                     : isHigh
                     ? 'bg-orange-950/20 border-orange-500/30 hover:border-orange-400'

@@ -40,12 +40,13 @@ export const OnlineUsersPanel: React.FC<OnlineUsersPanelProps> = () => {
       }));
     }
 
-    if (currentUser) {
+    const currUser = (currentUser as any)?.data || (currentUser as any);
+    if (currUser && currUser.id) {
       return [
         {
-          id: String(currentUser.id || 'curr-user'),
-          name: currentUser.full_name || currentUser.email || 'Investigator',
-          role: typeof currentUser.role === 'string' ? currentUser.role.toUpperCase() : 'INVESTIGATOR',
+          id: String(currUser.id || 'curr-user'),
+          name: currUser.full_name || currUser.email || 'Investigator',
+          role: typeof currUser.role === 'string' ? currUser.role.toUpperCase() : 'INVESTIGATOR',
           status: 'active' as const,
           avatarColor: AVATAR_GRADIENTS[0],
         },

@@ -66,7 +66,7 @@ export const recoveryService = {
    * Generate recovery report
    */
   async generateReport(transactionId: string, format: 'pdf' | 'excel' = 'pdf'): Promise<Blob> {
-    const response = await api.get(`${RECOVERY_BASE}/${transactionId}/report`, {
+    const response = await api.get<Blob>(`${RECOVERY_BASE}/${transactionId}/report`, {
       params: { format },
       responseType: 'blob',
     });

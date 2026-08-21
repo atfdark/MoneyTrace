@@ -23,8 +23,8 @@ export const Recovery: React.FC = () => {
   const fetchCases = async () => {
     setIsLoading(true);
     try {
-      const res = await api.get('/recovery/cases');
-      const data = res.data.cases || res.data || [];
+      const res = await api.get<any>('/recovery/cases');
+      const data = res.data?.cases || res.data || [];
       setCases(data);
       if (data.length > 0) setSelectedCase(data[0]);
     } catch (err) {
