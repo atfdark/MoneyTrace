@@ -23,6 +23,8 @@ export interface LiveTxItem {
   status?: string;
   remark?: string;
   timestamp: string;
+  is_simulation?: boolean;
+  scenario_id?: string;
 }
 
 export interface LiveAlertItem {
@@ -47,8 +49,9 @@ export interface LiveAlertItem {
     summary_text: string;
     recommended_action: string;
     recovery_score?: number;
-    recovery_probability?: string;
   };
+  is_simulation?: boolean;
+  scenario_id?: string;
 }
 
 export interface ToastItem {
@@ -226,6 +229,8 @@ export function useLiveTelemetry() {
         status: data.status || 'COMPLETED',
         remark: data.remark,
         timestamp: data.timestamp || new Date().toISOString(),
+        is_simulation: Boolean(data.is_simulation),
+        scenario_id: data.scenario_id,
       };
 
       sharedLiveTxs = [item, ...sharedLiveTxs.slice(0, 49)];

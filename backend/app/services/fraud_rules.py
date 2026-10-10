@@ -114,6 +114,8 @@ class FraudRulesEngine:
                 Transaction.sender_account_id == transaction.sender_account_id,
                 Transaction.timestamp >= five_mins_ago,
                 Transaction.timestamp <= txn_time,
+                Transaction.is_simulation == transaction.is_simulation,
+                Transaction.scenario_id == transaction.scenario_id,
             )
             count_res = await session.execute(recent_count_stmt)
             recent_txn_count = count_res.scalar_one() or 0
@@ -170,6 +172,8 @@ class FraudRulesEngine:
                     Transaction.timestamp >= fifteen_mins_ago,
                     Transaction.timestamp <= txn_time,
                     Transaction.location.is_not(None),
+                    Transaction.is_simulation == transaction.is_simulation,
+                    Transaction.scenario_id == transaction.scenario_id,
                 )
                 .order_by(Transaction.timestamp.desc())
                 .limit(1)
@@ -198,6 +202,8 @@ class FraudRulesEngine:
                     Transaction.timestamp >= one_day_ago,
                     Transaction.timestamp <= txn_time,
                     Transaction.device_info.is_not(None),
+                    Transaction.is_simulation == transaction.is_simulation,
+                    Transaction.scenario_id == transaction.scenario_id,
                 )
                 .order_by(Transaction.timestamp.desc())
                 .limit(1)
@@ -224,6 +230,8 @@ class FraudRulesEngine:
                     Transaction.receiver_account_id == transaction.sender_account_id,
                     Transaction.timestamp >= two_hours_ago,
                     Transaction.timestamp <= txn_time,
+                    Transaction.is_simulation == transaction.is_simulation,
+                    Transaction.scenario_id == transaction.scenario_id,
                 )
             )
             inbound_res = await session.execute(inbound_stmt)

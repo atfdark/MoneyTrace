@@ -85,6 +85,8 @@ class TransactionService:
         device_info: Optional[str] = None,
         ip_address: Optional[str] = None,
         location: Optional[str] = None,
+        is_simulation: bool = False,
+        scenario_id: Optional[str] = None,
     ) -> Transaction:
         """
         Send money from sender's account to receiver's account.
@@ -172,6 +174,8 @@ class TransactionService:
                 location=location,
                 risk_score=None,
                 is_flagged=False,
+                is_simulation=is_simulation,
+                scenario_id=scenario_id,
             )
             self.session.add(transaction)
 
@@ -218,6 +222,8 @@ class TransactionService:
                 "status": transaction.status,
                 "remark": transaction.remark or "Instant Transfer",
                 "timestamp": transaction.timestamp.isoformat() if transaction.timestamp else datetime.now(timezone.utc).isoformat(),
+                "is_simulation": bool(transaction.is_simulation),
+                "scenario_id": transaction.scenario_id,
             }
 
             await ws_events_manager.broadcast(WSEventTypes.TRANSACTION_CREATED, tx_payload)

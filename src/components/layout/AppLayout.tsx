@@ -45,7 +45,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ title, subtitle }) => {
       '/dashboard': { title: 'Dashboard', subtitle: 'Operations overview and threat intelligence' },
       '/transactions': { title: 'Transactions', subtitle: 'Monitor and analyze transaction activity' },
       '/alerts': { title: 'Alerts', subtitle: 'Real-time fraud detection and alert queue' },
-      '/investigation': { title: 'Cases', subtitle: 'Investigation workspace and case management' },
       '/flow': { title: 'Money Flow', subtitle: 'Transaction network visualization and trace analysis' },
       '/recovery': { title: 'Recovery', subtitle: 'Asset recovery tracking and recommendations' },
       '/chat': { title: 'AI Copilot', subtitle: 'Forensic analysis and investigative reasoning' },

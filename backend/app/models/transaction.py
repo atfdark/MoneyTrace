@@ -76,6 +76,14 @@ class Transaction(Base):
         Boolean, default=False, nullable=False
     )
 
+    # Scenario Provenance (Phase 9)
+    is_simulation: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, server_default="0"
+    )
+    scenario_id: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
+
     # Timestamp
     timestamp: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

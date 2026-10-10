@@ -293,7 +293,7 @@ class AIInvestigatorAssistant:
         balance = float(acc.balance or 0.0) if acc else 138000.0
 
         # Distinguish Victim Source vs Mule / Aggregator Account
-        is_victim = acc_num in ["ACC1001", "ACC1002"] or "rahul" in holder_name.lower() or "victim" in holder_name.lower()
+        is_victim = acc_num in ["ACC1001"] or "rahul" in holder_name.lower() or "victim" in holder_name.lower()
 
         if is_victim:
             lines = [

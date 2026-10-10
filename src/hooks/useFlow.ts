@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
 
-export const useFlowGraphs = () => {
+export const useFlowGraphs = (simulationOnly: boolean = false) => {
   return useQuery({
-    queryKey: ['flow-graphs'],
+    queryKey: ['flow-graphs', simulationOnly],
     queryFn: async () => {
-      const res = await api.get('/graph/network');
+      const res = await api.get('/graph/network', { params: { simulation_only: simulationOnly } });
       return res.data;
     },
     retry: 1,
@@ -24,11 +24,11 @@ export const useFlowGraph = (graphId: string, options?: { enabled?: boolean }) =
   });
 };
 
-export const useSuspiciousPatterns = () => {
+export const useSuspiciousPatterns = (simulationOnly: boolean = false) => {
   return useQuery({
-    queryKey: ['flow-suspicious'],
+    queryKey: ['flow-suspicious', simulationOnly],
     queryFn: async () => {
-      const res = await api.get('/graph/suspicious');
+      const res = await api.get('/graph/suspicious', { params: { simulation_only: simulationOnly } });
       return res.data;
     },
     retry: 1,

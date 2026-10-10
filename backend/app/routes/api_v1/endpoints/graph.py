@@ -59,13 +59,14 @@ async def get_account_subgraph(
 
 @router.get("/network", response_model=NetworkGraphResponse)
 async def get_network_graph(
-    limit: int = Query(1000, ge=10, le=5000, description="Max transactions to include in graph"),
+    limit: int = Query(150, ge=10, le=5000, description="Max transactions to include in graph"),
+    simulation_only: bool = Query(False, description="Filter for only simulation transactions"),
     current_user: User = Depends(get_current_active_user),
     session: AsyncSession = Depends(get_session),
 ) -> NetworkGraphResponse:
     """Get full network graph (nodes & edges) for visual UI graph rendering."""
     engine = GraphEngine(session)
-    return await engine.get_network_graph(limit=limit)
+    return await engine.get_network_graph(limit=limit, simulation_only=simulation_only)
 
 
 # ---------------------------------------------------------------------------
@@ -74,9 +75,10 @@ async def get_network_graph(
 
 @router.get("/suspicious", response_model=SuspiciousNetworkResponse)
 async def get_suspicious_patterns(
+    simulation_only: bool = Query(False, description="Filter for only simulation transactions"),
     current_user: User = Depends(get_current_active_user),
     session: AsyncSession = Depends(get_session),
 ) -> SuspiciousNetworkResponse:
     """Detect circular laundering chains (cycles), mule accounts, and collector nodes."""
     engine = GraphEngine(session)
-    return await engine.detect_suspicious_patterns()
+    return await engine.detect_suspicious_patterns(simulation_only=simulation_only)

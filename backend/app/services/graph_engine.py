@@ -29,7 +29,7 @@ class GraphEngine:
         self.session = session
 
     async def build_networkx_graph(
-        self, limit: int = 2000
+        self, limit: int = 2000, simulation_only: bool = False
     ) -> Tuple[nx.MultiDiGraph, Dict[str, Account], Dict[str, Transaction]]:
         """
         Construct a NetworkX MultiDiGraph from database accounts and completed transactions.
@@ -43,10 +43,14 @@ class GraphEngine:
         accounts_list = acc_res.scalars().all()
         accounts_map: Dict[str, Account] = {a.account_number: a for a in accounts_list}
 
-        # Fetch completed transactions
+        stmt = select(Transaction).where(Transaction.status == TransactionStatus.COMPLETED.value)
+        if simulation_only:
+            stmt = stmt.where(Transaction.is_simulation == True)
+        else:
+            stmt = stmt.where(Transaction.is_simulation == False)
+
         txn_stmt = (
-            select(Transaction)
-            .where(Transaction.status == TransactionStatus.COMPLETED.value)
+            stmt
             .order_by(Transaction.timestamp.desc())
             .limit(limit)
             .options(
@@ -251,9 +255,9 @@ class GraphEngine:
             hops=hops,
         )
 
-    async def get_network_graph(self, limit: int = 1000) -> NetworkGraphResponse:
+    async def get_network_graph(self, limit: int = 1000, simulation_only: bool = False) -> NetworkGraphResponse:
         """Get nodes and edges for full graph visualization."""
-        G, accounts_map, transactions_map = await self.build_networkx_graph(limit=limit)
+        G, accounts_map, transactions_map = await self.build_networkx_graph(limit=limit, simulation_only=simulation_only)
 
         nodes: List[GraphNode] = []
         for n, attrs in G.nodes(data=True):
@@ -307,10 +311,10 @@ class GraphEngine:
         )
 
     async def get_account_subgraph(
-        self, account_number: str, radius: int = 2
+        self, account_number: str, radius: int = 2, simulation_only: bool = False
     ) -> NetworkGraphResponse:
         """Get N-hop neighborhood subgraph around a specific account."""
-        G, accounts_map, transactions_map = await self.build_networkx_graph()
+        G, accounts_map, transactions_map = await self.build_networkx_graph(simulation_only=simulation_only)
 
         if not G.has_node(account_number):
             raise exceptions.NotFoundError(f"Account '{account_number}' not found in network graph")
@@ -364,14 +368,14 @@ class GraphEngine:
             total_edges=len(edges),
         )
 
-    async def detect_suspicious_patterns(self) -> SuspiciousNetworkResponse:
+    async def detect_suspicious_patterns(self, simulation_only: bool = False) -> SuspiciousNetworkResponse:
         """
         Detect graph-level fraud patterns:
         1. Circular Money Laundering Chains (cycles)
         2. Mule Accounts (Rapid pass-through: Inbound & Outbound transfers)
         3. Collector Accounts (High Fan-in hubs)
         """
-        G, accounts_map, transactions_map = await self.build_networkx_graph()
+        G, accounts_map, transactions_map = await self.build_networkx_graph(simulation_only=simulation_only)
 
         # 1. Circular Chains (Cycles)
         simple_digraph = nx.DiGraph(G)

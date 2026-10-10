@@ -23,6 +23,8 @@ class SendTransactionRequest(BaseModel):
     device_info: Optional[str] = Field(default=None, max_length=500)
     ip_address: Optional[str] = Field(default=None, max_length=45)
     location: Optional[str] = Field(default=None, max_length=255)
+    is_simulation: bool = Field(default=False)
+    scenario_id: Optional[str] = Field(default=None, max_length=100)
 
     @field_validator("amount")
     @classmethod
@@ -72,6 +74,8 @@ class TransactionResponse(BaseModel):
     location: Optional[str]
     risk_score: Optional[float]
     is_flagged: bool
+    is_simulation: bool
+    scenario_id: Optional[str]
     timestamp: datetime
     created_at: datetime
 
@@ -96,6 +100,8 @@ class LiveTransactionResponse(BaseModel):
     timestamp: datetime
     risk_score: Optional[float] = None
     is_flagged: Optional[bool] = False
+    is_simulation: bool = False
+    scenario_id: Optional[str] = None
 
 
 class SimulateScenarioResponse(BaseModel):

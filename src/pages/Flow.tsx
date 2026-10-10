@@ -31,9 +31,11 @@ import { AICopilotDrawer } from '../components/graph/AICopilotDrawer';
 import { wsService } from '../hooks/useWebSocket';
 
 export const Flow: React.FC = () => {
+  const [simulationMode, setSimulationMode] = useState(false);
+  
   /* ─────────────────────── Backend Data Queries ─────────────────────── */
-  const { data: networkData, isLoading: netLoading, refetch: refetchNetwork } = useFlowGraphs();
-  const { data: suspiciousData } = useSuspiciousPatterns();
+  const { data: networkData, isLoading: netLoading, refetch: refetchNetwork } = useFlowGraphs(simulationMode);
+  const { data: suspiciousData } = useSuspiciousPatterns(simulationMode);
   const { data: dashboardStats } = useDashboardStats();
   const { data: alertsData } = useAlerts({ limit: 10 });
 
@@ -42,6 +44,9 @@ export const Flow: React.FC = () => {
 
   useEffect(() => {
     const unsubTx = wsService.subscribe('TRANSACTION_CREATED', (data: any) => {
+      const isSim = Boolean(data.is_simulation);
+      if (isSim !== simulationMode) return;
+
       refetchNetwork();
       if (data?.source && data?.target) {
         setTraceHighlight(new Set([data.source, data.target]));
@@ -506,6 +511,22 @@ export const Flow: React.FC = () => {
             <span>Fraud Rings</span>
           </button>
 
+          {/* Simulation Mode Toggle */}
+          <button
+            onClick={() => setSimulationMode(!simulationMode)}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              simulationMode
+                ? 'bg-sky-600 text-white shadow-lg ring-2 ring-sky-300'
+                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+            title="Toggle Live Mobile Simulation Mode"
+          >
+            <span className="material-symbols-outlined text-base">
+              {simulationMode ? 'sensors' : 'sensors_off'}
+            </span>
+            <span>{simulationMode ? 'Sim Mode: ON' : 'Sim Mode: OFF'}</span>
+          </button>
+
           {/* View Mode Toggle */}
           <div className="flex items-center bg-white p-1 rounded-xl border border-gray-200">
             <button
@@ -711,6 +732,7 @@ export const Flow: React.FC = () => {
             /* Live Transaction Feed */
             <div className="flex-1 min-h-0">
               <LiveTransactionFeed
+                simulationMode={simulationMode}
                 initialTransactions={rawEdges.slice(0, 30).map(e => ({
                   id: e.id,
                   source: e.source,

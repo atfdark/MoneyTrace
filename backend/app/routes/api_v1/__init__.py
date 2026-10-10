@@ -17,6 +17,7 @@ from app.routes.api_v1.endpoints import (
     simulation,
     watchlist,
     audit_logs,
+    scenarios,
 )
 
 api_router = APIRouter()
@@ -36,5 +37,6 @@ api_router.include_router(assistant.router, tags=["assistant"], prefix="/assista
 api_router.include_router(simulation.router, tags=["simulation"], prefix="/simulation")
 api_router.include_router(watchlist.router, tags=["watchlist"], prefix="/watchlist")
 api_router.include_router(audit_logs.router, tags=["audit-logs"], prefix="/audit-logs")
+api_router.include_router(scenarios.router, tags=["scenarios"], prefix="/scenarios")
 
 __all__ = ["api_router"]

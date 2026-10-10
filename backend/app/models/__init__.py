@@ -19,6 +19,7 @@ from app.models.investigation import (
 )
 from app.models.watchlist import WatchlistAccount, WatchlistRiskTier
 from app.models.audit_log import AuditLog, AuditAction
+from app.models.scenario import ScenarioRun, ScenarioStatus
 
 __all__ = [
     "Base",
@@ -47,4 +48,6 @@ __all__ = [
     "WatchlistRiskTier",
     "AuditLog",
     "AuditAction",
+    "ScenarioRun",
+    "ScenarioStatus",
 ]

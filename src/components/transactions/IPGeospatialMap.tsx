@@ -185,9 +185,9 @@ export const IPGeospatialMap: React.FC<{
       attributionControl: false,
     });
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
-      subdomains: "abcd",
+      className: "invert hue-rotate-180 brightness-75 contrast-125 opacity-90",
     }).addTo(map);
 
     polylineGroupRef.current = L.layerGroup().addTo(map);

@@ -4,7 +4,6 @@ const adminRoutes = [
   '/dashboard',
   '/transactions',
   '/alerts',
-  '/investigation',
   '/flow',
   '/recovery',
   '/reports',

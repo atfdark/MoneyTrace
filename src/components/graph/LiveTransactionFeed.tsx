@@ -18,11 +18,13 @@ export interface LiveTransactionFeedProps {
   initialTransactions?: LiveTxItem[];
   onSelectTx?: (source: string, target: string) => void;
   demoMode?: boolean;
+  simulationMode?: boolean;
 }
 
 export const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({
   initialTransactions = [],
   onSelectTx,
+  simulationMode = false,
 }) => {
   const [feed, setFeed] = useState<LiveTxItem[]>([]);
   const [isPaused, setIsPaused] = useState(false);
@@ -39,6 +41,9 @@ export const LiveTransactionFeed: React.FC<LiveTransactionFeedProps> = ({
   useEffect(() => {
     const unsub = wsService.subscribe('TRANSACTION_CREATED', (txData: any) => {
       if (isPaused) return;
+
+      const isSim = Boolean(txData.is_simulation);
+      if (isSim !== simulationMode) return;
 
       const newTx: LiveTxItem = {
         id: txData.transaction_id || txData.id || `tx_${Date.now()}`,

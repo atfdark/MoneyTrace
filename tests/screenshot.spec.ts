@@ -5,10 +5,7 @@ const routes = [
   '/login',
   '/dashboard',
   '/transactions',
-  '/alerts',
-  '/investigation',
-  '/customer/login',
-  '/customer/home'
+  '/alerts'
 ];
 
 test('Capture screenshots of all major routes', async ({ page }) => {

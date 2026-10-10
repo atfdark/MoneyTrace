@@ -117,6 +117,8 @@ async def send_money(
         device_info=device_str,
         ip_address=geo_info["ip"],
         location=location_str,
+        is_simulation=data.is_simulation,
+        scenario_id=data.scenario_id,
     )
 
     # Log Audit

@@ -8,7 +8,6 @@ const navSections = [
     label: 'OPERATIONS',
     items: [
       { name: 'SOC Dashboard', href: '/dashboard', icon: 'space_dashboard' },
-      { name: 'Executive View', href: '/executive', icon: 'monitoring' },
       { name: 'Transactions', href: '/transactions', icon: 'receipt_long' },
       { name: 'Alerts', href: '/alerts', icon: 'notification_important' },
     ],
@@ -16,8 +15,6 @@ const navSections = [
   {
     label: 'INVESTIGATIONS',
     items: [
-      { name: 'Case Dossiers', href: '/investigation', icon: 'folder_shared' },
-      { name: 'Watchlist', href: '/watchlist', icon: 'shield_person' },
       { name: 'Money Flow Graph', href: '/flow', icon: 'account_tree' },
       { name: 'Recovery & Freeze', href: '/recovery', icon: 'ac_unit' },
     ],

@@ -44,13 +44,14 @@ class DashboardService:
     # ------------------------------------------------------------------
     async def get_overview_stats(self) -> OverviewResponse:
         """Executive KPI summary overview."""
-        # Total transactions
-        txn_count_res = await self.session.execute(select(func.count(Transaction.id)))
+        txn_count_res = await self.session.execute(select(func.count(Transaction.id)).where(Transaction.is_simulation == False))
         total_txns = txn_count_res.scalar_one() or 0
 
         # Total amount processed
         amount_res = await self.session.execute(
-            select(func.sum(Transaction.amount)).where(Transaction.status == TransactionStatus.COMPLETED.value)
+            select(func.sum(Transaction.amount)).where(
+                and_(Transaction.status == TransactionStatus.COMPLETED.value, Transaction.is_simulation == False)
+            )
         )
         total_amount = float(amount_res.scalar_one() or 0.0)
 
@@ -112,7 +113,9 @@ class DashboardService:
 
         # Transactions in the last minute (or recent active window)
         txns_min_res = await self.session.execute(
-            select(func.count(Transaction.id)).where(Transaction.created_at >= one_min_ago)
+            select(func.count(Transaction.id)).where(
+                and_(Transaction.created_at >= one_min_ago, Transaction.is_simulation == False)
+            )
         )
         txns_last_minute = txns_min_res.scalar_one() or 0
         if txns_last_minute == 0:
@@ -153,7 +156,7 @@ class DashboardService:
         # 24 Hours
         d1_res = await self.session.execute(
             select(func.count(Transaction.id), func.coalesce(func.sum(Transaction.amount), 0.0)).where(
-                Transaction.timestamp >= d_1
+                and_(Transaction.timestamp >= d_1, Transaction.is_simulation == False)
             )
         )
         d1_count, d1_vol = d1_res.one()
@@ -161,7 +164,7 @@ class DashboardService:
         # 7 Days
         d7_res = await self.session.execute(
             select(func.count(Transaction.id), func.coalesce(func.sum(Transaction.amount), 0.0)).where(
-                Transaction.timestamp >= d_7
+                and_(Transaction.timestamp >= d_7, Transaction.is_simulation == False)
             )
         )
         d7_count, d7_vol = d7_res.one()
@@ -169,25 +172,24 @@ class DashboardService:
         # 30 Days
         d30_res = await self.session.execute(
             select(func.count(Transaction.id), func.coalesce(func.sum(Transaction.amount), 0.0)).where(
-                Transaction.timestamp >= d_30
+                and_(Transaction.timestamp >= d_30, Transaction.is_simulation == False)
             )
         )
         d30_count, d30_vol = d30_res.one()
 
-        # Min, Max, Avg
         stats_res = await self.session.execute(
             select(
                 func.coalesce(func.avg(Transaction.amount), 0.0),
                 func.coalesce(func.max(Transaction.amount), 0.0),
                 func.coalesce(func.min(Transaction.amount), 0.0),
-            )
+            ).where(Transaction.is_simulation == False)
         )
         avg_amt, max_amt, min_amt = stats_res.one()
 
         # Daily volume trend for last 30 days
         txns_stmt = (
             select(Transaction.timestamp, Transaction.amount)
-            .where(Transaction.timestamp >= d_30)
+            .where(and_(Transaction.timestamp >= d_30, Transaction.is_simulation == False))
             .order_by(Transaction.timestamp.asc())
         )
         txns_res = await self.session.execute(txns_stmt)
@@ -261,13 +263,16 @@ class DashboardService:
                     if r.lower() in alert_type.lower():
                         rule_counts[r] += 1
 
-        # Total flagged transactions & fraud rate
         flagged_res = await self.session.execute(
-            select(func.count(Transaction.id)).where(Transaction.is_flagged == True)
+            select(func.count(Transaction.id)).where(
+                and_(Transaction.is_flagged == True, Transaction.is_simulation == False)
+            )
         )
         flagged_txns = flagged_res.scalar_one() or 0
 
-        total_txns_res = await self.session.execute(select(func.count(Transaction.id)))
+        total_txns_res = await self.session.execute(
+            select(func.count(Transaction.id)).where(Transaction.is_simulation == False)
+        )
         total_txns = total_txns_res.scalar_one() or 1
 
         fraud_rate = round((flagged_txns / max(total_txns, 1)) * 100.0, 2)
@@ -341,7 +346,7 @@ class DashboardService:
         # Top locations
         loc_stmt = (
             select(Transaction.location, func.count(Transaction.id))
-            .where(Transaction.location.is_not(None))
+            .where(and_(Transaction.location.is_not(None), Transaction.is_simulation == False))
             .group_by(Transaction.location)
             .order_by(desc(func.count(Transaction.id)))
             .limit(10)
@@ -352,7 +357,7 @@ class DashboardService:
         # Flagged by location
         flagged_loc_stmt = (
             select(Transaction.location, func.count(Transaction.id))
-            .where(and_(Transaction.location.is_not(None), Transaction.is_flagged == True))
+            .where(and_(Transaction.location.is_not(None), Transaction.is_flagged == True, Transaction.is_simulation == False))
             .group_by(Transaction.location)
             .order_by(desc(func.count(Transaction.id)))
             .limit(10)
@@ -372,7 +377,7 @@ class DashboardService:
         # Sample corridor calculation from transaction sequences
         txns_stmt = (
             select(Transaction.sender_account_id, Transaction.location, Transaction.timestamp)
-            .where(Transaction.location.is_not(None))
+            .where(and_(Transaction.location.is_not(None), Transaction.is_simulation == False))
             .order_by(Transaction.sender_account_id, Transaction.timestamp.asc())
         )
         txns_res = await self.session.execute(txns_stmt)
@@ -418,7 +423,9 @@ class DashboardService:
                     func.coalesce(func.avg(Transaction.risk_score), 0.0),
                     func.count(Transaction.id),
                     func.coalesce(func.sum(Transaction.amount), 0.0),
-                ).where(Transaction.sender_account_id == acc.id)
+                ).where(
+                    and_(Transaction.sender_account_id == acc.id, Transaction.is_simulation == False)
+                )
             )
             avg_risk, txn_count, total_vol = txn_res.one()
 
