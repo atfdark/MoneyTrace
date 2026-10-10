@@ -10,27 +10,34 @@ import json
 # Setup
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{os.path.abspath('moneytrace_test.db')}"
 PORT = 8001
-API_URL = f"http://localhost:{PORT}/api/v1"
-WS_URL = f"ws://localhost:{PORT}/api/v1/ws/live"
+API_URL = f"http://127.0.0.1:{PORT}/api/v1"
+WS_URL = f"ws://127.0.0.1:{PORT}/api/v1/ws/live"
 
 async def test_e2e():
-    print("Starting FastAPI server...")
+    print("Starting FastAPI server...", flush=True)
+    server_log = open("e2e_server.log", "w", encoding="utf-8")
     server = subprocess.Popen(
         ["uvicorn", "app.main:app", "--port", str(PORT)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stdout=server_log,
+        stderr=subprocess.STDOUT,
         env=os.environ.copy()
     )
     
     # Wait for server to start
-    time.sleep(3)
+    for _ in range(30):
+        try:
+            requests.get(f"http://127.0.0.1:{PORT}/docs", timeout=0.5)
+            break
+        except Exception:
+            time.sleep(0.5)
     
     try:
         # Register test user
-        print("Registering test user...")
+        test_email = f"admin_{int(time.time())}@test.com"
+        print(f"Registering test user {test_email}...", flush=True)
         reg_res = requests.post(f"{API_URL}/auth/register", json={
             "full_name": "Admin Test",
-            "email": "admin@test.com",
+            "email": test_email,
             "password": "Password123"
         }, timeout=5.0)
         assert reg_res.status_code == 201, reg_res.text
@@ -40,26 +47,34 @@ async def test_e2e():
         # Upgrade role to admin via sqlite
         import sqlite3
         con = sqlite3.connect("moneytrace_test.db")
-        con.execute("UPDATE users SET role='admin' WHERE email='admin@test.com'")
+        con.execute("UPDATE users SET role='admin' WHERE email=?", (test_email,))
         con.commit()
         con.close()
         
         ws_events = []
+        ws_connected_evt = asyncio.Event()
         
         async def listen_ws():
-            async with websockets.connect(WS_URL) as ws:
-                while True:
-                    try:
-                        msg = await asyncio.wait_for(ws.recv(), timeout=5.0)
-                        if msg != "pong":
-                            data = json.loads(msg)
-                            ws_events.append(data)
-                    except asyncio.TimeoutError:
-                        break
+            try:
+                print(f"Connecting to WS: {WS_URL}...", flush=True)
+                async with websockets.connect(WS_URL) as ws:
+                    print("WS connected successfully!", flush=True)
+                    ws_connected_evt.set()
+                    while True:
+                        try:
+                            msg = await asyncio.wait_for(ws.recv(), timeout=5.0)
+                            if msg != "pong":
+                                data = json.loads(msg)
+                                print(f"Received WS message: {data.get('type')}", flush=True)
+                                ws_events.append(data)
+                        except asyncio.TimeoutError:
+                            continue
+            except Exception as e:
+                print(f"WS Exception in listener: {type(e)} {e}", flush=True)
         
-        print("Starting WebSocket listener...")
+        print("Starting WebSocket listener...", flush=True)
         ws_task = asyncio.create_task(listen_ws())
-        time.sleep(1) # wait for ws connection
+        await asyncio.wait_for(ws_connected_evt.wait(), timeout=5.0)
         
         # Start scenario
         print("Starting scenario 'mule_chain'...")
@@ -88,27 +103,36 @@ async def test_e2e():
         
         assert len(tx_events) == scenario["total_steps"], "Expected one WS tx event per step"
         for tx in tx_events:
-            assert tx["payload"]["is_simulation"] is True, "Tx missing is_simulation=True"
-            assert tx["payload"]["scenario_id"] == scenario_id, "Tx missing scenario_id"
+            item = tx.get("data") or tx.get("payload")
+            assert item["is_simulation"] is True, "Tx missing is_simulation=True"
+            assert item["scenario_id"] == scenario_id, "Tx missing scenario_id"
             
         if len(alert_events) > 0:
-            print(f"Fraud rule triggered! Alert type: {alert_events[0]['payload']['alert_type']}")
+            item = alert_events[0].get("data") or alert_events[0].get("payload")
+            print(f"Fraud rule triggered! Alert type: {item.get('alert_type')}")
         else:
             print("No fraud alerts triggered by this scenario (which might be expected depending on the engine).")
         
-        print("End to End Test Passed Successfully!")
+        print("End to End Test Passed Successfully!", flush=True)
+        ws_task.cancel()
         
     except Exception as e:
-        print(f"Exception: {e}")
+        print(f"Exception: {e}", flush=True)
+        if 'ws_task' in locals():
+            ws_task.cancel()
         server.terminate()
-        out, err = server.communicate()
-        print("Server stdout:", out.decode('utf-8', errors='ignore'))
-        print("Server stderr:", err.decode('utf-8', errors='ignore'))
+        server_log.close()
+        with open("e2e_server.log", "r", encoding="utf-8") as f:
+            print("Server log:\n", f.read())
         raise
         
     finally:
         server.terminate()
-        server.wait()
+        try:
+            server.wait(timeout=5)
+        except Exception:
+            server.kill()
+        server_log.close()
 
 if __name__ == "__main__":
     asyncio.run(test_e2e())

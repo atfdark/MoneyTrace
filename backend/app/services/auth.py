@@ -30,7 +30,7 @@ class AuthService:
     # Register
     # ------------------------------------------------------------------
 
-    async def register(self, data: RegisterRequest) -> AuthDataResponse:
+    async def register(self, data: RegisterRequest, request: Any = None) -> AuthDataResponse:
         """Register a new user, create default account, and issue JWT tokens."""
         # Check for duplicate email (case-insensitive)
         email_clean = data.email.strip().lower()

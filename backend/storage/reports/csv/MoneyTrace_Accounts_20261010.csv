@@ -1,4 +1,36 @@
 Account Number,User Name,User Email,Balance (INR),Status,Created At
+RECV6DBEC1D1,Test User 2,test_541be3c9-6087-4285-844b-70aec0714311@moneytrace.dev,1100.0,active,2026-10-10T17:58:17.138345
+ACCA5404C0A,Test User,test_3fa87bf0-e69c-4bc4-ab0f-148498e53f2b@moneytrace.dev,8900.0,active,2026-10-10T17:58:17.138338
+SIM81554590,Sim Mule 3,sim_6b00e952@moneytrace.dev,0.0,active,2026-10-10T17:58:16.107308
+SIM10547862,Sim Mule 2,sim_aa2d340c@moneytrace.dev,0.0,active,2026-10-10T17:58:15.711468
+SIM19008861,Sim Mule 1,sim_591f516c@moneytrace.dev,50000.0,active,2026-10-10T17:58:15.318642
+SIM95372475,Sim Victim,sim_514e9fef@moneytrace.dev,50000.0,active,2026-10-10T17:58:14.918424
+RECV338DB809,Test User 2,test_69dcf6c6-103b-414d-a8db-f4b2e44fbdaa@moneytrace.dev,1100.0,active,2026-10-10T16:24:50.758633
+ACC801AD770,Test User,test_0bde9279-f97d-4c84-ac4e-2bad02ec5bdb@moneytrace.dev,8900.0,active,2026-10-10T16:24:50.758627
+SIM64822008,Sim Mule 3,sim_05718e98@moneytrace.dev,0.0,active,2026-10-10T16:24:49.788994
+SIM50243525,Sim Mule 2,sim_1239c547@moneytrace.dev,0.0,active,2026-10-10T16:24:49.398842
+SIM80642807,Sim Mule 1,sim_d1ef7e83@moneytrace.dev,50000.0,active,2026-10-10T16:24:48.997017
+SIM44966250,Sim Victim,sim_fe402afc@moneytrace.dev,50000.0,active,2026-10-10T16:24:48.609747
+RECVA323DF32,Test User 2,test_561711d5-9ee3-43c6-8de5-0db66ba8e677@moneytrace.dev,1100.0,active,2026-10-10T16:15:37.308696
+ACC5EDC8BB1,Test User,test_2384f3ab-2784-428b-9525-1fb1fd4ed8dc@moneytrace.dev,8900.0,active,2026-10-10T16:15:37.308687
+SIM86587170,Sim Mule 3,sim_6f6e1ad9@moneytrace.dev,0.0,active,2026-10-10T16:15:36.337700
+SIM23273127,Sim Mule 2,sim_3b8002a4@moneytrace.dev,0.0,active,2026-10-10T16:15:35.949241
+SIM28330239,Sim Mule 1,sim_b2c65b72@moneytrace.dev,50000.0,active,2026-10-10T16:15:35.559013
+SIM23490629,Sim Victim,sim_88903c7f@moneytrace.dev,50000.0,active,2026-10-10T16:15:35.156400
+RECVB5F184C0,Test User 2,test_fbf658d0-ec5b-4e04-a2b6-13c57e7dad96@moneytrace.dev,1100.0,active,2026-10-10T16:05:39.192317
+ACCBC42338D,Test User,test_d7926de2-135d-4a4a-a3c7-02ff5a3384e4@moneytrace.dev,8900.0,active,2026-10-10T16:05:39.192309
+SIM21960938,Sim Mule 3,sim_ef80240b@moneytrace.dev,0.0,active,2026-10-10T16:05:38.206343
+SIM57077740,Sim Mule 2,sim_6928cf9a@moneytrace.dev,0.0,active,2026-10-10T16:05:37.819194
+SIM52225013,Sim Mule 1,sim_abb14162@moneytrace.dev,50000.0,active,2026-10-10T16:05:37.428106
+SIM42211022,Sim Victim,sim_cecd4f0c@moneytrace.dev,50000.0,active,2026-10-10T16:05:37.030638
+RECV3A6F72C5,Test User 2,test_ae5c26f9-426a-4e89-af85-cd403d7edf90@moneytrace.dev,1100.0,active,2026-10-10T15:50:44.334543
+ACCC6DB5306,Test User,test_c4d9f909-b2c4-42a5-95bb-25820686501c@moneytrace.dev,8900.0,active,2026-10-10T15:50:44.334537
+RECV5B364577,Test User 2,test_47f03b3d-cbbd-4132-9de9-3cb3cb0ce066@moneytrace.dev,1100.0,active,2026-10-10T15:50:05.718747
+ACC271EFFA2,Test User,test_a0c00b5d-9a85-44df-a3f1-05f827061c43@moneytrace.dev,8900.0,active,2026-10-10T15:50:05.718740
+SIM24971619,Sim Mule 3,sim_3f6d2cea@moneytrace.dev,0.0,active,2026-10-10T15:50:04.710052
+SIM67437409,Sim Mule 2,sim_e28ff710@moneytrace.dev,0.0,active,2026-10-10T15:50:04.310138
+SIM53980262,Sim Mule 1,sim_cfee0314@moneytrace.dev,50000.0,active,2026-10-10T15:50:03.908868
+SIM30274726,Sim Victim,sim_568aa14c@moneytrace.dev,50000.0,active,2026-10-10T15:50:03.507761
 RECV8E58EACD,Test User 2,test_78ed8bca-9773-4ff5-b394-84e8071fb7da@moneytrace.dev,1100.0,active,2026-10-10T15:45:50.582460
 ACC2E0C05F5,Test User,test_c7eefcfd-bcc8-4038-916f-8373e7ec2fa2@moneytrace.dev,8900.0,active,2026-10-10T15:45:50.582455
 SIM69831301,Sim Mule 3,sim_d018a94e@moneytrace.dev,0.0,active,2026-10-10T15:45:49.849599

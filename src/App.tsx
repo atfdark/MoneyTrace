@@ -73,6 +73,14 @@ const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/controller"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'investigator', 'analyst', 'supervisor', 'executive']} redirectTo="/login">
+              <ScenarioController />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           element={

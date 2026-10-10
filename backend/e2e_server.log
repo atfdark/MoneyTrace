@@ -1,0 +1,673 @@
+INFO:     Started server process [18060]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+Starting MoneyTrace AI Banking & Crime Intelligence Platform...
+INFO:     127.0.0.1:61584 - "GET /docs HTTP/1.1" 200 OK
+2026-10-10 23:33:36,396 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:36,453 INFO sqlalchemy.engine.Engine SELECT users.id, users.full_name, users.email, users.password_hash, users.role, users.is_active, users.is_superuser, users.transaction_pin_hash, users.trust_score, users.last_login_device, users.last_login_city, users.last_login_ip, users.created_at, users.updated_at 
+FROM users 
+WHERE lower(users.email) = ?
+2026-10-10 23:33:36,453 INFO sqlalchemy.engine.Engine [generated in 0.00061s] ('admin_1791655416@test.com',)
+2026-10-10 23:33:36,831 INFO sqlalchemy.engine.Engine INSERT INTO users (id, full_name, email, password_hash, role, is_active, is_superuser, transaction_pin_hash, trust_score, last_login_device, last_login_city, last_login_ip, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:36,831 INFO sqlalchemy.engine.Engine [generated in 0.00068s] ('b318c12162784c74983ce40199e9ec6d', 'Admin Test', 'admin_1791655416@test.com', '$2b$12$PqwPKK2a4K0q34XLQ.XHFOQJ2Lf9BGgbNLARzxkZw9x939hfGMn46', <UserRole.CUSTOMER: 'customer'>, 1, 0, None, 96.0, 'Chrome on Windows 11', 'Mumbai, India', '103.21.244.2', '2026-10-10 18:03:36.831038', '2026-10-10 18:03:36.831046')
+2026-10-10 23:33:36,839 INFO sqlalchemy.engine.Engine INSERT INTO accounts (id, account_number, user_id, balance, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:36,839 INFO sqlalchemy.engine.Engine [generated in 0.00052s] ('26b8d68b3c8744ebbda7f881b4891a77', 'ACC673105', 'b318c12162784c74983ce40199e9ec6d', 100000.0, 'active', '2026-10-10 18:03:36.839524', '2026-10-10 18:03:36.839531')
+2026-10-10 23:33:36,841 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:36,852 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:36,854 INFO sqlalchemy.engine.Engine SELECT users.id, users.full_name, users.email, users.password_hash, users.role, users.is_active, users.is_superuser, users.transaction_pin_hash, users.trust_score, users.last_login_device, users.last_login_city, users.last_login_ip, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:36,855 INFO sqlalchemy.engine.Engine [generated in 0.00042s] ('b318c12162784c74983ce40199e9ec6d',)
+INFO:     127.0.0.1:61585 - "POST /api/v1/auth/register HTTP/1.1" 201 Created
+2026-10-10 23:33:36,871 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:61586 - "WebSocket /api/v1/ws/live" [accepted]
+INFO:     connection open
+2026-10-10 23:33:37,148 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:37,150 INFO sqlalchemy.engine.Engine SELECT users.id, users.full_name, users.email, users.password_hash, users.role, users.is_active, users.is_superuser, users.transaction_pin_hash, users.trust_score, users.last_login_device, users.last_login_city, users.last_login_ip, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:37,150 INFO sqlalchemy.engine.Engine [generated in 0.00026s] ('b318c12162784c74983ce40199e9ec6d',)
+2026-10-10 23:33:37,539 INFO sqlalchemy.engine.Engine INSERT INTO users (id, full_name, email, password_hash, role, is_active, is_superuser, transaction_pin_hash, trust_score, last_login_device, last_login_city, last_login_ip, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:37,540 INFO sqlalchemy.engine.Engine [cached since 0.7092s ago] ('ef4f5ae173d844f594532d8c30398b7e', 'Sim Victim', 'sim_ef4f5ae1@moneytrace.dev', '$2b$12$TUrqghR0/vhNkiB9oAHF/eFGvSkKQMNr1k/tDyDJTv8kGlk9pYCNO', 'customer', 1, 0, None, 96.0, 'Chrome on Windows 11', 'Mumbai, India', '103.21.244.2', '2026-10-10 18:03:37.539638', '2026-10-10 18:03:37.539646')
+2026-10-10 23:33:37,547 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.account_number = ?
+2026-10-10 23:33:37,548 INFO sqlalchemy.engine.Engine [generated in 0.00041s] ('ACC72043487',)
+2026-10-10 23:33:37,550 INFO sqlalchemy.engine.Engine INSERT INTO accounts (id, account_number, user_id, balance, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:37,550 INFO sqlalchemy.engine.Engine [cached since 0.7113s ago] ('9d8faa98549d4489a45da03887abdf17', 'SIM72043487', 'ef4f5ae173d844f594532d8c30398b7e', 100000.0, 'active', '2026-10-10 18:03:37.550438', '2026-10-10 18:03:37.550446')
+2026-10-10 23:33:37,551 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:37,559 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:37,559 INFO sqlalchemy.engine.Engine SELECT users.id, users.full_name, users.email, users.password_hash, users.role, users.is_active, users.is_superuser, users.transaction_pin_hash, users.trust_score, users.last_login_device, users.last_login_city, users.last_login_ip, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:37,559 INFO sqlalchemy.engine.Engine [cached since 0.7051s ago] ('ef4f5ae173d844f594532d8c30398b7e',)
+2026-10-10 23:33:37,562 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:37,563 INFO sqlalchemy.engine.Engine [generated in 0.00038s] ('9d8faa98549d4489a45da03887abdf17',)
+2026-10-10 23:33:37,942 INFO sqlalchemy.engine.Engine INSERT INTO users (id, full_name, email, password_hash, role, is_active, is_superuser, transaction_pin_hash, trust_score, last_login_device, last_login_city, last_login_ip, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:37,942 INFO sqlalchemy.engine.Engine [cached since 1.112s ago] ('781cb6da24c94c85afcfff18bdcb8ec4', 'Sim Mule 1', 'sim_781cb6da@moneytrace.dev', '$2b$12$W6zUUG7m3mgFO00n0Wh9g.Uk.mWxYB0x8d15r3R1.uhEBGO1lPdMS', 'customer', 1, 0, None, 96.0, 'Chrome on Windows 11', 'Mumbai, India', '103.21.244.2', '2026-10-10 18:03:37.942243', '2026-10-10 18:03:37.942250')
+2026-10-10 23:33:37,948 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.account_number = ?
+2026-10-10 23:33:37,948 INFO sqlalchemy.engine.Engine [cached since 0.4011s ago] ('ACC72520074',)
+2026-10-10 23:33:37,950 INFO sqlalchemy.engine.Engine INSERT INTO accounts (id, account_number, user_id, balance, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:37,951 INFO sqlalchemy.engine.Engine [cached since 1.112s ago] ('5873df0cd90144d2bba77224ca6b5753', 'SIM72520074', '781cb6da24c94c85afcfff18bdcb8ec4', 0.0, 'active', '2026-10-10 18:03:37.950747', '2026-10-10 18:03:37.950755')
+2026-10-10 23:33:37,952 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:37,958 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:37,959 INFO sqlalchemy.engine.Engine SELECT users.id, users.full_name, users.email, users.password_hash, users.role, users.is_active, users.is_superuser, users.transaction_pin_hash, users.trust_score, users.last_login_device, users.last_login_city, users.last_login_ip, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:37,959 INFO sqlalchemy.engine.Engine [cached since 1.105s ago] ('781cb6da24c94c85afcfff18bdcb8ec4',)
+2026-10-10 23:33:37,962 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:37,962 INFO sqlalchemy.engine.Engine [cached since 0.3997s ago] ('5873df0cd90144d2bba77224ca6b5753',)
+2026-10-10 23:33:38,334 INFO sqlalchemy.engine.Engine INSERT INTO users (id, full_name, email, password_hash, role, is_active, is_superuser, transaction_pin_hash, trust_score, last_login_device, last_login_city, last_login_ip, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:38,334 INFO sqlalchemy.engine.Engine [cached since 1.504s ago] ('7663d11c8bb640f6a767fe9400b203cd', 'Sim Mule 2', 'sim_7663d11c@moneytrace.dev', '$2b$12$Tw5XT9WcCH6QJSNhQtu7qOOIWxVx5mAIaFsIQ8LPVlRsI7X7lwQYC', 'customer', 1, 0, None, 96.0, 'Chrome on Windows 11', 'Mumbai, India', '103.21.244.2', '2026-10-10 18:03:38.334047', '2026-10-10 18:03:38.334058')
+2026-10-10 23:33:38,340 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.account_number = ?
+2026-10-10 23:33:38,340 INFO sqlalchemy.engine.Engine [cached since 0.7927s ago] ('ACC61714965',)
+2026-10-10 23:33:38,342 INFO sqlalchemy.engine.Engine INSERT INTO accounts (id, account_number, user_id, balance, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:38,342 INFO sqlalchemy.engine.Engine [cached since 1.503s ago] ('d301e854c1ea446588a421c0533beacd', 'SIM61714965', '7663d11c8bb640f6a767fe9400b203cd', 0.0, 'active', '2026-10-10 18:03:38.342279', '2026-10-10 18:03:38.342287')
+2026-10-10 23:33:38,343 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:38,349 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:38,350 INFO sqlalchemy.engine.Engine SELECT users.id, users.full_name, users.email, users.password_hash, users.role, users.is_active, users.is_superuser, users.transaction_pin_hash, users.trust_score, users.last_login_device, users.last_login_city, users.last_login_ip, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:38,350 INFO sqlalchemy.engine.Engine [cached since 1.495s ago] ('7663d11c8bb640f6a767fe9400b203cd',)
+2026-10-10 23:33:38,352 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:38,352 INFO sqlalchemy.engine.Engine [cached since 0.7899s ago] ('d301e854c1ea446588a421c0533beacd',)
+2026-10-10 23:33:38,725 INFO sqlalchemy.engine.Engine INSERT INTO users (id, full_name, email, password_hash, role, is_active, is_superuser, transaction_pin_hash, trust_score, last_login_device, last_login_city, last_login_ip, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:38,725 INFO sqlalchemy.engine.Engine [cached since 1.895s ago] ('259f793cb90b4d4bb11770ee7bd85d79', 'Sim Mule 3', 'sim_259f793c@moneytrace.dev', '$2b$12$ShIMByOfx20ijRqW.Phzu.dywgOoN7rBw3loosKWH6HZd2gKCmgKu', 'customer', 1, 0, None, 96.0, 'Chrome on Windows 11', 'Mumbai, India', '103.21.244.2', '2026-10-10 18:03:38.725028', '2026-10-10 18:03:38.725036')
+2026-10-10 23:33:38,730 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.account_number = ?
+2026-10-10 23:33:38,731 INFO sqlalchemy.engine.Engine [cached since 1.183s ago] ('ACC82626182',)
+2026-10-10 23:33:38,733 INFO sqlalchemy.engine.Engine INSERT INTO accounts (id, account_number, user_id, balance, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:38,733 INFO sqlalchemy.engine.Engine [cached since 1.894s ago] ('f78893e117924c51b188339d300cc940', 'SIM82626182', '259f793cb90b4d4bb11770ee7bd85d79', 0.0, 'active', '2026-10-10 18:03:38.733449', '2026-10-10 18:03:38.733457')
+2026-10-10 23:33:38,735 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:38,745 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:38,745 INFO sqlalchemy.engine.Engine SELECT users.id, users.full_name, users.email, users.password_hash, users.role, users.is_active, users.is_superuser, users.transaction_pin_hash, users.trust_score, users.last_login_device, users.last_login_city, users.last_login_ip, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:38,745 INFO sqlalchemy.engine.Engine [cached since 1.891s ago] ('259f793cb90b4d4bb11770ee7bd85d79',)
+2026-10-10 23:33:38,747 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:38,747 INFO sqlalchemy.engine.Engine [cached since 1.185s ago] ('f78893e117924c51b188339d300cc940',)
+2026-10-10 23:33:38,751 INFO sqlalchemy.engine.Engine INSERT INTO scenario_runs (id, scenario_id, scenario_type, status, current_step, total_steps, context_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:38,752 INFO sqlalchemy.engine.Engine [generated in 0.00059s] ('6f7279f3fe1544d78059cf793a3556bb', 'SCEN_2FC11047', 'mule_chain', 'running', 0, 3, '{"nodes": [{"user_id": "ef4f5ae1-73d8-44f5-9453-2d8c30398b7e", "acc": "SIM72043487"}, {"user_id": "781cb6da-24c9-4c85-afcf-ff18bdcb8ec4", "acc": "SIM ... (47 characters truncated) ... 7-fe9400b203cd", "acc": "SIM61714965"}, {"user_id": "259f793c-b90b-4d4b-b117-70ee7bd85d79", "acc": "SIM82626182"}], "amounts": [50000, 49000, 48000]}', '2026-10-10 18:03:38.751647', '2026-10-10 18:03:38.751654')
+2026-10-10 23:33:38,756 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:38,762 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:38,763 INFO sqlalchemy.engine.Engine SELECT scenario_runs.id, scenario_runs.scenario_id, scenario_runs.scenario_type, scenario_runs.status, scenario_runs.current_step, scenario_runs.total_steps, scenario_runs.context_data, scenario_runs.created_at, scenario_runs.updated_at 
+FROM scenario_runs 
+WHERE scenario_runs.id = ?
+2026-10-10 23:33:38,763 INFO sqlalchemy.engine.Engine [generated in 0.00018s] ('6f7279f3fe1544d78059cf793a3556bb',)
+2026-10-10 23:33:38,768 INFO sqlalchemy.engine.Engine INSERT INTO audit_logs (id, user_id, user_name, user_email, user_role, action, target_type, target_id, details, ip_address, user_agent, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:38,768 INFO sqlalchemy.engine.Engine [generated in 0.00067s] ('ea55e8aa450746bb9ff10230a60ae0a1', 'b318c12162784c74983ce40199e9ec6d', 'Admin Test', 'admin_1791655416@test.com', 'admin', 'SCENARIO_STARTED', 'SCENARIO', 'SCEN_2FC11047', '{"type": "mule_chain"}', '127.0.0.1', None, '2026-10-10 18:03:38.765919')
+2026-10-10 23:33:38,774 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     127.0.0.1:61587 - "POST /api/v1/scenarios/start HTTP/1.1" 200 OK
+2026-10-10 23:33:38,788 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:38,789 INFO sqlalchemy.engine.Engine SELECT users.id, users.full_name, users.email, users.password_hash, users.role, users.is_active, users.is_superuser, users.transaction_pin_hash, users.trust_score, users.last_login_device, users.last_login_city, users.last_login_ip, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:38,789 INFO sqlalchemy.engine.Engine [cached since 1.639s ago] ('b318c12162784c74983ce40199e9ec6d',)
+2026-10-10 23:33:38,792 INFO sqlalchemy.engine.Engine SELECT scenario_runs.id, scenario_runs.scenario_id, scenario_runs.scenario_type, scenario_runs.status, scenario_runs.current_step, scenario_runs.total_steps, scenario_runs.context_data, scenario_runs.created_at, scenario_runs.updated_at 
+FROM scenario_runs 
+WHERE scenario_runs.scenario_id = ?
+2026-10-10 23:33:38,792 INFO sqlalchemy.engine.Engine [generated in 0.00047s] ('SCEN_2FC11047',)
+2026-10-10 23:33:38,795 INFO sqlalchemy.engine.Engine SELECT scenario_runs.id, scenario_runs.scenario_id, scenario_runs.scenario_type, scenario_runs.status, scenario_runs.current_step, scenario_runs.total_steps, scenario_runs.context_data, scenario_runs.created_at, scenario_runs.updated_at 
+FROM scenario_runs 
+WHERE scenario_runs.scenario_id = ?
+2026-10-10 23:33:38,796 INFO sqlalchemy.engine.Engine [cached since 0.003628s ago] ('SCEN_2FC11047',)
+2026-10-10 23:33:38,799 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.user_id = ?
+2026-10-10 23:33:38,799 INFO sqlalchemy.engine.Engine [generated in 0.00033s] ('ef4f5ae173d844f594532d8c30398b7e',)
+2026-10-10 23:33:38,802 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.account_number = ?
+2026-10-10 23:33:38,802 INFO sqlalchemy.engine.Engine [cached since 1.255s ago] ('SIM72520074',)
+2026-10-10 23:33:38,804 INFO sqlalchemy.engine.Engine SAVEPOINT sa_savepoint_1
+2026-10-10 23:33:38,804 INFO sqlalchemy.engine.Engine [no key 0.00020s] ()
+2026-10-10 23:33:38,806 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:38,806 INFO sqlalchemy.engine.Engine [generated in 0.00026s] ('9d8faa98549d4489a45da03887abdf17',)
+2026-10-10 23:33:38,809 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:38,809 INFO sqlalchemy.engine.Engine [cached since 0.003382s ago] ('5873df0cd90144d2bba77224ca6b5753',)
+2026-10-10 23:33:38,814 INFO sqlalchemy.engine.Engine UPDATE accounts SET balance=?, updated_at=? WHERE accounts.id = ?
+2026-10-10 23:33:38,814 INFO sqlalchemy.engine.Engine [generated in 0.00048s] [(50000.0, '2026-10-10 18:03:38.811017', '5873df0cd90144d2bba77224ca6b5753'), (50000.0, '2026-10-10 18:03:38.810982', '9d8faa98549d4489a45da03887abdf17')]
+2026-10-10 23:33:38,821 INFO sqlalchemy.engine.Engine INSERT INTO transactions (id, transaction_id, sender_account_id, receiver_account_id, amount, remark, status, device_info, ip_address, location, risk_score, is_flagged, is_simulation, scenario_id, timestamp, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:38,821 INFO sqlalchemy.engine.Engine [generated in 0.00057s] ('cf21f0c82a87443dacaecb2095c69bb1', 'TXN20261010180338373823', '9d8faa98549d4489a45da03887abdf17', '5873df0cd90144d2bba77224ca6b5753', 50000.0, 'Simulated Transfer 1', 'completed', None, None, None, None, 0, 1, 'SCEN_2FC11047', '2026-10-10 18:03:38.821065', '2026-10-10 18:03:38.821071')
+2026-10-10 23:33:38,824 INFO sqlalchemy.engine.Engine RELEASE SAVEPOINT sa_savepoint_1
+2026-10-10 23:33:38,824 INFO sqlalchemy.engine.Engine [no key 0.00033s] ()
+2026-10-10 23:33:38,832 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:38,833 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:38,834 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.id = ?
+2026-10-10 23:33:38,835 INFO sqlalchemy.engine.Engine [generated in 0.00018s] ('cf21f0c82a87443dacaecb2095c69bb1',)
+2026-10-10 23:33:38,840 INFO sqlalchemy.engine.Engine SELECT count(transactions.id) AS count_1 
+FROM transactions 
+WHERE transactions.sender_account_id = ? AND transactions.timestamp >= ? AND transactions.timestamp <= ? AND transactions.is_simulation = 1 AND transactions.scenario_id = ?
+2026-10-10 23:33:38,840 INFO sqlalchemy.engine.Engine [generated in 0.00041s] ('9d8faa98549d4489a45da03887abdf17', '2026-10-10 17:58:38.821065', '2026-10-10 18:03:38.821065', 'SCEN_2FC11047')
+2026-10-10 23:33:38,845 INFO sqlalchemy.engine.Engine SELECT sum(transactions.amount) AS sum_1 
+FROM transactions 
+WHERE transactions.receiver_account_id = ? AND transactions.timestamp >= ? AND transactions.timestamp <= ? AND transactions.is_simulation = 1 AND transactions.scenario_id = ?
+2026-10-10 23:33:38,845 INFO sqlalchemy.engine.Engine [generated in 0.00030s] ('9d8faa98549d4489a45da03887abdf17', '2026-10-10 16:03:38.821065', '2026-10-10 18:03:38.821065', 'SCEN_2FC11047')
+2026-10-10 23:33:38,849 INFO sqlalchemy.engine.Engine UPDATE transactions SET risk_score=? WHERE transactions.id = ?
+2026-10-10 23:33:38,849 INFO sqlalchemy.engine.Engine [generated in 0.00048s] (20.0, 'cf21f0c82a87443dacaecb2095c69bb1')
+2026-10-10 23:33:38,852 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:38,857 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:38,857 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.id = ?
+2026-10-10 23:33:38,857 INFO sqlalchemy.engine.Engine [cached since 0.02304s ago] ('cf21f0c82a87443dacaecb2095c69bb1',)
+2026-10-10 23:33:38,860 INFO sqlalchemy.engine.Engine SELECT accounts.id 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:38,860 INFO sqlalchemy.engine.Engine [generated in 0.00026s] ('9d8faa98549d4489a45da03887abdf17',)
+2026-10-10 23:33:38,865 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:38,865 INFO sqlalchemy.engine.Engine [generated in 0.00028s] ('ef4f5ae173d844f594532d8c30398b7e',)
+2026-10-10 23:33:38,868 INFO sqlalchemy.engine.Engine SELECT accounts.id 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:38,868 INFO sqlalchemy.engine.Engine [cached since 0.008311s ago] ('5873df0cd90144d2bba77224ca6b5753',)
+2026-10-10 23:33:38,871 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:38,871 INFO sqlalchemy.engine.Engine [cached since 0.0058s ago] ('781cb6da24c94c85afcfff18bdcb8ec4',)
+2026-10-10 23:33:38,873 INFO sqlalchemy.engine.Engine UPDATE scenario_runs SET current_step=?, updated_at=? WHERE scenario_runs.id = ?
+2026-10-10 23:33:38,873 INFO sqlalchemy.engine.Engine [generated in 0.00022s] (1, '2026-10-10 18:03:38.873505', '6f7279f3fe1544d78059cf793a3556bb')
+2026-10-10 23:33:38,877 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:38,881 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:38,882 INFO sqlalchemy.engine.Engine INSERT INTO audit_logs (id, user_id, user_name, user_email, user_role, action, target_type, target_id, details, ip_address, user_agent, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:38,882 INFO sqlalchemy.engine.Engine [cached since 0.1148s ago] ('ce1f7783d68c4270a13e25925e0d1bcf', 'b318c12162784c74983ce40199e9ec6d', 'Admin Test', 'admin_1791655416@test.com', 'admin', 'SCENARIO_STEPPED', 'SCENARIO', 'SCEN_2FC11047', '{"completed": false}', '127.0.0.1', None, '2026-10-10 18:03:38.881382')
+2026-10-10 23:33:38,885 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:38,889 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:38,890 INFO sqlalchemy.engine.Engine SELECT scenario_runs.id, scenario_runs.scenario_id, scenario_runs.scenario_type, scenario_runs.status, scenario_runs.current_step, scenario_runs.total_steps, scenario_runs.context_data, scenario_runs.created_at, scenario_runs.updated_at 
+FROM scenario_runs 
+WHERE scenario_runs.scenario_id = ?
+2026-10-10 23:33:38,890 INFO sqlalchemy.engine.Engine [cached since 0.09778s ago] ('SCEN_2FC11047',)
+INFO:     127.0.0.1:61589 - "POST /api/v1/scenarios/SCEN_2FC11047/command HTTP/1.1" 200 OK
+2026-10-10 23:33:38,892 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-10-10 23:33:38,897 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:38,898 INFO sqlalchemy.engine.Engine SELECT users.id, users.full_name, users.email, users.password_hash, users.role, users.is_active, users.is_superuser, users.transaction_pin_hash, users.trust_score, users.last_login_device, users.last_login_city, users.last_login_ip, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:38,898 INFO sqlalchemy.engine.Engine [cached since 1.748s ago] ('b318c12162784c74983ce40199e9ec6d',)
+2026-10-10 23:33:38,900 INFO sqlalchemy.engine.Engine SELECT scenario_runs.id, scenario_runs.scenario_id, scenario_runs.scenario_type, scenario_runs.status, scenario_runs.current_step, scenario_runs.total_steps, scenario_runs.context_data, scenario_runs.created_at, scenario_runs.updated_at 
+FROM scenario_runs 
+WHERE scenario_runs.scenario_id = ?
+2026-10-10 23:33:38,900 INFO sqlalchemy.engine.Engine [cached since 0.1085s ago] ('SCEN_2FC11047',)
+2026-10-10 23:33:38,902 INFO sqlalchemy.engine.Engine SELECT scenario_runs.id, scenario_runs.scenario_id, scenario_runs.scenario_type, scenario_runs.status, scenario_runs.current_step, scenario_runs.total_steps, scenario_runs.context_data, scenario_runs.created_at, scenario_runs.updated_at 
+FROM scenario_runs 
+WHERE scenario_runs.scenario_id = ?
+2026-10-10 23:33:38,902 INFO sqlalchemy.engine.Engine [cached since 0.1104s ago] ('SCEN_2FC11047',)
+2026-10-10 23:33:38,904 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.user_id = ?
+2026-10-10 23:33:38,904 INFO sqlalchemy.engine.Engine [cached since 0.1052s ago] ('781cb6da24c94c85afcfff18bdcb8ec4',)
+2026-10-10 23:33:38,906 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.account_number = ?
+2026-10-10 23:33:38,907 INFO sqlalchemy.engine.Engine [cached since 1.359s ago] ('SIM61714965',)
+2026-10-10 23:33:38,908 INFO sqlalchemy.engine.Engine SAVEPOINT sa_savepoint_1
+2026-10-10 23:33:38,909 INFO sqlalchemy.engine.Engine [no key 0.00017s] ()
+2026-10-10 23:33:38,910 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:38,910 INFO sqlalchemy.engine.Engine [cached since 0.1035s ago] ('5873df0cd90144d2bba77224ca6b5753',)
+2026-10-10 23:33:38,912 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:38,912 INFO sqlalchemy.engine.Engine [cached since 0.1063s ago] ('d301e854c1ea446588a421c0533beacd',)
+2026-10-10 23:33:38,915 INFO sqlalchemy.engine.Engine UPDATE accounts SET balance=?, updated_at=? WHERE accounts.id = ?
+2026-10-10 23:33:38,915 INFO sqlalchemy.engine.Engine [cached since 0.1007s ago] [(1000.0, '2026-10-10 18:03:38.913800', '5873df0cd90144d2bba77224ca6b5753'), (49000.0, '2026-10-10 18:03:38.913814', 'd301e854c1ea446588a421c0533beacd')]
+2026-10-10 23:33:38,919 INFO sqlalchemy.engine.Engine INSERT INTO transactions (id, transaction_id, sender_account_id, receiver_account_id, amount, remark, status, device_info, ip_address, location, risk_score, is_flagged, is_simulation, scenario_id, timestamp, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:38,920 INFO sqlalchemy.engine.Engine [cached since 0.09907s ago] ('019a9aa1d585425f9a8330223771ec46', 'TXN20261010180338948519', '5873df0cd90144d2bba77224ca6b5753', 'd301e854c1ea446588a421c0533beacd', 49000.0, 'Simulated Transfer 2', 'completed', None, None, None, None, 0, 1, 'SCEN_2FC11047', '2026-10-10 18:03:38.919752', '2026-10-10 18:03:38.919759')
+2026-10-10 23:33:38,921 INFO sqlalchemy.engine.Engine RELEASE SAVEPOINT sa_savepoint_1
+2026-10-10 23:33:38,921 INFO sqlalchemy.engine.Engine [no key 0.00018s] ()
+2026-10-10 23:33:38,925 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:38,927 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:38,927 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.id = ?
+2026-10-10 23:33:38,927 INFO sqlalchemy.engine.Engine [cached since 0.09292s ago] ('019a9aa1d585425f9a8330223771ec46',)
+2026-10-10 23:33:38,929 INFO sqlalchemy.engine.Engine SELECT count(transactions.id) AS count_1 
+FROM transactions 
+WHERE transactions.sender_account_id = ? AND transactions.timestamp >= ? AND transactions.timestamp <= ? AND transactions.is_simulation = 1 AND transactions.scenario_id = ?
+2026-10-10 23:33:38,929 INFO sqlalchemy.engine.Engine [cached since 0.08938s ago] ('5873df0cd90144d2bba77224ca6b5753', '2026-10-10 17:58:38.919752', '2026-10-10 18:03:38.919752', 'SCEN_2FC11047')
+2026-10-10 23:33:38,931 INFO sqlalchemy.engine.Engine SELECT sum(transactions.amount) AS sum_1 
+FROM transactions 
+WHERE transactions.receiver_account_id = ? AND transactions.timestamp >= ? AND transactions.timestamp <= ? AND transactions.is_simulation = 1 AND transactions.scenario_id = ?
+2026-10-10 23:33:38,931 INFO sqlalchemy.engine.Engine [cached since 0.08627s ago] ('5873df0cd90144d2bba77224ca6b5753', '2026-10-10 16:03:38.919752', '2026-10-10 18:03:38.919752', 'SCEN_2FC11047')
+2026-10-10 23:33:38,934 INFO sqlalchemy.engine.Engine UPDATE transactions SET risk_score=?, is_flagged=? WHERE transactions.id = ?
+2026-10-10 23:33:38,934 INFO sqlalchemy.engine.Engine [generated in 0.00021s] (100.0, 1, '019a9aa1d585425f9a8330223771ec46')
+2026-10-10 23:33:38,940 INFO sqlalchemy.engine.Engine SELECT fraud_alerts.id, fraud_alerts.alert_id, fraud_alerts.transaction_id, fraud_alerts.account_id, fraud_alerts.alert_type, fraud_alerts.risk_score, fraud_alerts.severity, fraud_alerts.description, fraud_alerts.rule_breakdown, fraud_alerts.status, fraud_alerts.created_at 
+FROM fraud_alerts 
+WHERE fraud_alerts.transaction_id = ?
+2026-10-10 23:33:38,940 INFO sqlalchemy.engine.Engine [generated in 0.00031s] ('019a9aa1d585425f9a8330223771ec46',)
+2026-10-10 23:33:38,943 INFO sqlalchemy.engine.Engine INSERT INTO fraud_alerts (id, alert_id, transaction_id, account_id, alert_type, risk_score, severity, description, rule_breakdown, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:38,943 INFO sqlalchemy.engine.Engine [generated in 0.00037s] ('dd7f5d60f19e4022980fa2cfb53b8abe', 'ALT20261010180338544', '019a9aa1d585425f9a8330223771ec46', '5873df0cd90144d2bba77224ca6b5753', 'New Account Activity, Balance Drain, Mule Account Activity', 100.0, 'CRITICAL', '- New Account Activity: Account created 0.0 days ago with transfer > INR 20,000 (+20 Risk)\n- Balance Drain: 98.0% of balance transferred (+40 Risk)\n- Mule Account Activity: Transferring 98.0% of recent deposit within 2 hours (+40 Risk)', '{"rules_triggered": ["New Account Activity", "Balance Drain", "Mule Account Activity"], "score_breakdown": {"New Account Activity": 20.0, "Balance Drain": 40.0, "Mule Account Activity": 40.0}}', 'OPEN', '2026-10-10 18:03:38.942015')
+2026-10-10 23:33:38,946 INFO sqlalchemy.engine.Engine SELECT fraud_alerts.id, fraud_alerts.alert_id, fraud_alerts.transaction_id, fraud_alerts.account_id, fraud_alerts.alert_type, fraud_alerts.risk_score, fraud_alerts.severity, fraud_alerts.description, fraud_alerts.rule_breakdown, fraud_alerts.status, fraud_alerts.created_at 
+FROM fraud_alerts 
+WHERE fraud_alerts.alert_id = ?
+2026-10-10 23:33:38,946 INFO sqlalchemy.engine.Engine [generated in 0.00029s] ('ALT20261010180338544',)
+2026-10-10 23:33:38,951 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.id = ? OR transactions.transaction_id = ?
+2026-10-10 23:33:38,951 INFO sqlalchemy.engine.Engine [generated in 0.00031s] ('019a9aa1d585425f9a8330223771ec46', '019a9aa1-d585-425f-9a83-30223771ec46')
+2026-10-10 23:33:38,956 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.transaction_id = ? OR transactions.id IS NULL
+2026-10-10 23:33:38,957 INFO sqlalchemy.engine.Engine [generated in 0.00023s] ('TXN20261010180338948519',)
+2026-10-10 23:33:38,961 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:38,961 INFO sqlalchemy.engine.Engine [generated in 0.00036s] ('d301e854c1ea446588a421c0533beacd',)
+2026-10-10 23:33:38,963 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:38,963 INFO sqlalchemy.engine.Engine [generated in 0.00023s] ('5873df0cd90144d2bba77224ca6b5753',)
+2026-10-10 23:33:38,968 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts
+2026-10-10 23:33:38,968 INFO sqlalchemy.engine.Engine [generated in 0.00030s] ()
+2026-10-10 23:33:38,971 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:38,972 INFO sqlalchemy.engine.Engine [generated in 0.00033s] ('1f32c1e2a99442b4a0c2e1d8a6522054', '259f793cb90b4d4bb11770ee7bd85d79', '35e03758e80c48cc8ac4285e891b26fd', '3b3362a26fea41d9b81871611c6b8daf', '7663d11c8bb640f6a767fe9400b203cd', '781cb6da24c94c85afcfff18bdcb8ec4', '7fc3e347d9cc46ec93d55a7ce66fe8b2', '8a447c3bbb7b4d06ab819559aca98f04', 'a32199620bbe456099b9f0c046083e62', 'b318c12162784c74983ce40199e9ec6d', 'e927004b49e44cecae89f4e62bc44a6c', 'ef4f5ae173d844f594532d8c30398b7e', 'f1ec2b9db89c4b0f8c3b057101e2a532')
+2026-10-10 23:33:38,977 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.status = ? AND transactions.is_simulation = 0 ORDER BY transactions.timestamp DESC
+ LIMIT ? OFFSET ?
+2026-10-10 23:33:38,978 INFO sqlalchemy.engine.Engine [generated in 0.00051s] ('completed', 3000, 0)
+2026-10-10 23:33:38,981 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:38,981 INFO sqlalchemy.engine.Engine [generated in 0.00034s] ('80f0adbe51ac4d2fba8c98533cf063b0',)
+2026-10-10 23:33:38,984 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:38,984 INFO sqlalchemy.engine.Engine [generated in 0.00031s] ('648e2efdd8aa42e69118094026ef89cf',)
+2026-10-10 23:33:38,987 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:38,987 INFO sqlalchemy.engine.Engine [generated in 0.00034s] ('35e03758e80c48cc8ac4285e891b26fd',)
+2026-10-10 23:33:38,991 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:38,991 INFO sqlalchemy.engine.Engine [generated in 0.00029s] ('35e03758e80c48cc8ac4285e891b26fd',)
+2026-10-10 23:33:38,994 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts
+2026-10-10 23:33:38,994 INFO sqlalchemy.engine.Engine [cached since 0.02609s ago] ()
+2026-10-10 23:33:38,997 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:38,997 INFO sqlalchemy.engine.Engine [cached since 0.026s ago] ('1f32c1e2a99442b4a0c2e1d8a6522054', '259f793cb90b4d4bb11770ee7bd85d79', '35e03758e80c48cc8ac4285e891b26fd', '3b3362a26fea41d9b81871611c6b8daf', '7663d11c8bb640f6a767fe9400b203cd', '781cb6da24c94c85afcfff18bdcb8ec4', '7fc3e347d9cc46ec93d55a7ce66fe8b2', '8a447c3bbb7b4d06ab819559aca98f04', 'a32199620bbe456099b9f0c046083e62', 'b318c12162784c74983ce40199e9ec6d', 'e927004b49e44cecae89f4e62bc44a6c', 'ef4f5ae173d844f594532d8c30398b7e', 'f1ec2b9db89c4b0f8c3b057101e2a532')
+2026-10-10 23:33:39,001 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.status = ? AND transactions.is_simulation = 0 ORDER BY transactions.timestamp DESC
+ LIMIT ? OFFSET ?
+2026-10-10 23:33:39,001 INFO sqlalchemy.engine.Engine [cached since 0.02394s ago] ('completed', 2000, 0)
+2026-10-10 23:33:39,003 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,003 INFO sqlalchemy.engine.Engine [cached since 0.02216s ago] ('80f0adbe51ac4d2fba8c98533cf063b0',)
+2026-10-10 23:33:39,005 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,005 INFO sqlalchemy.engine.Engine [cached since 0.02132s ago] ('648e2efdd8aa42e69118094026ef89cf',)
+2026-10-10 23:33:39,007 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,007 INFO sqlalchemy.engine.Engine [cached since 0.02038s ago] ('35e03758e80c48cc8ac4285e891b26fd',)
+2026-10-10 23:33:39,010 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,010 INFO sqlalchemy.engine.Engine [cached since 0.01898s ago] ('35e03758e80c48cc8ac4285e891b26fd',)
+2026-10-10 23:33:39,017 INFO sqlalchemy.engine.Engine SELECT recovery_cases.id, recovery_cases.case_id, recovery_cases.alert_id, recovery_cases.transaction_id, recovery_cases.recovery_score, recovery_cases.recovery_probability, recovery_cases.current_holder_account, recovery_cases.amount_at_risk, recovery_cases.recommended_action, recovery_cases.status, recovery_cases.assigned_to_id, recovery_cases.assigned_at, recovery_cases.closed_at, recovery_cases.created_at, recovery_cases.updated_at 
+FROM recovery_cases 
+WHERE recovery_cases.alert_id = ?
+2026-10-10 23:33:39,017 INFO sqlalchemy.engine.Engine [generated in 0.00037s] ('dd7f5d60f19e4022980fa2cfb53b8abe',)
+2026-10-10 23:33:39,021 INFO sqlalchemy.engine.Engine INSERT INTO recovery_cases (id, case_id, alert_id, transaction_id, recovery_score, recovery_probability, current_holder_account, amount_at_risk, recommended_action, status, assigned_to_id, assigned_at, closed_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:39,021 INFO sqlalchemy.engine.Engine [generated in 0.00037s] ('10df9b8dcdaf40a080c4e37f69eb9a6e', 'REC202610107172', 'dd7f5d60f19e4022980fa2cfb53b8abe', '019a9aa1d585425f9a8330223771ec46', 100.0, 'HIGH', 'SIM61714965', 49000.0, 'Freeze destination account immediately', 'OPEN', None, None, None, '2026-10-10 18:03:39.019393', '2026-10-10 18:03:39.019394')
+2026-10-10 23:33:39,023 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:39,034 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:39,039 INFO sqlalchemy.engine.Engine SELECT recovery_cases.id, recovery_cases.case_id, recovery_cases.alert_id, recovery_cases.transaction_id, recovery_cases.recovery_score, recovery_cases.recovery_probability, recovery_cases.current_holder_account, recovery_cases.amount_at_risk, recovery_cases.recommended_action, recovery_cases.status, recovery_cases.assigned_to_id, recovery_cases.assigned_at, recovery_cases.closed_at, recovery_cases.created_at, recovery_cases.updated_at 
+FROM recovery_cases 
+WHERE recovery_cases.case_id = ?
+2026-10-10 23:33:39,040 INFO sqlalchemy.engine.Engine [generated in 0.00033s] ('REC202610107172',)
+2026-10-10 23:33:39,046 INFO sqlalchemy.engine.Engine SELECT transactions.id AS transactions_id, transactions.transaction_id AS transactions_transaction_id, transactions.sender_account_id AS transactions_sender_account_id, transactions.receiver_account_id AS transactions_receiver_account_id, transactions.amount AS transactions_amount, transactions.remark AS transactions_remark, transactions.status AS transactions_status, transactions.device_info AS transactions_device_info, transactions.ip_address AS transactions_ip_address, transactions.location AS transactions_location, transactions.risk_score AS transactions_risk_score, transactions.is_flagged AS transactions_is_flagged, transactions.is_simulation AS transactions_is_simulation, transactions.scenario_id AS transactions_scenario_id, transactions.timestamp AS transactions_timestamp, transactions.created_at AS transactions_created_at 
+FROM transactions 
+WHERE transactions.id IN (?)
+2026-10-10 23:33:39,046 INFO sqlalchemy.engine.Engine [generated in 0.00089s] ('019a9aa1d585425f9a8330223771ec46',)
+2026-10-10 23:33:39,055 INFO sqlalchemy.engine.Engine SELECT fraud_alerts.id AS fraud_alerts_id, fraud_alerts.alert_id AS fraud_alerts_alert_id, fraud_alerts.transaction_id AS fraud_alerts_transaction_id, fraud_alerts.account_id AS fraud_alerts_account_id, fraud_alerts.alert_type AS fraud_alerts_alert_type, fraud_alerts.risk_score AS fraud_alerts_risk_score, fraud_alerts.severity AS fraud_alerts_severity, fraud_alerts.description AS fraud_alerts_description, fraud_alerts.rule_breakdown AS fraud_alerts_rule_breakdown, fraud_alerts.status AS fraud_alerts_status, fraud_alerts.created_at AS fraud_alerts_created_at 
+FROM fraud_alerts 
+WHERE fraud_alerts.id IN (?)
+2026-10-10 23:33:39,055 INFO sqlalchemy.engine.Engine [generated in 0.00038s] ('dd7f5d60f19e4022980fa2cfb53b8abe',)
+2026-10-10 23:33:39,064 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,064 INFO sqlalchemy.engine.Engine [generated in 0.00039s] ('d301e854c1ea446588a421c0533beacd',)
+2026-10-10 23:33:39,068 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,068 INFO sqlalchemy.engine.Engine [generated in 0.00038s] ('5873df0cd90144d2bba77224ca6b5753',)
+2026-10-10 23:33:39,074 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,074 INFO sqlalchemy.engine.Engine [generated in 0.00040s] ('5873df0cd90144d2bba77224ca6b5753',)
+2026-10-10 23:33:39,080 INFO sqlalchemy.engine.Engine SELECT transactions.id AS transactions_id, transactions.transaction_id AS transactions_transaction_id, transactions.sender_account_id AS transactions_sender_account_id, transactions.receiver_account_id AS transactions_receiver_account_id, transactions.amount AS transactions_amount, transactions.remark AS transactions_remark, transactions.status AS transactions_status, transactions.device_info AS transactions_device_info, transactions.ip_address AS transactions_ip_address, transactions.location AS transactions_location, transactions.risk_score AS transactions_risk_score, transactions.is_flagged AS transactions_is_flagged, transactions.is_simulation AS transactions_is_simulation, transactions.scenario_id AS transactions_scenario_id, transactions.timestamp AS transactions_timestamp, transactions.created_at AS transactions_created_at 
+FROM transactions 
+WHERE transactions.id IN (?)
+2026-10-10 23:33:39,080 INFO sqlalchemy.engine.Engine [generated in 0.00056s] ('019a9aa1d585425f9a8330223771ec46',)
+2026-10-10 23:33:39,085 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,085 INFO sqlalchemy.engine.Engine [generated in 0.00044s] ('7663d11c8bb640f6a767fe9400b203cd',)
+2026-10-10 23:33:39,090 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,090 INFO sqlalchemy.engine.Engine [generated in 0.00041s] ('781cb6da24c94c85afcfff18bdcb8ec4',)
+2026-10-10 23:33:39,095 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,095 INFO sqlalchemy.engine.Engine [generated in 0.00038s] ('781cb6da24c94c85afcfff18bdcb8ec4',)
+2026-10-10 23:33:39,101 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,101 INFO sqlalchemy.engine.Engine [generated in 0.00042s] ('d301e854c1ea446588a421c0533beacd',)
+2026-10-10 23:33:39,117 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,117 INFO sqlalchemy.engine.Engine [generated in 0.00041s] ('5873df0cd90144d2bba77224ca6b5753',)
+2026-10-10 23:33:39,122 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,122 INFO sqlalchemy.engine.Engine [generated in 0.00043s] ('7663d11c8bb640f6a767fe9400b203cd',)
+2026-10-10 23:33:39,128 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,129 INFO sqlalchemy.engine.Engine [generated in 0.00050s] ('781cb6da24c94c85afcfff18bdcb8ec4',)
+2026-10-10 23:33:39,134 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:39,137 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:39,137 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.id = ?
+2026-10-10 23:33:39,138 INFO sqlalchemy.engine.Engine [cached since 0.3032s ago] ('019a9aa1d585425f9a8330223771ec46',)
+2026-10-10 23:33:39,141 INFO sqlalchemy.engine.Engine SELECT accounts.id 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:39,141 INFO sqlalchemy.engine.Engine [cached since 0.2812s ago] ('5873df0cd90144d2bba77224ca6b5753',)
+2026-10-10 23:33:39,143 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:39,143 INFO sqlalchemy.engine.Engine [cached since 0.2784s ago] ('781cb6da24c94c85afcfff18bdcb8ec4',)
+2026-10-10 23:33:39,146 INFO sqlalchemy.engine.Engine SELECT accounts.id 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:39,146 INFO sqlalchemy.engine.Engine [cached since 0.2867s ago] ('d301e854c1ea446588a421c0533beacd',)
+2026-10-10 23:33:39,149 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:39,149 INFO sqlalchemy.engine.Engine [cached since 0.2842s ago] ('7663d11c8bb640f6a767fe9400b203cd',)
+2026-10-10 23:33:39,151 INFO sqlalchemy.engine.Engine UPDATE scenario_runs SET current_step=?, updated_at=? WHERE scenario_runs.id = ?
+2026-10-10 23:33:39,151 INFO sqlalchemy.engine.Engine [cached since 0.2785s ago] (2, '2026-10-10 18:03:39.151842', '6f7279f3fe1544d78059cf793a3556bb')
+2026-10-10 23:33:39,155 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:39,159 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:39,159 INFO sqlalchemy.engine.Engine INSERT INTO audit_logs (id, user_id, user_name, user_email, user_role, action, target_type, target_id, details, ip_address, user_agent, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:39,160 INFO sqlalchemy.engine.Engine [cached since 0.3922s ago] ('3e32bf6f871041fba866762835cb85a2', 'b318c12162784c74983ce40199e9ec6d', 'Admin Test', 'admin_1791655416@test.com', 'admin', 'SCENARIO_STEPPED', 'SCENARIO', 'SCEN_2FC11047', '{"completed": false}', '127.0.0.1', None, '2026-10-10 18:03:39.159204')
+2026-10-10 23:33:39,163 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:39,168 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:39,168 INFO sqlalchemy.engine.Engine SELECT scenario_runs.id, scenario_runs.scenario_id, scenario_runs.scenario_type, scenario_runs.status, scenario_runs.current_step, scenario_runs.total_steps, scenario_runs.context_data, scenario_runs.created_at, scenario_runs.updated_at 
+FROM scenario_runs 
+WHERE scenario_runs.scenario_id = ?
+2026-10-10 23:33:39,169 INFO sqlalchemy.engine.Engine [cached since 0.3767s ago] ('SCEN_2FC11047',)
+INFO:     127.0.0.1:61590 - "POST /api/v1/scenarios/SCEN_2FC11047/command HTTP/1.1" 200 OK
+2026-10-10 23:33:39,172 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-10-10 23:33:39,177 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:39,177 INFO sqlalchemy.engine.Engine SELECT users.id, users.full_name, users.email, users.password_hash, users.role, users.is_active, users.is_superuser, users.transaction_pin_hash, users.trust_score, users.last_login_device, users.last_login_city, users.last_login_ip, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:39,178 INFO sqlalchemy.engine.Engine [cached since 2.028s ago] ('b318c12162784c74983ce40199e9ec6d',)
+2026-10-10 23:33:39,180 INFO sqlalchemy.engine.Engine SELECT scenario_runs.id, scenario_runs.scenario_id, scenario_runs.scenario_type, scenario_runs.status, scenario_runs.current_step, scenario_runs.total_steps, scenario_runs.context_data, scenario_runs.created_at, scenario_runs.updated_at 
+FROM scenario_runs 
+WHERE scenario_runs.scenario_id = ?
+2026-10-10 23:33:39,180 INFO sqlalchemy.engine.Engine [cached since 0.3881s ago] ('SCEN_2FC11047',)
+2026-10-10 23:33:39,183 INFO sqlalchemy.engine.Engine SELECT scenario_runs.id, scenario_runs.scenario_id, scenario_runs.scenario_type, scenario_runs.status, scenario_runs.current_step, scenario_runs.total_steps, scenario_runs.context_data, scenario_runs.created_at, scenario_runs.updated_at 
+FROM scenario_runs 
+WHERE scenario_runs.scenario_id = ?
+2026-10-10 23:33:39,183 INFO sqlalchemy.engine.Engine [cached since 0.3914s ago] ('SCEN_2FC11047',)
+2026-10-10 23:33:39,185 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.user_id = ?
+2026-10-10 23:33:39,185 INFO sqlalchemy.engine.Engine [cached since 0.3864s ago] ('7663d11c8bb640f6a767fe9400b203cd',)
+2026-10-10 23:33:39,187 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.account_number = ?
+2026-10-10 23:33:39,187 INFO sqlalchemy.engine.Engine [cached since 1.64s ago] ('SIM82626182',)
+2026-10-10 23:33:39,190 INFO sqlalchemy.engine.Engine SAVEPOINT sa_savepoint_1
+2026-10-10 23:33:39,190 INFO sqlalchemy.engine.Engine [no key 0.00024s] ()
+2026-10-10 23:33:39,191 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:39,191 INFO sqlalchemy.engine.Engine [cached since 0.3853s ago] ('d301e854c1ea446588a421c0533beacd',)
+2026-10-10 23:33:39,193 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:39,193 INFO sqlalchemy.engine.Engine [cached since 0.3873s ago] ('f78893e117924c51b188339d300cc940',)
+2026-10-10 23:33:39,196 INFO sqlalchemy.engine.Engine UPDATE accounts SET balance=?, updated_at=? WHERE accounts.id = ?
+2026-10-10 23:33:39,196 INFO sqlalchemy.engine.Engine [cached since 0.382s ago] [(1000.0, '2026-10-10 18:03:39.194924', 'd301e854c1ea446588a421c0533beacd'), (48000.0, '2026-10-10 18:03:39.194938', 'f78893e117924c51b188339d300cc940')]
+2026-10-10 23:33:39,199 INFO sqlalchemy.engine.Engine INSERT INTO transactions (id, transaction_id, sender_account_id, receiver_account_id, amount, remark, status, device_info, ip_address, location, risk_score, is_flagged, is_simulation, scenario_id, timestamp, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:39,199 INFO sqlalchemy.engine.Engine [cached since 0.3787s ago] ('f6585c4b6ea54890b86569130f9a6654', 'TXN20261010180339984597', 'd301e854c1ea446588a421c0533beacd', 'f78893e117924c51b188339d300cc940', 48000.0, 'Simulated Transfer 3', 'completed', None, None, None, None, 0, 1, 'SCEN_2FC11047', '2026-10-10 18:03:39.199390', '2026-10-10 18:03:39.199394')
+2026-10-10 23:33:39,201 INFO sqlalchemy.engine.Engine RELEASE SAVEPOINT sa_savepoint_1
+2026-10-10 23:33:39,201 INFO sqlalchemy.engine.Engine [no key 0.00020s] ()
+2026-10-10 23:33:39,205 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:39,206 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:39,207 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.id = ?
+2026-10-10 23:33:39,207 INFO sqlalchemy.engine.Engine [cached since 0.3726s ago] ('f6585c4b6ea54890b86569130f9a6654',)
+2026-10-10 23:33:39,210 INFO sqlalchemy.engine.Engine SELECT count(transactions.id) AS count_1 
+FROM transactions 
+WHERE transactions.sender_account_id = ? AND transactions.timestamp >= ? AND transactions.timestamp <= ? AND transactions.is_simulation = 1 AND transactions.scenario_id = ?
+2026-10-10 23:33:39,210 INFO sqlalchemy.engine.Engine [cached since 0.37s ago] ('d301e854c1ea446588a421c0533beacd', '2026-10-10 17:58:39.199390', '2026-10-10 18:03:39.199390', 'SCEN_2FC11047')
+2026-10-10 23:33:39,212 INFO sqlalchemy.engine.Engine SELECT sum(transactions.amount) AS sum_1 
+FROM transactions 
+WHERE transactions.receiver_account_id = ? AND transactions.timestamp >= ? AND transactions.timestamp <= ? AND transactions.is_simulation = 1 AND transactions.scenario_id = ?
+2026-10-10 23:33:39,213 INFO sqlalchemy.engine.Engine [cached since 0.3679s ago] ('d301e854c1ea446588a421c0533beacd', '2026-10-10 16:03:39.199390', '2026-10-10 18:03:39.199390', 'SCEN_2FC11047')
+2026-10-10 23:33:39,215 INFO sqlalchemy.engine.Engine UPDATE transactions SET risk_score=?, is_flagged=? WHERE transactions.id = ?
+2026-10-10 23:33:39,215 INFO sqlalchemy.engine.Engine [cached since 0.2811s ago] (100.0, 1, 'f6585c4b6ea54890b86569130f9a6654')
+2026-10-10 23:33:39,219 INFO sqlalchemy.engine.Engine SELECT fraud_alerts.id, fraud_alerts.alert_id, fraud_alerts.transaction_id, fraud_alerts.account_id, fraud_alerts.alert_type, fraud_alerts.risk_score, fraud_alerts.severity, fraud_alerts.description, fraud_alerts.rule_breakdown, fraud_alerts.status, fraud_alerts.created_at 
+FROM fraud_alerts 
+WHERE fraud_alerts.transaction_id = ?
+2026-10-10 23:33:39,219 INFO sqlalchemy.engine.Engine [cached since 0.2794s ago] ('f6585c4b6ea54890b86569130f9a6654',)
+2026-10-10 23:33:39,221 INFO sqlalchemy.engine.Engine INSERT INTO fraud_alerts (id, alert_id, transaction_id, account_id, alert_type, risk_score, severity, description, rule_breakdown, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:39,221 INFO sqlalchemy.engine.Engine [cached since 0.2786s ago] ('98d61b76ef964e608ce9cbe03e62d877', 'ALT20261010180339613', 'f6585c4b6ea54890b86569130f9a6654', 'd301e854c1ea446588a421c0533beacd', 'New Account Activity, Balance Drain, Mule Account Activity', 100.0, 'CRITICAL', '- New Account Activity: Account created 0.0 days ago with transfer > INR 20,000 (+20 Risk)\n- Balance Drain: 98.0% of balance transferred (+40 Risk)\n- Mule Account Activity: Transferring 98.0% of recent deposit within 2 hours (+40 Risk)', '{"rules_triggered": ["New Account Activity", "Balance Drain", "Mule Account Activity"], "score_breakdown": {"New Account Activity": 20.0, "Balance Drain": 40.0, "Mule Account Activity": 40.0}}', 'OPEN', '2026-10-10 18:03:39.220951')
+2026-10-10 23:33:39,224 INFO sqlalchemy.engine.Engine SELECT fraud_alerts.id, fraud_alerts.alert_id, fraud_alerts.transaction_id, fraud_alerts.account_id, fraud_alerts.alert_type, fraud_alerts.risk_score, fraud_alerts.severity, fraud_alerts.description, fraud_alerts.rule_breakdown, fraud_alerts.status, fraud_alerts.created_at 
+FROM fraud_alerts 
+WHERE fraud_alerts.alert_id = ?
+2026-10-10 23:33:39,224 INFO sqlalchemy.engine.Engine [cached since 0.2782s ago] ('ALT20261010180339613',)
+2026-10-10 23:33:39,225 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.id = ? OR transactions.transaction_id = ?
+2026-10-10 23:33:39,226 INFO sqlalchemy.engine.Engine [cached since 0.275s ago] ('f6585c4b6ea54890b86569130f9a6654', 'f6585c4b-6ea5-4890-b865-69130f9a6654')
+2026-10-10 23:33:39,228 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.transaction_id = ? OR transactions.id IS NULL
+2026-10-10 23:33:39,228 INFO sqlalchemy.engine.Engine [cached since 0.2712s ago] ('TXN20261010180339984597',)
+2026-10-10 23:33:39,230 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,230 INFO sqlalchemy.engine.Engine [cached since 0.2694s ago] ('f78893e117924c51b188339d300cc940',)
+2026-10-10 23:33:39,232 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,232 INFO sqlalchemy.engine.Engine [cached since 0.2691s ago] ('d301e854c1ea446588a421c0533beacd',)
+2026-10-10 23:33:39,234 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts
+2026-10-10 23:33:39,234 INFO sqlalchemy.engine.Engine [cached since 0.2661s ago] ()
+2026-10-10 23:33:39,236 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:39,237 INFO sqlalchemy.engine.Engine [cached since 0.2653s ago] ('1f32c1e2a99442b4a0c2e1d8a6522054', '259f793cb90b4d4bb11770ee7bd85d79', '35e03758e80c48cc8ac4285e891b26fd', '3b3362a26fea41d9b81871611c6b8daf', '7663d11c8bb640f6a767fe9400b203cd', '781cb6da24c94c85afcfff18bdcb8ec4', '7fc3e347d9cc46ec93d55a7ce66fe8b2', '8a447c3bbb7b4d06ab819559aca98f04', 'a32199620bbe456099b9f0c046083e62', 'b318c12162784c74983ce40199e9ec6d', 'e927004b49e44cecae89f4e62bc44a6c', 'ef4f5ae173d844f594532d8c30398b7e', 'f1ec2b9db89c4b0f8c3b057101e2a532')
+2026-10-10 23:33:39,240 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.status = ? AND transactions.is_simulation = 0 ORDER BY transactions.timestamp DESC
+ LIMIT ? OFFSET ?
+2026-10-10 23:33:39,240 INFO sqlalchemy.engine.Engine [cached since 0.2628s ago] ('completed', 3000, 0)
+2026-10-10 23:33:39,241 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,241 INFO sqlalchemy.engine.Engine [cached since 0.2604s ago] ('80f0adbe51ac4d2fba8c98533cf063b0',)
+2026-10-10 23:33:39,243 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,244 INFO sqlalchemy.engine.Engine [cached since 0.2596s ago] ('648e2efdd8aa42e69118094026ef89cf',)
+2026-10-10 23:33:39,246 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,246 INFO sqlalchemy.engine.Engine [cached since 0.2587s ago] ('35e03758e80c48cc8ac4285e891b26fd',)
+2026-10-10 23:33:39,248 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,248 INFO sqlalchemy.engine.Engine [cached since 0.257s ago] ('35e03758e80c48cc8ac4285e891b26fd',)
+2026-10-10 23:33:39,250 INFO sqlalchemy.engine.Engine SELECT accounts.id, accounts.account_number, accounts.user_id, accounts.balance, accounts.status, accounts.created_at, accounts.updated_at 
+FROM accounts
+2026-10-10 23:33:39,250 INFO sqlalchemy.engine.Engine [cached since 0.2818s ago] ()
+2026-10-10 23:33:39,252 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:39,253 INFO sqlalchemy.engine.Engine [cached since 0.2813s ago] ('1f32c1e2a99442b4a0c2e1d8a6522054', '259f793cb90b4d4bb11770ee7bd85d79', '35e03758e80c48cc8ac4285e891b26fd', '3b3362a26fea41d9b81871611c6b8daf', '7663d11c8bb640f6a767fe9400b203cd', '781cb6da24c94c85afcfff18bdcb8ec4', '7fc3e347d9cc46ec93d55a7ce66fe8b2', '8a447c3bbb7b4d06ab819559aca98f04', 'a32199620bbe456099b9f0c046083e62', 'b318c12162784c74983ce40199e9ec6d', 'e927004b49e44cecae89f4e62bc44a6c', 'ef4f5ae173d844f594532d8c30398b7e', 'f1ec2b9db89c4b0f8c3b057101e2a532')
+2026-10-10 23:33:39,255 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.status = ? AND transactions.is_simulation = 0 ORDER BY transactions.timestamp DESC
+ LIMIT ? OFFSET ?
+2026-10-10 23:33:39,255 INFO sqlalchemy.engine.Engine [cached since 0.278s ago] ('completed', 2000, 0)
+2026-10-10 23:33:39,257 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,257 INFO sqlalchemy.engine.Engine [cached since 0.2757s ago] ('80f0adbe51ac4d2fba8c98533cf063b0',)
+2026-10-10 23:33:39,259 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,260 INFO sqlalchemy.engine.Engine [cached since 0.2757s ago] ('648e2efdd8aa42e69118094026ef89cf',)
+2026-10-10 23:33:39,262 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,262 INFO sqlalchemy.engine.Engine [cached since 0.2747s ago] ('35e03758e80c48cc8ac4285e891b26fd',)
+2026-10-10 23:33:39,263 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,263 INFO sqlalchemy.engine.Engine [cached since 0.2725s ago] ('35e03758e80c48cc8ac4285e891b26fd',)
+2026-10-10 23:33:39,266 INFO sqlalchemy.engine.Engine SELECT recovery_cases.id, recovery_cases.case_id, recovery_cases.alert_id, recovery_cases.transaction_id, recovery_cases.recovery_score, recovery_cases.recovery_probability, recovery_cases.current_holder_account, recovery_cases.amount_at_risk, recovery_cases.recommended_action, recovery_cases.status, recovery_cases.assigned_to_id, recovery_cases.assigned_at, recovery_cases.closed_at, recovery_cases.created_at, recovery_cases.updated_at 
+FROM recovery_cases 
+WHERE recovery_cases.alert_id = ?
+2026-10-10 23:33:39,267 INFO sqlalchemy.engine.Engine [cached since 0.2499s ago] ('98d61b76ef964e608ce9cbe03e62d877',)
+2026-10-10 23:33:39,268 INFO sqlalchemy.engine.Engine INSERT INTO recovery_cases (id, case_id, alert_id, transaction_id, recovery_score, recovery_probability, current_holder_account, amount_at_risk, recommended_action, status, assigned_to_id, assigned_at, closed_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:39,269 INFO sqlalchemy.engine.Engine [cached since 0.2481s ago] ('62880e2a09354a528fd114c5421ef3ff', 'REC202610107017', '98d61b76ef964e608ce9cbe03e62d877', 'f6585c4b6ea54890b86569130f9a6654', 100.0, 'HIGH', 'SIM82626182', 48000.0, 'Freeze destination account immediately', 'OPEN', None, None, None, '2026-10-10 18:03:39.268466', '2026-10-10 18:03:39.268468')
+2026-10-10 23:33:39,270 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:39,276 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:39,277 INFO sqlalchemy.engine.Engine SELECT recovery_cases.id, recovery_cases.case_id, recovery_cases.alert_id, recovery_cases.transaction_id, recovery_cases.recovery_score, recovery_cases.recovery_probability, recovery_cases.current_holder_account, recovery_cases.amount_at_risk, recovery_cases.recommended_action, recovery_cases.status, recovery_cases.assigned_to_id, recovery_cases.assigned_at, recovery_cases.closed_at, recovery_cases.created_at, recovery_cases.updated_at 
+FROM recovery_cases 
+WHERE recovery_cases.case_id = ?
+2026-10-10 23:33:39,277 INFO sqlalchemy.engine.Engine [cached since 0.2373s ago] ('REC202610107017',)
+2026-10-10 23:33:39,279 INFO sqlalchemy.engine.Engine SELECT transactions.id AS transactions_id, transactions.transaction_id AS transactions_transaction_id, transactions.sender_account_id AS transactions_sender_account_id, transactions.receiver_account_id AS transactions_receiver_account_id, transactions.amount AS transactions_amount, transactions.remark AS transactions_remark, transactions.status AS transactions_status, transactions.device_info AS transactions_device_info, transactions.ip_address AS transactions_ip_address, transactions.location AS transactions_location, transactions.risk_score AS transactions_risk_score, transactions.is_flagged AS transactions_is_flagged, transactions.is_simulation AS transactions_is_simulation, transactions.scenario_id AS transactions_scenario_id, transactions.timestamp AS transactions_timestamp, transactions.created_at AS transactions_created_at 
+FROM transactions 
+WHERE transactions.id IN (?)
+2026-10-10 23:33:39,279 INFO sqlalchemy.engine.Engine [cached since 0.2339s ago] ('f6585c4b6ea54890b86569130f9a6654',)
+2026-10-10 23:33:39,282 INFO sqlalchemy.engine.Engine SELECT fraud_alerts.id AS fraud_alerts_id, fraud_alerts.alert_id AS fraud_alerts_alert_id, fraud_alerts.transaction_id AS fraud_alerts_transaction_id, fraud_alerts.account_id AS fraud_alerts_account_id, fraud_alerts.alert_type AS fraud_alerts_alert_type, fraud_alerts.risk_score AS fraud_alerts_risk_score, fraud_alerts.severity AS fraud_alerts_severity, fraud_alerts.description AS fraud_alerts_description, fraud_alerts.rule_breakdown AS fraud_alerts_rule_breakdown, fraud_alerts.status AS fraud_alerts_status, fraud_alerts.created_at AS fraud_alerts_created_at 
+FROM fraud_alerts 
+WHERE fraud_alerts.id IN (?)
+2026-10-10 23:33:39,282 INFO sqlalchemy.engine.Engine [cached since 0.2274s ago] ('98d61b76ef964e608ce9cbe03e62d877',)
+2026-10-10 23:33:39,285 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,285 INFO sqlalchemy.engine.Engine [cached since 0.2213s ago] ('f78893e117924c51b188339d300cc940',)
+2026-10-10 23:33:39,287 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,288 INFO sqlalchemy.engine.Engine [cached since 0.2199s ago] ('d301e854c1ea446588a421c0533beacd',)
+2026-10-10 23:33:39,290 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,290 INFO sqlalchemy.engine.Engine [cached since 0.2164s ago] ('d301e854c1ea446588a421c0533beacd',)
+2026-10-10 23:33:39,293 INFO sqlalchemy.engine.Engine SELECT transactions.id AS transactions_id, transactions.transaction_id AS transactions_transaction_id, transactions.sender_account_id AS transactions_sender_account_id, transactions.receiver_account_id AS transactions_receiver_account_id, transactions.amount AS transactions_amount, transactions.remark AS transactions_remark, transactions.status AS transactions_status, transactions.device_info AS transactions_device_info, transactions.ip_address AS transactions_ip_address, transactions.location AS transactions_location, transactions.risk_score AS transactions_risk_score, transactions.is_flagged AS transactions_is_flagged, transactions.is_simulation AS transactions_is_simulation, transactions.scenario_id AS transactions_scenario_id, transactions.timestamp AS transactions_timestamp, transactions.created_at AS transactions_created_at 
+FROM transactions 
+WHERE transactions.id IN (?)
+2026-10-10 23:33:39,293 INFO sqlalchemy.engine.Engine [cached since 0.2137s ago] ('f6585c4b6ea54890b86569130f9a6654',)
+2026-10-10 23:33:39,296 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,296 INFO sqlalchemy.engine.Engine [cached since 0.2108s ago] ('259f793cb90b4d4bb11770ee7bd85d79',)
+2026-10-10 23:33:39,299 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,299 INFO sqlalchemy.engine.Engine [cached since 0.2094s ago] ('7663d11c8bb640f6a767fe9400b203cd',)
+2026-10-10 23:33:39,302 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,302 INFO sqlalchemy.engine.Engine [cached since 0.2075s ago] ('7663d11c8bb640f6a767fe9400b203cd',)
+2026-10-10 23:33:39,304 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,304 INFO sqlalchemy.engine.Engine [cached since 0.2032s ago] ('f78893e117924c51b188339d300cc940',)
+2026-10-10 23:33:39,307 INFO sqlalchemy.engine.Engine SELECT accounts.id AS accounts_id, accounts.account_number AS accounts_account_number, accounts.user_id AS accounts_user_id, accounts.balance AS accounts_balance, accounts.status AS accounts_status, accounts.created_at AS accounts_created_at, accounts.updated_at AS accounts_updated_at 
+FROM accounts 
+WHERE accounts.id IN (?)
+2026-10-10 23:33:39,307 INFO sqlalchemy.engine.Engine [cached since 0.1903s ago] ('d301e854c1ea446588a421c0533beacd',)
+2026-10-10 23:33:39,310 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,310 INFO sqlalchemy.engine.Engine [cached since 0.1883s ago] ('259f793cb90b4d4bb11770ee7bd85d79',)
+2026-10-10 23:33:39,312 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id IN (?)
+2026-10-10 23:33:39,312 INFO sqlalchemy.engine.Engine [cached since 0.184s ago] ('7663d11c8bb640f6a767fe9400b203cd',)
+2026-10-10 23:33:39,315 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:39,316 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:39,316 INFO sqlalchemy.engine.Engine SELECT transactions.id, transactions.transaction_id, transactions.sender_account_id, transactions.receiver_account_id, transactions.amount, transactions.remark, transactions.status, transactions.device_info, transactions.ip_address, transactions.location, transactions.risk_score, transactions.is_flagged, transactions.is_simulation, transactions.scenario_id, transactions.timestamp, transactions.created_at 
+FROM transactions 
+WHERE transactions.id = ?
+2026-10-10 23:33:39,317 INFO sqlalchemy.engine.Engine [cached since 0.4822s ago] ('f6585c4b6ea54890b86569130f9a6654',)
+2026-10-10 23:33:39,319 INFO sqlalchemy.engine.Engine SELECT accounts.id 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:39,319 INFO sqlalchemy.engine.Engine [cached since 0.459s ago] ('d301e854c1ea446588a421c0533beacd',)
+2026-10-10 23:33:39,321 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:39,321 INFO sqlalchemy.engine.Engine [cached since 0.4559s ago] ('7663d11c8bb640f6a767fe9400b203cd',)
+2026-10-10 23:33:39,324 INFO sqlalchemy.engine.Engine SELECT accounts.id 
+FROM accounts 
+WHERE accounts.id = ?
+2026-10-10 23:33:39,324 INFO sqlalchemy.engine.Engine [cached since 0.4642s ago] ('f78893e117924c51b188339d300cc940',)
+2026-10-10 23:33:39,326 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.full_name AS users_full_name, users.email AS users_email, users.password_hash AS users_password_hash, users.role AS users_role, users.is_active AS users_is_active, users.is_superuser AS users_is_superuser, users.transaction_pin_hash AS users_transaction_pin_hash, users.trust_score AS users_trust_score, users.last_login_device AS users_last_login_device, users.last_login_city AS users_last_login_city, users.last_login_ip AS users_last_login_ip, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.id = ?
+2026-10-10 23:33:39,326 INFO sqlalchemy.engine.Engine [cached since 0.461s ago] ('259f793cb90b4d4bb11770ee7bd85d79',)
+2026-10-10 23:33:39,329 INFO sqlalchemy.engine.Engine UPDATE scenario_runs SET status=?, current_step=?, updated_at=? WHERE scenario_runs.id = ?
+2026-10-10 23:33:39,329 INFO sqlalchemy.engine.Engine [generated in 0.00033s] ('completed', 3, '2026-10-10 18:03:39.329668', '6f7279f3fe1544d78059cf793a3556bb')
+2026-10-10 23:33:39,333 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:39,336 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:39,337 INFO sqlalchemy.engine.Engine INSERT INTO audit_logs (id, user_id, user_name, user_email, user_role, action, target_type, target_id, details, ip_address, user_agent, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-10-10 23:33:39,337 INFO sqlalchemy.engine.Engine [cached since 0.5697s ago] ('ba2ba55aa0f1401fbc8f237aa93a2eee', 'b318c12162784c74983ce40199e9ec6d', 'Admin Test', 'admin_1791655416@test.com', 'admin', 'SCENARIO_STEPPED', 'SCENARIO', 'SCEN_2FC11047', '{"completed": true}', '127.0.0.1', None, '2026-10-10 18:03:39.336535')
+2026-10-10 23:33:39,340 INFO sqlalchemy.engine.Engine COMMIT
+2026-10-10 23:33:39,344 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-10-10 23:33:39,345 INFO sqlalchemy.engine.Engine SELECT scenario_runs.id, scenario_runs.scenario_id, scenario_runs.scenario_type, scenario_runs.status, scenario_runs.current_step, scenario_runs.total_steps, scenario_runs.context_data, scenario_runs.created_at, scenario_runs.updated_at 
+FROM scenario_runs 
+WHERE scenario_runs.scenario_id = ?
+2026-10-10 23:33:39,345 INFO sqlalchemy.engine.Engine [cached since 0.5527s ago] ('SCEN_2FC11047',)
+INFO:     127.0.0.1:61592 - "POST /api/v1/scenarios/SCEN_2FC11047/command HTTP/1.1" 200 OK
+2026-10-10 23:33:39,346 INFO sqlalchemy.engine.Engine ROLLBACK
