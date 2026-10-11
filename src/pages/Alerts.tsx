@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useAlerts, useAlertFilters } from '../hooks/useAlerts';
+import { useLiveTelemetry } from '../hooks/useWebSocket';
 import { AlertCard } from '../components/alerts/AlertCard';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { Pagination } from '../components/common/Pagination';
 import { formatDate } from '../utils/formatters';
 
 export const Alerts: React.FC = () => {
+  const { acknowledgeAlert, soundAlarm } = useLiveTelemetry();
   const { data, isLoading, error, refetch } = useAlerts({});
   const { filters, setFilters, clearFilters, hasActiveFilters } = useAlertFilters();
   const [selectedAlert, setSelectedAlert] = useState<any>(null);
@@ -42,8 +44,8 @@ export const Alerts: React.FC = () => {
   ];
 
   const handleAcknowledge = async (id: string) => {
-    // Call acknowledge API
-    console.log('Acknowledge alert:', id);
+    soundAlarm.stopAll();
+    await acknowledgeAlert(id);
     refetch();
   };
 

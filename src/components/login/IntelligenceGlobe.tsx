@@ -29,13 +29,13 @@ const GLOBAL_CITIES: GlobalCityNode[] = [
   { name: 'Frankfurt', country: 'Germany', lat: 50.1109, lng: 8.6821, account: 'ACC3042', currency: 'EUR', currencySymbol: '€' },
 
   // North America
-  { name: 'New York', country: 'USA', lat: 40.7128, lng: -74.006, account: 'ACC4011', currency: 'USD', currencySymbol: '$' },
-  { name: 'San Francisco', country: 'USA', lat: 37.7749, lng: -122.4194, account: 'ACC4085', currency: 'USD', currencySymbol: '$' },
+  { name: 'New York', country: 'USA', lat: 40.7128, lng: -74.006, account: 'ACC4011', currency: 'INR', currencySymbol: '₹' },
+  { name: 'San Francisco', country: 'USA', lat: 37.7749, lng: -122.4194, account: 'ACC4085', currency: 'INR', currencySymbol: '₹' },
 
   // Asia-Pacific
-  { name: 'Singapore', country: 'Singapore', lat: 1.3521, lng: 103.8198, account: 'ACC5022', currency: 'SGD', currencySymbol: 'S$' },
+  { name: 'Singapore', country: 'Singapore', lat: 1.3521, lng: 103.8198, account: 'ACC5022', currency: 'INR', currencySymbol: '₹' },
   { name: 'Tokyo', country: 'Japan', lat: 35.6762, lng: 139.6503, account: 'ACC5090', currency: 'JPY', currencySymbol: '¥' },
-  { name: 'Sydney', country: 'Australia', lat: -33.8688, lng: 151.2093, account: 'ACC6014', currency: 'AUD', currencySymbol: 'A$' },
+  { name: 'Sydney', country: 'Australia', lat: -33.8688, lng: 151.2093, account: 'ACC6014', currency: 'INR', currencySymbol: '₹' },
 ];
 
 type RiskTier = 'safe' | 'medium' | 'critical';
@@ -67,8 +67,8 @@ const RISK_COLORS: Record<RiskTier, { arc: string; particle: string }> = {
 const GLOBAL_THREAT_TRIGGERS = [
   { type: 'Cross-Border Hawala Route', corridor: 'Dubai ➔ Mumbai', amount: 'AED 180,000 (₹40.8L)', risk: 'critical' as RiskTier },
   { type: 'Offshore Shell Movement', corridor: 'Zurich ➔ London', amount: '£75,000', risk: 'critical' as RiskTier },
-  { type: 'High-Risk Wire Intercept', corridor: 'New York ➔ Mumbai', amount: '$120,000 (₹1.0Cr)', risk: 'critical' as RiskTier },
-  { type: 'Velocity Layering Anomaly', corridor: 'Singapore ➔ Bangalore', amount: 'S$65,000 (₹40.5L)', risk: 'medium' as RiskTier },
+  { type: 'High-Risk Wire Intercept', corridor: 'New York ➔ Mumbai', amount: '₹1,00,00,000 (₹1.0Cr)', risk: 'critical' as RiskTier },
+  { type: 'Velocity Layering Anomaly', corridor: 'Singapore ➔ Bangalore', amount: '₹40,50,000 (₹40.5L)', risk: 'medium' as RiskTier },
   { type: 'Capital Flight Corroboration', corridor: 'Tokyo ➔ Dubai', amount: '¥14,500,000', risk: 'medium' as RiskTier },
   { type: 'Domestic Mule Burst', corridor: 'Mumbai ➔ Delhi', amount: '₹1,45,000', risk: 'critical' as RiskTier },
 ];
@@ -336,9 +336,9 @@ export const IntelligenceGlobe: React.FC = () => {
       // Mumbai ➔ Delhi (Domestic RTGS)
       { id: 'GTX-102', fromIdx: 0, toIdx: 1, risk: 'safe', amount: '₹85,000', speed: 0.24 },
       // Singapore ➔ Bangalore (FinTech corridor)
-      { id: 'GTX-103', fromIdx: 9, toIdx: 2, risk: 'safe', amount: 'S$65,000', speed: 0.26 },
+      { id: 'GTX-103', fromIdx: 9, toIdx: 2, risk: 'safe', amount: '₹40,50,000', speed: 0.26 },
       // New York ➔ Mumbai (Cross-border wire)
-      { id: 'GTX-104', fromIdx: 7, toIdx: 0, risk: 'critical', amount: '$120,000', speed: 0.2 },
+      { id: 'GTX-104', fromIdx: 7, toIdx: 0, risk: 'critical', amount: '₹1,00,00,000', speed: 0.2 },
       // London ➔ Delhi (Offshore wire)
       { id: 'GTX-105', fromIdx: 4, toIdx: 1, risk: 'medium', amount: '£45,000', speed: 0.22 },
       // Zurich ➔ London (European private banking)
@@ -346,11 +346,11 @@ export const IntelligenceGlobe: React.FC = () => {
       // Frankfurt ➔ New York (Inter-bank settlement)
       { id: 'GTX-107', fromIdx: 6, toIdx: 7, risk: 'safe', amount: '€78,000', speed: 0.2 },
       // New York ➔ San Francisco (US Domestic wire)
-      { id: 'GTX-108', fromIdx: 7, toIdx: 8, risk: 'safe', amount: '$240,000', speed: 0.25 },
+      { id: 'GTX-108', fromIdx: 7, toIdx: 8, risk: 'safe', amount: '₹2,00,00,000', speed: 0.25 },
       // Tokyo ➔ Singapore (APAC settlement)
       { id: 'GTX-109', fromIdx: 10, toIdx: 9, risk: 'safe', amount: '¥8,200,000', speed: 0.27 },
       // Sydney ➔ Singapore (Asia-Pac corridor)
-      { id: 'GTX-110', fromIdx: 11, toIdx: 9, risk: 'medium', amount: 'A$52,000', speed: 0.22 },
+      { id: 'GTX-110', fromIdx: 11, toIdx: 9, risk: 'medium', amount: '₹28,50,000', speed: 0.22 },
       // Bangalore ➔ Mumbai (High velocity domestic)
       { id: 'GTX-111', fromIdx: 2, toIdx: 0, risk: 'medium', amount: '₹1,45,000', speed: 0.32 },
     ];

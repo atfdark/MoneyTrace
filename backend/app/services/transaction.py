@@ -253,12 +253,32 @@ class TransactionService:
         user_id: UUID,
         page: int = 1,
         page_size: int = 20,
+        is_investigator: bool = False,
     ) -> tuple[List[Transaction], int]:
-        """Get paginated transaction history for a user (sent + received)."""
-        # Get user's account
+        """Get paginated transaction history."""
+        if is_investigator:
+            count_stmt = select(func.count(Transaction.id))
+            total_result = await self.session.execute(count_stmt)
+            total = total_result.scalar_one()
+
+            stmt = (
+                select(Transaction)
+                .order_by(Transaction.timestamp.desc())
+                .offset((page - 1) * page_size)
+                .limit(page_size)
+                .options(
+                    selectinload(Transaction.sender_account),
+                    selectinload(Transaction.receiver_account)
+                )
+            )
+            result = await self.session.execute(stmt)
+            transactions = result.scalars().all()
+            return list(transactions), total
+
+        # Get user's account for customer role
         account = await self.get_account_by_user_id(user_id)
         if account is None:
-            raise exceptions.NotFoundError("Account not found")
+            return [], 0
 
         # Count total transactions
         count_stmt = select(func.count(Transaction.id)).where(

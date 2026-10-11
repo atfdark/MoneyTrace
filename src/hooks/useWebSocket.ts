@@ -34,6 +34,12 @@ export interface LiveAlertItem {
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | string;
   description: string;
   account_id: string;
+  account_number?: string;
+  target_account?: string;
+  current_holder?: string;
+  case_id?: string;
+  recovery_score?: number;
+  recovery_probability?: string;
   transaction_id?: string;
   transaction_code?: string;
   amount?: number;
@@ -52,6 +58,7 @@ export interface LiveAlertItem {
   };
   is_simulation?: boolean;
   scenario_id?: string;
+  status?: string;
 }
 
 export interface ToastItem {
@@ -185,9 +192,170 @@ let sharedLiveTxs: LiveTxItem[] = [];
 let sharedToasts: ToastItem[] = [];
 let sharedEmergencyAlert: LiveAlertItem | null = null;
 const telemetryListeners = new Set<() => void>();
+const acknowledgedAlertIds = new Set<string>();
+let isTelemetrySubscribed = false;
+let globalQueryClient: any = null;
 
 function notifyTelemetryListeners() {
   telemetryListeners.forEach(fn => fn());
+}
+
+function initGlobalTelemetrySubscriptions(queryClient: any) {
+  if (isTelemetrySubscribed) return;
+  isTelemetrySubscribed = true;
+  globalQueryClient = queryClient;
+
+  // 1. Live Transaction
+  wsService.subscribe('TRANSACTION_CREATED', (data: LiveTxItem) => {
+    const item: LiveTxItem = {
+      id: data.id || data.transaction_id || `tx-${Date.now()}`,
+      transaction_id: data.transaction_id || data.id,
+      source: data.source || 'ACC_SRC',
+      target: data.target || 'ACC_TGT',
+      source_name: data.source_name || data.source,
+      target_name: data.target_name || data.target,
+      amount: Number(data.amount || 0),
+      risk_score: Number(data.risk_score || 0),
+      is_flagged: Boolean(data.is_flagged),
+      status: data.status || 'COMPLETED',
+      remark: data.remark,
+      timestamp: data.timestamp || new Date().toISOString(),
+      is_simulation: Boolean(data.is_simulation),
+      scenario_id: data.scenario_id,
+    };
+
+    sharedLiveTxs = [item, ...sharedLiveTxs.slice(0, 49)];
+
+    // Add toast notification
+    const toastType = item.risk_score >= 80 ? 'error' : item.risk_score >= 50 ? 'warning' : 'info';
+    const toastTitle = item.risk_score >= 80 ? '🚨 Critical Transaction Detected' : item.risk_score >= 50 ? '⚠ High Risk Transfer' : '✓ New Transfer';
+    
+    const newToast: ToastItem = {
+      id: `toast-${Date.now()}-${Math.random()}`,
+      type: toastType,
+      title: toastTitle,
+      message: `${item.source_name} sent ₹${item.amount.toLocaleString()} to ${item.target_name}`,
+      timestamp: Date.now(),
+    };
+    sharedToasts = [newToast, ...sharedToasts.slice(0, 5)];
+
+    if (!soundAlarm.isSnoozed() && !soundAlarm.getMuted()) {
+      if (item.risk_score >= 80) {
+        soundAlarm.playWarningBeep();
+      } else {
+        soundAlarm.playBlip();
+      }
+    }
+
+    notifyTelemetryListeners();
+
+    // Invalidate queries
+    if (globalQueryClient) {
+      globalQueryClient.invalidateQueries({ queryKey: ['flow-graphs'] });
+      globalQueryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      globalQueryClient.invalidateQueries({ queryKey: ['transactions'] });
+      globalQueryClient.invalidateQueries({ queryKey: ['my-account'] });
+    }
+  });
+
+  // 2. Fraud Alert Created
+  wsService.subscribe('FRAUD_ALERT_CREATED', (data: LiveAlertItem) => {
+    const isAlreadyAck = data.alert_id && acknowledgedAlertIds.has(data.alert_id);
+    const isClosedOrReviewed = data.status === 'UNDER_REVIEW' || data.status === 'CLOSED';
+    const isHighOrCrit = data.severity === 'CRITICAL' || data.severity === 'HIGH' || data.risk_score >= 60;
+    
+    if (isHighOrCrit && !isAlreadyAck && !isClosedOrReviewed) {
+      sharedEmergencyAlert = data;
+      if (!soundAlarm.isSnoozed() && !soundAlarm.getMuted()) {
+        soundAlarm.startSiren();
+      }
+    }
+
+    const alertToast: ToastItem = {
+      id: `alert-toast-${Date.now()}`,
+      type: 'error',
+      title: `🚨 ${data.severity || 'HIGH'} FRAUD ALERT: ${data.alert_id}`,
+      message: data.description || `Risk Score ${data.risk_score}/100 triggered on transaction.`,
+      timestamp: Date.now(),
+    };
+    sharedToasts = [alertToast, ...sharedToasts.slice(0, 5)];
+
+    notifyTelemetryListeners();
+    if (globalQueryClient) {
+      globalQueryClient.invalidateQueries({ queryKey: ['alerts'] });
+      globalQueryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      globalQueryClient.invalidateQueries({ queryKey: ['flow-graphs'] });
+      globalQueryClient.invalidateQueries({ queryKey: ['flow-suspicious'] });
+    }
+  });
+
+  // 2b. Alert Acknowledged (Cross-device real-time sync)
+  wsService.subscribe('ALERT_ACKNOWLEDGED', (payload: any) => {
+    const alertId = payload?.alert_id;
+    if (alertId) {
+      acknowledgedAlertIds.add(alertId);
+    }
+    // Instantly terminate alarm sound across all connected screens & tabs
+    soundAlarm.stopAll();
+    sharedEmergencyAlert = null;
+    notifyTelemetryListeners();
+    if (globalQueryClient) {
+      globalQueryClient.invalidateQueries({ queryKey: ['alerts'] });
+      globalQueryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    }
+  });
+
+  // 3. User Connected / Presence
+  wsService.subscribe('USER_CONNECTED', (payload: any) => {
+    const user = payload?.user;
+    if (user && user.user_id !== 'anonymous') {
+      const existingIdx = sharedActiveUsers.findIndex(u => u.account_number === user.account_number);
+      if (existingIdx >= 0) {
+        sharedActiveUsers[existingIdx] = user;
+      } else {
+        sharedActiveUsers = [user, ...sharedActiveUsers];
+      }
+
+      const loginToast: ToastItem = {
+        id: `login-${Date.now()}`,
+        type: 'info',
+        title: '🟢 User Connected',
+        message: `${user.username} (${user.role}) is now online.`,
+        timestamp: Date.now(),
+      };
+      sharedToasts = [loginToast, ...sharedToasts.slice(0, 5)];
+    }
+    notifyTelemetryListeners();
+  });
+
+  // 3b. User Disconnected
+  wsService.subscribe('USER_DISCONNECTED', (payload: any) => {
+    const user = payload?.user;
+    if (user) {
+      sharedActiveUsers = sharedActiveUsers.filter(u => u.account_number !== user.account_number && u.user_id !== user.user_id);
+      notifyTelemetryListeners();
+    }
+  });
+
+  // 4. Account Frozen
+  wsService.subscribe('ACCOUNT_FROZEN', (data: any) => {
+    const freezeToast: ToastItem = {
+      id: `freeze-${Date.now()}`,
+      type: 'warning',
+      title: '🔒 Account Frozen',
+      message: `Account ${data.account_number} was frozen by ${data.frozen_by || 'SOC Investigator'}.`,
+      timestamp: Date.now(),
+    };
+    sharedToasts = [freezeToast, ...sharedToasts.slice(0, 5)];
+    soundAlarm.playWarningBeep();
+    notifyTelemetryListeners();
+
+    if (globalQueryClient) {
+      globalQueryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      globalQueryClient.invalidateQueries({ queryKey: ['flow-graphs'] });
+      globalQueryClient.invalidateQueries({ queryKey: ['flow-suspicious'] });
+    }
+  });
 }
 
 export function useLiveTelemetry() {
@@ -202,7 +370,7 @@ export function useLiveTelemetry() {
     };
   }, []);
 
-  // Fetch initial active users
+  // Fetch initial active users once
   useEffect(() => {
     api.get<any>('/users/active').then(res => {
       if (res.data?.active_users) {
@@ -212,139 +380,9 @@ export function useLiveTelemetry() {
     }).catch(() => {});
   }, []);
 
-  // Subscribe to real-time events
+  // Initialize global real-time event handlers exactly once
   useEffect(() => {
-    // 1. Live Transaction
-    const unsubTx = wsService.subscribe('TRANSACTION_CREATED', (data: LiveTxItem) => {
-      const item: LiveTxItem = {
-        id: data.id || data.transaction_id || `tx-${Date.now()}`,
-        transaction_id: data.transaction_id || data.id,
-        source: data.source || 'ACC_SRC',
-        target: data.target || 'ACC_TGT',
-        source_name: data.source_name || data.source,
-        target_name: data.target_name || data.target,
-        amount: Number(data.amount || 0),
-        risk_score: Number(data.risk_score || 0),
-        is_flagged: Boolean(data.is_flagged),
-        status: data.status || 'COMPLETED',
-        remark: data.remark,
-        timestamp: data.timestamp || new Date().toISOString(),
-        is_simulation: Boolean(data.is_simulation),
-        scenario_id: data.scenario_id,
-      };
-
-      sharedLiveTxs = [item, ...sharedLiveTxs.slice(0, 49)];
-
-      // Add toast notification
-      const toastType = item.risk_score >= 80 ? 'error' : item.risk_score >= 50 ? 'warning' : 'info';
-      const toastTitle = item.risk_score >= 80 ? '🚨 Critical Transaction Detected' : item.risk_score >= 50 ? '⚠ High Risk Transfer' : '✓ New Transfer';
-      
-      const newToast: ToastItem = {
-        id: `toast-${Date.now()}-${Math.random()}`,
-        type: toastType,
-        title: toastTitle,
-        message: `${item.source_name} sent ₹${item.amount.toLocaleString()} to ${item.target_name}`,
-        timestamp: Date.now(),
-      };
-      sharedToasts = [newToast, ...sharedToasts.slice(0, 5)];
-
-      if (item.risk_score >= 80) {
-        soundAlarm.playWarningBeep();
-      } else {
-        soundAlarm.playBlip();
-      }
-
-      notifyTelemetryListeners();
-
-      // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['flow-graphs'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['my-account'] });
-    });
-
-    // 2. Fraud Alert Created
-    const unsubAlert = wsService.subscribe('FRAUD_ALERT_CREATED', (data: LiveAlertItem) => {
-      const isHighOrCrit = data.severity === 'CRITICAL' || data.severity === 'HIGH' || data.risk_score >= 60;
-      
-      if (isHighOrCrit) {
-        sharedEmergencyAlert = data;
-        soundAlarm.startSiren();
-      }
-
-      const alertToast: ToastItem = {
-        id: `alert-toast-${Date.now()}`,
-        type: 'error',
-        title: `🚨 ${data.severity || 'HIGH'} FRAUD ALERT: ${data.alert_id}`,
-        message: data.description || `Risk Score ${data.risk_score}/100 triggered on transaction.`,
-        timestamp: Date.now(),
-      };
-      sharedToasts = [alertToast, ...sharedToasts.slice(0, 5)];
-
-      notifyTelemetryListeners();
-      queryClient.invalidateQueries({ queryKey: ['alerts'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['flow-graphs'] });
-      queryClient.invalidateQueries({ queryKey: ['flow-suspicious'] });
-    });
-
-    // 3. User Connected / Presence
-    const unsubUser = wsService.subscribe('USER_CONNECTED', (payload: any) => {
-      const user = payload?.user;
-      if (user && user.user_id !== 'anonymous') {
-        const existingIdx = sharedActiveUsers.findIndex(u => u.account_number === user.account_number);
-        if (existingIdx >= 0) {
-          sharedActiveUsers[existingIdx] = user;
-        } else {
-          sharedActiveUsers = [user, ...sharedActiveUsers];
-        }
-
-        const loginToast: ToastItem = {
-          id: `login-${Date.now()}`,
-          type: 'info',
-          title: '🟢 User Connected',
-          message: `${user.username} (${user.role}) is now online.`,
-          timestamp: Date.now(),
-        };
-        sharedToasts = [loginToast, ...sharedToasts.slice(0, 5)];
-      }
-      notifyTelemetryListeners();
-    });
-
-    // 3b. User Disconnected
-    const unsubUserDisconn = wsService.subscribe('USER_DISCONNECTED', (payload: any) => {
-      const user = payload?.user;
-      if (user) {
-        sharedActiveUsers = sharedActiveUsers.filter(u => u.account_number !== user.account_number && u.user_id !== user.user_id);
-        notifyTelemetryListeners();
-      }
-    });
-
-    // 4. Account Frozen
-    const unsubFreeze = wsService.subscribe('ACCOUNT_FROZEN', (data: any) => {
-      const freezeToast: ToastItem = {
-        id: `freeze-${Date.now()}`,
-        type: 'warning',
-        title: '🔒 Account Frozen',
-        message: `Account ${data.account_number} was frozen by ${data.frozen_by || 'SOC Investigator'}.`,
-        timestamp: Date.now(),
-      };
-      sharedToasts = [freezeToast, ...sharedToasts.slice(0, 5)];
-      soundAlarm.playWarningBeep();
-      notifyTelemetryListeners();
-
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['flow-graphs'] });
-      queryClient.invalidateQueries({ queryKey: ['flow-suspicious'] });
-    });
-
-    return () => {
-      unsubTx();
-      unsubAlert();
-      unsubUser();
-      unsubUserDisconn();
-      unsubFreeze();
-    };
+    initGlobalTelemetrySubscriptions(queryClient);
   }, [queryClient]);
 
   const dismissToast = useCallback((id: string) => {
@@ -352,11 +390,32 @@ export function useLiveTelemetry() {
     notifyTelemetryListeners();
   }, []);
 
-  const acknowledgeAlert = useCallback((alertId?: string) => {
-    soundAlarm.stopSiren();
+  const acknowledgeAlert = useCallback(async (alertId?: string) => {
+    // 1. Immediately silence ALL sound & siren without delay
+    soundAlarm.stopAll();
+
+    // 2. Mark alert as acknowledged to prevent re-triggering
+    const targetId = alertId || sharedEmergencyAlert?.alert_id;
+    if (targetId) {
+      acknowledgedAlertIds.add(targetId);
+    }
     sharedEmergencyAlert = null;
     notifyTelemetryListeners();
-  }, []);
+
+    // 3. Persist acknowledgment in backend API
+    if (targetId) {
+      try {
+        await api.post(`/alerts/${targetId}/acknowledge`);
+      } catch (err) {
+        console.error('Failed to acknowledge alert in backend:', err);
+      }
+    }
+
+    // 4. Invalidate relevant queries
+    queryClient.invalidateQueries({ queryKey: ['alerts'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    queryClient.invalidateQueries({ queryKey: ['flow-graphs'] });
+  }, [queryClient]);
 
   const freezeAccount = useCallback(async (accountNumber: string, reason?: string) => {
     try {

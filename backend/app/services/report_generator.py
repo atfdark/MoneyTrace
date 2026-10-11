@@ -242,8 +242,8 @@ class ReportGenerator:
 
     async def compile_dashboard_report_data(self) -> DashboardReportData:
         """Compile high-level executive dashboard summary."""
-        txn_count = (await self.session.execute(select(func.count(Transaction.id)).where(Transaction.is_simulation == False))).scalar_one() or 0
-        total_vol = (await self.session.execute(select(func.sum(Transaction.amount)).where(Transaction.is_simulation == False))).scalar_one() or 0.0
+        txn_count = (await self.session.execute(select(func.count(Transaction.id)))).scalar_one() or 0
+        total_vol = (await self.session.execute(select(func.sum(Transaction.amount)))).scalar_one() or 0.0
         alerts_count = (await self.session.execute(select(func.count(FraudAlert.id)))).scalar_one() or 0
         crit_count = (await self.session.execute(select(func.count(FraudAlert.id)).where(FraudAlert.severity == Severity.CRITICAL.value))).scalar_one() or 0
         open_cases = (await self.session.execute(select(func.count(RecoveryCase.id)).where(RecoveryCase.status != CaseStatus.RECOVERED.value))).scalar_one() or 0
@@ -590,7 +590,6 @@ class ReportGenerator:
 
         txns_stmt = (
             select(Transaction)
-            .where(Transaction.is_simulation == False)
             .order_by(Transaction.timestamp.desc())
             .options(selectinload(Transaction.sender_account), selectinload(Transaction.receiver_account))
         )
@@ -758,7 +757,6 @@ class ReportGenerator:
 
         txns_stmt = (
             select(Transaction)
-            .where(Transaction.is_simulation == False)
             .order_by(Transaction.timestamp.desc())
             .limit(500)
             .options(selectinload(Transaction.sender_account), selectinload(Transaction.receiver_account))

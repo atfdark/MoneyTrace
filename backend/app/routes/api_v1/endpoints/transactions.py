@@ -222,12 +222,14 @@ async def get_transaction_history(
     current_user: User = Depends(get_current_active_user),
     session: AsyncSession = Depends(get_session),
 ) -> TransactionHistoryResponse:
-    """Get paginated transaction history for current user."""
+    user_role_str = str(getattr(current_user, "role", "")).lower()
+    is_investigator = user_role_str in ["admin", "investigator", "analyst", "supervisor", "executive"]
     service = TransactionService(session)
     transactions, total = await service.get_transaction_history(
         user_id=current_user.id,
         page=page,
         page_size=page_size,
+        is_investigator=is_investigator,
     )
 
     total_pages = (total + page_size - 1) // page_size if total > 0 else 1

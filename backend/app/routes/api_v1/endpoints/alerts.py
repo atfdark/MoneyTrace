@@ -66,6 +66,18 @@ async def acknowledge_alert(
     """Acknowledge an alert."""
     service = FraudService(session)
     alert = await service.update_alert_status(alert_id, "UNDER_REVIEW")
+
+    # Broadcast ALERT_ACKNOWLEDGED event to immediately silence all connected SOC dashboards & mobile controllers
+    try:
+        from app.core.websocket_events import ws_events_manager, WSEventTypes
+        await ws_events_manager.broadcast(WSEventTypes.ALERT_ACKNOWLEDGED, {
+            "alert_id": alert.alert_id,
+            "status": alert.status,
+            "acknowledged_by": current_user.email,
+        })
+    except Exception:
+        pass
+
     return FraudAlertResponse.model_validate(alert)
 
 
@@ -78,4 +90,15 @@ async def resolve_alert(
     """Resolve an alert."""
     service = FraudService(session)
     alert = await service.update_alert_status(alert_id, "CLOSED")
+
+    try:
+        from app.core.websocket_events import ws_events_manager, WSEventTypes
+        await ws_events_manager.broadcast(WSEventTypes.ALERT_ACKNOWLEDGED, {
+            "alert_id": alert.alert_id,
+            "status": alert.status,
+            "resolved_by": current_user.email,
+        })
+    except Exception:
+        pass
+
     return FraudAlertResponse.model_validate(alert)

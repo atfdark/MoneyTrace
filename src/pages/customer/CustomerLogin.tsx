@@ -1,8 +1,8 @@
 import React from 'react';
-import { AuthPortal } from '../AuthPortal';
+import { Navigate } from 'react-router-dom';
 
 export const CustomerLogin: React.FC = () => {
-  return <AuthPortal initialPortal="customer" initialTab="signin" />;
+  return <Navigate to="/login" replace />;
 };
 
 export default CustomerLogin;

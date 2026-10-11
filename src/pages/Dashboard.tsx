@@ -13,7 +13,6 @@ import { ActiveUsersWidget } from '../components/dashboard/ActiveUsersWidget';
 import { FraudGeoHeatmap } from '../components/dashboard/FraudGeoHeatmap';
 import { LiveRecoveryTracker } from '../components/dashboard/LiveRecoveryTracker';
 import { DemoControlPanel } from '../components/dashboard/DemoControlPanel';
-import { EmergencyInvestigationOverlay } from '../components/alerts/EmergencyInvestigationOverlay';
 import { ToastCenter } from '../components/common/ToastCenter';
 import { useLiveTelemetry } from '../hooks/useWebSocket';
 import { RecoveryCommandCenter } from '../components/dashboard/RecoveryCommandCenter';
@@ -96,9 +95,8 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-5 pb-12">
-      {/* Toast & Emergency Overlay */}
+      {/* Toast Center */}
       <ToastCenter />
-      <EmergencyInvestigationOverlay />
 
       {/* Live Ticker */}
       <LiveTicker />

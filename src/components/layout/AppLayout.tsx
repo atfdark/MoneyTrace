@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopNav } from './TopNav';
 import { useLiveEvents } from '../../hooks/useWebSocket';
+import { EmergencyInvestigationOverlay } from '../alerts/EmergencyInvestigationOverlay';
 
 interface AppLayoutProps {
   title?: string;
@@ -65,6 +66,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ title, subtitle }) => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
+      {/* Global Emergency Investigation Overlay */}
+      <EmergencyInvestigationOverlay />
+
       {/* Mobile Sidebar Overlay */}
       {isMobile && sidebarOpen && (
         <div

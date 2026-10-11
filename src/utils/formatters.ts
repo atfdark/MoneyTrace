@@ -1,18 +1,26 @@
-// Currency formatting
+// Currency formatting (defaults to Indian Rupee ₹)
 export const formatCurrency = (
   value: number,
-  currency: string = 'USD',
-  locale: string = 'en-US'
+  currency: string = 'INR',
+  locale: string = 'en-IN'
 ): string => {
-  if (value === null || value === undefined || isNaN(value)) return '$0.00';
+  if (value === null || value === undefined || isNaN(value)) return '₹0.00';
 
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-    notation: value >= 1e6 || value <= -1e6 ? 'compact' : 'standard',
-  }).format(value);
+  // Normalize any USD or missing currency to Indian Rupee (INR / ₹)
+  const effectiveCurrency = (!currency || currency === 'USD') ? 'INR' : currency;
+  const effectiveLocale = effectiveCurrency === 'INR' ? 'en-IN' : locale;
+
+  try {
+    return new Intl.NumberFormat(effectiveLocale, {
+      style: 'currency',
+      currency: effectiveCurrency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+      notation: value >= 1e7 || value <= -1e7 ? 'compact' : 'standard',
+    }).format(value);
+  } catch {
+    return `₹${value.toLocaleString('en-IN')}`;
+  }
 };
 
 // Number formatting

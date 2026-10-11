@@ -128,7 +128,17 @@ class FraudService:
 
                 # Broadcast Fraud Alert event
                 try:
-                    from app.core.websocket_events import ws_events_manager, WSEventTypes
+                    # Extract target and holder accounts
+                    target_acc_num = None
+                    if hasattr(transaction, 'receiver_account') and transaction.receiver_account:
+                        target_acc_num = transaction.receiver_account.account_number
+
+                    holder_acc = (
+                        rec_case_dict.get("current_holder_account")
+                        if rec_case_dict and rec_case_dict.get("current_holder_account")
+                        else (target_acc_num or sender_account.account_number)
+                    )
+
                     await ws_events_manager.broadcast(WSEventTypes.FRAUD_ALERT_CREATED, {
                         "alert_id": alert.alert_id,
                         "alert_type": alert.alert_type,
@@ -136,6 +146,12 @@ class FraudService:
                         "severity": alert.severity,
                         "description": alert.description,
                         "account_id": str(alert.account_id),
+                        "account_number": sender_account.account_number,
+                        "target_account": target_acc_num,
+                        "current_holder": holder_acc,
+                        "case_id": rec_case_dict.get("case_id") if rec_case_dict else None,
+                        "recovery_score": rec_case_dict.get("recovery_score") if rec_case_dict else 85.0,
+                        "recovery_probability": rec_case_dict.get("recovery_probability") if rec_case_dict else "HIGH",
                         "transaction_id": str(alert.transaction_id),
                         "transaction_code": transaction.transaction_id,
                         "amount": float(transaction.amount),

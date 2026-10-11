@@ -150,7 +150,20 @@ async def freeze_account(
     Issue an immediate freeze directive on a suspect or mule holding account.
     Halts all outbound/inbound transactions and broadcasts ACCOUNT_FROZEN.
     """
-    stmt = select(Account).where(Account.account_number == account_number)
+    is_uuid = False
+    val_uuid = None
+    try:
+        from uuid import UUID as PyUUID
+        val_uuid = PyUUID(account_number)
+        is_uuid = True
+    except (ValueError, TypeError, AttributeError):
+        pass
+
+    if is_uuid and val_uuid:
+        stmt = select(Account).where(or_(Account.id == val_uuid, Account.account_number == account_number))
+    else:
+        stmt = select(Account).where(Account.account_number == account_number)
+
     res = await session.execute(stmt)
     account = res.scalar_one_or_none()
 
@@ -172,7 +185,7 @@ async def freeze_account(
         user_role=current_user.role if isinstance(current_user.role, str) else current_user.role.value,
         action=AuditAction.ACCOUNT_FROZEN.value,
         target_type="ACCOUNT",
-        target_id=account_number,
+        target_id=account.account_number,
         details={
             "reason": reason,
             "balance_preserved": float(account.balance),
@@ -183,6 +196,22 @@ async def freeze_account(
     )
     session.add(audit)
 
+    # Sync any related RecoveryCase to ACTION_TAKEN
+    try:
+        from app.models.recovery import RecoveryCase, CaseStatus
+        rec_stmt = select(RecoveryCase).where(
+            or_(
+                RecoveryCase.current_holder_account == account.account_number,
+                RecoveryCase.current_holder_account == str(account.id)
+            )
+        )
+        rec_res = await session.execute(rec_stmt)
+        for rc in rec_res.scalars().all():
+            rc.status = CaseStatus.ACTION_TAKEN.value
+            rc.updated_at = datetime.now(timezone.utc)
+    except Exception:
+        pass
+
     await session.commit()
     await session.refresh(account)
 
@@ -190,7 +219,8 @@ async def freeze_account(
     await ws_events_manager.broadcast(
         WSEventTypes.ACCOUNT_FROZEN,
         {
-            "account_number": account_number,
+            "account_number": account.account_number,
+            "account_id": str(account.id),
             "status": "FROZEN",
             "frozen_by": current_user.full_name,
             "reason": reason,
@@ -200,8 +230,9 @@ async def freeze_account(
 
     return {
         "success": True,
-        "message": f"Account {account_number} successfully frozen under emergency directive.",
-        "account_number": account_number,
+        "message": f"Account {account.account_number} successfully frozen under emergency directive.",
+        "account_number": account.account_number,
+        "account_id": str(account.id),
         "status": "FROZEN",
         "balance_preserved": float(account.balance),
     }

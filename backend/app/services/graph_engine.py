@@ -46,8 +46,6 @@ class GraphEngine:
         stmt = select(Transaction).where(Transaction.status == TransactionStatus.COMPLETED.value)
         if simulation_only:
             stmt = stmt.where(Transaction.is_simulation == True)
-        else:
-            stmt = stmt.where(Transaction.is_simulation == False)
 
         txn_stmt = (
             stmt
