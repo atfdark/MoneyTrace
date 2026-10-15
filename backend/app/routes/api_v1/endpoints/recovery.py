@@ -147,8 +147,11 @@ from pydantic import BaseModel, Field
 
 class FreezeAndProtectRequest(BaseModel):
     alert_id: Optional[str] = None
+    case_id: Optional[str] = None
     account_number: Optional[str] = None
-    reason: Optional[str] = "Emergency Debit Freeze Directive issued under Section 91 CrPC"
+    mode: Optional[str] = "LIEN"  # "LIEN" (Section 106 BNSS targeted lien) | "FULL_FREEZE" (Full account halt)
+    branch_id: Optional[str] = None  # Optional specific branch ID (e.g. "BR-01"); if omitted, batch-applies to all
+    reason: Optional[str] = "Statutory Lien Directive issued under Section 106 BNSS / I4C National Protocol"
 
 
 @router.post("/action/freeze-and-protect")
@@ -158,27 +161,34 @@ async def freeze_and_protect(
     session: AsyncSession = Depends(get_session),
 ):
     """
-    1-Click Emergency Freeze & Asset Recovery Directive.
-    Freezes the suspect/holder account, preserves capital, and transitions
-    the associated recovery case to ACTION_TAKEN.
+    1-Click Emergency Freeze & Statutory Lien Directive.
+    Supports targeted statutory lien under Section 106 BNSS (ring-fencing only tainted funds)
+    or emergency full account freeze, with multi-mule branch updates and NPCI dispatch telemetry.
     """
     from sqlalchemy import select, or_
     from app.models.account import Account, AccountStatus
     from app.models.recovery import RecoveryCase, CaseStatus
     from app.core.websocket_events import ws_events_manager, WSEventTypes
+    from app.services.recovery_engine import RecoveryEngine
     from uuid import UUID as PyUUID
 
     service = RecoveryService(session)
     case = None
 
-    # 1. Analyze or locate recovery case if alert_id is provided
-    if req.alert_id:
+    # 1. Locate recovery case by case_id, alert_id, or account
+    if req.case_id:
+        try:
+            case = await service.get_case(req.case_id)
+        except Exception:
+            pass
+
+    if not case and req.alert_id:
         try:
             case = await service.analyze_recovery(req.alert_id)
         except Exception:
             pass
 
-    # 2. Identify the target account to freeze
+    # 2. Identify the target account
     target_acc = req.account_number
     if not target_acc and case:
         target_acc = case.current_holder_account
@@ -192,9 +202,9 @@ async def freeze_and_protect(
             target_acc = str(alert.account_id)
 
     if not target_acc:
-        raise exceptions.ValidationError("No account identifier provided to freeze.")
+        raise exceptions.ValidationError("No account identifier provided for lien or freeze directive.")
 
-    # 3. Locate account in database
+    # 3. Locate account in database if exists
     is_uuid = False
     val_uuid = None
     try:
@@ -203,35 +213,82 @@ async def freeze_and_protect(
     except (ValueError, TypeError, AttributeError):
         pass
 
+    account = None
     if is_uuid and val_uuid:
         stmt = select(Account).where(or_(Account.id == val_uuid, Account.account_number == target_acc))
+        res = await session.execute(stmt)
+        account = res.scalar_one_or_none()
     else:
         stmt = select(Account).where(Account.account_number == target_acc)
+        res = await session.execute(stmt)
+        account = res.scalar_one_or_none()
 
-    res = await session.execute(stmt)
-    account = res.scalar_one_or_none()
-
-    if not account:
-        raise exceptions.NotFoundError(f"Target account '{target_acc}' not found")
-
-    # 4. Freeze account
-    account.status = AccountStatus.FROZEN.value
-
-    # 5. Update recovery case status
-    if case:
-        case.status = CaseStatus.ACTION_TAKEN.value
-        case.updated_at = datetime.now(timezone.utc)
-    else:
-        # Check if case exists for target account
+    # 4. If case was not found yet, check by target account
+    if not case and account:
         rec_stmt = select(RecoveryCase).where(RecoveryCase.current_holder_account == account.account_number)
         rec_res = await session.execute(rec_stmt)
         case = rec_res.scalars().first()
         if case:
-            case.status = CaseStatus.ACTION_TAKEN.value
+            case = service._ensure_branches_and_breakdown(case)
 
-    # 6. Audit Log
+    # 5. Process Multi-Branch statutory lien or freeze
+    branches = []
+    if case:
+        branches = case.recovery_branches or RecoveryEngine.synthesize_branches(
+            case.amount_at_risk, case.current_holder_account, case.status
+        )
+        updated_branches = []
+        for b in branches:
+            b_dict = dict(b)
+            # If a specific branch_id was provided, only mutate that branch
+            if req.branch_id and b_dict.get("branch_id") != req.branch_id:
+                updated_branches.append(b_dict)
+                continue
+
+            # Skip ATM exits from banking lien directives
+            if b_dict.get("rail") == "ATM_EXIT" or b_dict.get("status") == "LEAKED_ATM":
+                b_dict["status"] = "LEAKED_ATM"
+                updated_branches.append(b_dict)
+                continue
+
+            if req.mode == "FULL_FREEZE":
+                b_dict["status"] = "FROZEN"
+                if not b_dict.get("npci_ref"):
+                    b_dict["npci_ref"] = f"NPCI-ISO20022-FRZ-{abs(hash(b_dict.get('account_number', '')))%89999 + 10000}"
+            else:  # Default: targeted LIEN under Sec 106 BNSS
+                b_dict["status"] = "LIEN_MARKED"
+                if not b_dict.get("npci_ref"):
+                    b_dict["npci_ref"] = f"NPCI-ISO20022-LIEN-{abs(hash(b_dict.get('account_number', '')))%89999 + 10000}"
+
+            updated_branches.append(b_dict)
+
+        case.recovery_branches = updated_branches
+        branches = updated_branches
+        total_lien = sum(
+            float(b.get("recoverable_amount", 0.0))
+            for b in branches
+            if b.get("status") in ("LIEN_MARKED", "FROZEN")
+        )
+        case.lien_amount = total_lien
+        case.status = CaseStatus.ACTION_TAKEN.value
+        case.recommended_action = (
+            f"Statutory Lien (Sec 106 BNSS) Placed: ₹{total_lien:,.2f} Ring-Fenced across {len(branches)} Branches"
+            if req.mode != "FULL_FREEZE"
+            else f"Full Account Freeze Placed on {case.current_holder_account}"
+        )
+        case.updated_at = datetime.now(timezone.utc)
+
+    # 6. Apply to DB Account
+    if account:
+        if req.mode == "FULL_FREEZE":
+            account.status = AccountStatus.FROZEN.value
+        else:
+            # Under Section 106 BNSS, place statutory lien without destructive full account freeze
+            lien_delta = float(case.lien_amount) if case and case.lien_amount else float(account.balance)
+            account.lien_amount = (account.lien_amount or 0.0) + lien_delta
+
+    # 7. Audit Log
     from app.models.audit_log import AuditLog, AuditAction
-    from datetime import datetime, timezone
     from uuid import uuid4
 
     audit = AuditLog(
@@ -240,14 +297,17 @@ async def freeze_and_protect(
         user_name=current_user.full_name,
         user_email=current_user.email,
         user_role=current_user.role if isinstance(current_user.role, str) else current_user.role.value,
-        action=AuditAction.ACCOUNT_FROZEN.value,
+        action=AuditAction.ACCOUNT_FROZEN.value if req.mode == "FULL_FREEZE" else AuditAction.CASE_UPDATED.value,
         target_type="ACCOUNT",
-        target_id=account.account_number,
+        target_id=target_acc,
         details={
+            "directive_mode": req.mode or "LIEN",
+            "statute": "Section 106 BNSS / I4C Protocol" if req.mode != "FULL_FREEZE" else "Section 91 CrPC Full Freeze",
             "reason": req.reason,
             "case_id": case.case_id if case else None,
-            "balance_preserved": float(account.balance),
-            "status": "FROZEN",
+            "lien_amount": float(case.lien_amount if case else 0.0),
+            "balance_preserved": float(account.balance if account else (case.amount_at_risk if case else 0.0)),
+            "branches_count": len(branches),
         },
         ip_address="127.0.0.1",
         timestamp=datetime.now(timezone.utc),
@@ -255,18 +315,23 @@ async def freeze_and_protect(
     session.add(audit)
 
     await session.commit()
-    await session.refresh(account)
+    if account:
+        await session.refresh(account)
+    if case:
+        await session.refresh(case)
 
-    # 7. Broadcast real-time events
+    # 8. Real-Time Broadcasts
     await ws_events_manager.broadcast(
         WSEventTypes.ACCOUNT_FROZEN,
         {
-            "account_number": account.account_number,
-            "account_id": str(account.id),
-            "status": "FROZEN",
+            "account_number": target_acc,
+            "account_id": str(account.id) if account else target_acc,
+            "status": "FROZEN" if req.mode == "FULL_FREEZE" else "LIEN_MARKED",
+            "mode": req.mode or "LIEN",
             "frozen_by": current_user.full_name,
             "reason": req.reason,
-            "balance": float(account.balance),
+            "lien_amount": float(case.lien_amount if case else 0.0),
+            "balance": float(account.balance if account else 0.0),
         }
     )
 
@@ -277,24 +342,36 @@ async def freeze_and_protect(
                 "case_id": case.case_id,
                 "recovery_score": case.recovery_score,
                 "recovery_probability": case.recovery_probability,
-                "current_holder_account": account.account_number,
+                "current_holder_account": case.current_holder_account,
                 "amount_at_risk": float(case.amount_at_risk or 0),
-                "balance_preserved": float(account.balance),
+                "recovered_amount": float(case.recovered_amount or 0),
+                "lien_amount": float(case.lien_amount or 0),
+                "recovery_branches": case.recovery_branches,
+                "score_breakdown": case.score_breakdown,
                 "status": "ACTION_TAKEN",
                 "recommended_action": case.recommended_action,
             }
         )
 
+    mode_label = "Emergency Full Account Freeze" if req.mode == "FULL_FREEZE" else "Statutory Lien (Sec 106 BNSS)"
     return {
         "success": True,
-        "message": f"Account {account.account_number} frozen. Section 91 CrPC Directive issued.",
+        "mode": req.mode or "LIEN",
+        "message": f"{mode_label} placed on {target_acc}. NPCI ISO-20022 Directives Dispatched.",
         "case_id": case.case_id if case else None,
-        "account_frozen": account.account_number,
-        "balance_preserved": float(account.balance),
+        "account_affected": target_acc,
+        "lien_amount": float(case.lien_amount if case else 0.0),
+        "balance_preserved": float(account.balance if account else (case.amount_at_risk if case else 0.0)),
         "recovery_score": case.recovery_score if case else 88.0,
         "recovery_probability": case.recovery_probability if case else "HIGH",
-        "legal_notice": "Section 91 CrPC Preservation Notice Dispatched to Bank Nodal Officer",
+        "recovery_branches": case.recovery_branches if case else branches,
+        "legal_notice": "Section 106 BNSS Statutory Lien Directive Dispatched to Bank Nodal Officers",
         "status": "ACTION_TAKEN",
+        "npci_dispatch_steps": [
+            {"step": 1, "label": "ISO-20022 Lien Directive Dispatched via NPCI Central Switch", "status": "COMPLETED"},
+            {"step": 2, "label": f"Beneficiary Banks ACK Received ({case.case_id if case else 'ISO-ACK'}) — Ring-fenced", "status": "COMPLETED"},
+            {"step": 3, "label": "Statutory Lien Registered in I4C National Cybercrime Portal (1930)", "status": "COMPLETED"},
+        ],
     }
 
 
@@ -309,9 +386,10 @@ async def restitute_case(
     session: AsyncSession = Depends(get_session),
 ):
     """
-    Execute full capital restitution for a recovery case under Section 91 CrPC.
-    Freezes destination holder node, restitutes funds to victim, transitions
-    case status to RECOVERED, and broadcasts real-time recovery completion.
+    Execute pro-rata capital restitution for a recovery case under Section 106 BNSS / I4C.
+    Calculates total recoverable funds across all non-leaked banking branches,
+    credits the victim account with the recoverable sum (supporting partial pro-rata recovery),
+    marks branches as RESTITUTED, and transitions case to RECOVERED.
     """
     from datetime import datetime, timezone
     from decimal import Decimal
@@ -323,6 +401,7 @@ async def restitute_case(
     from app.models.transaction import Transaction, TransactionStatus
     from app.models.audit_log import AuditLog, AuditAction
     from app.core.websocket_events import ws_events_manager, WSEventTypes
+    from app.services.recovery_engine import RecoveryEngine
 
     service = RecoveryService(session)
     case = await service.get_case(case_id)
@@ -332,7 +411,7 @@ async def restitute_case(
     holder_res = await session.execute(select(Account).where(Account.account_number == holder_acc_num))
     holder = holder_res.scalar_one_or_none()
 
-    # Victim account from alert or fallback to ACC1001
+    # Victim account from alert or transaction or fallback
     victim = None
     if case.alert and case.alert.account:
         victim = case.alert.account
@@ -344,31 +423,61 @@ async def restitute_case(
         victim = vic_res.scalar_one_or_none()
 
     if not victim:
-        # Fallback to any account other than holder
         vic_res = await session.execute(select(Account).where(Account.account_number != holder_acc_num).limit(1))
         victim = vic_res.scalar_one_or_none()
 
-    amount_to_restore = Decimal(str(case.amount_at_risk or 150000.0))
+    # 2. Multi-Branch Pro-Rata Recoverable Calculation
+    branches = case.recovery_branches or RecoveryEngine.synthesize_branches(
+        case.amount_at_risk, case.current_holder_account, case.status
+    )
 
-    # 2. Freeze holder account
+    recoverable_amount = sum(
+        float(b.get("recoverable_amount", 0.0))
+        for b in branches
+        if b.get("status") != "LEAKED_ATM" and b.get("rail") != "ATM_EXIT"
+    )
+
+    total_at_risk = float(case.amount_at_risk or 100000.0)
+    if recoverable_amount <= 0:
+        recoverable_amount = round(total_at_risk * 0.80, 2)
+
+    leaked_shortfall = round(total_at_risk - recoverable_amount, 2)
+    recovery_percentage = round((recoverable_amount / total_at_risk) * 100, 1) if total_at_risk > 0 else 80.0
+
+    # 3. Update branch statuses
+    updated_branches = []
+    for b in branches:
+        b_dict = dict(b)
+        if b_dict.get("rail") == "ATM_EXIT" or b_dict.get("status") == "LEAKED_ATM":
+            b_dict["status"] = "LEAKED_ATM"
+        else:
+            b_dict["status"] = "RESTITUTED"
+        updated_branches.append(b_dict)
+
+    case.recovery_branches = updated_branches
+    case.recovered_amount = recoverable_amount
+    case.lien_amount = 0.0  # Lien converted into restitution settlement
+
+    # 4. Debits & Credits
+    amount_to_restore_dec = Decimal(str(recoverable_amount))
     if holder:
-        holder.status = AccountStatus.FROZEN.value
-        if holder.balance >= amount_to_restore:
-            holder.balance -= amount_to_restore
+        if holder.balance >= amount_to_restore_dec:
+            holder.balance -= amount_to_restore_dec
+        if hasattr(holder, "lien_amount") and holder.lien_amount:
+            holder.lien_amount = max(0.0, float(holder.lien_amount) - recoverable_amount)
 
-    # 3. Credit victim account
     if victim:
-        victim.balance += amount_to_restore
+        victim.balance += amount_to_restore_dec
         victim.status = AccountStatus.ACTIVE.value
 
-    # 4. Create restitution transaction record
+    # 5. Create synthetic restitution ledger transaction
     restitution_txn = Transaction(
         id=uuid4(),
         transaction_id=f"TXN_REST_{datetime.now(timezone.utc).strftime('%H%M%S')}_{case.case_id[-4:]}",
-        sender_account_id=holder.id if holder else victim.id,
+        sender_account_id=holder.id if holder else (victim.id if victim else uuid4()),
         receiver_account_id=victim.id if victim else (holder.id if holder else None),
-        amount=amount_to_restore,
-        remark=f"Section 91 CrPC Judicial Restitution Directive for Case {case.case_id}",
+        amount=amount_to_restore_dec,
+        remark=f"Section 106 BNSS Pro-Rata Restitution ({recovery_percentage}% Recovered: ₹{recoverable_amount:,.2f} Settled via NPCI Switch; ₹{leaked_shortfall:,.2f} ATM Leakage)",
         status=TransactionStatus.COMPLETED.value,
         risk_score=5.0,
         is_flagged=False,
@@ -378,12 +487,15 @@ async def restitute_case(
     )
     session.add(restitution_txn)
 
-    # 5. Update Recovery Case to RECOVERED
+    # 6. Update Recovery Case to RECOVERED
     case.status = CaseStatus.RECOVERED.value
-    case.recommended_action = f"100% CAPITAL RESTITUTED UNDER SECTION 91 CrPC ({holder_acc_num} Frozen, Funds Restored to {victim.account_number if victim else 'Victim'})"
+    case.recommended_action = (
+        f"{recovery_percentage}% PRO-RATA CAPITAL RESTITUTED UNDER SECTION 106 BNSS "
+        f"(₹{recoverable_amount:,.2f} Settled to {victim.account_number if victim else 'Victim'} via NPCI Switch)"
+    )
     case.updated_at = datetime.now(timezone.utc)
 
-    # 6. Close associated FraudAlert if present
+    # 7. Close linked Fraud Alert if present
     alert_to_ack = None
     if case.alert_id:
         al_res = await session.execute(select(FraudAlert).where(FraudAlert.id == case.alert_id))
@@ -392,7 +504,7 @@ async def restitute_case(
             al_obj.status = AlertStatus.CLOSED.value
             alert_to_ack = al_obj.alert_id
 
-    # 7. Audit Log
+    # 8. Audit Log
     audit = AuditLog(
         id=uuid4(),
         user_id=current_user.id,
@@ -403,11 +515,15 @@ async def restitute_case(
         target_type="CASE",
         target_id=case.case_id,
         details={
-            "action": "CAPITAL_RESTITUTED",
+            "action": "PRO_RATA_CAPITAL_RESTITUTED",
             "case_id": case.case_id,
+            "statute": "Section 106 BNSS / I4C Protocol",
             "holder_account": holder_acc_num,
             "victim_account": victim.account_number if victim else "Unknown",
-            "amount_restituted": float(amount_to_restore),
+            "amount_at_risk": total_at_risk,
+            "amount_restituted": recoverable_amount,
+            "recovery_percentage": recovery_percentage,
+            "leaked_shortfall": leaked_shortfall,
             "status": "RECOVERED",
         },
         ip_address="127.0.0.1",
@@ -418,24 +534,11 @@ async def restitute_case(
     await session.commit()
     await session.refresh(case)
 
-    # 8. Real-time broadcast
+    # 9. Real-Time Broadcasts
     if alert_to_ack:
         await ws_events_manager.broadcast(
             WSEventTypes.ALERT_ACKNOWLEDGED,
             {"alert_id": alert_to_ack, "acknowledged_by": current_user.full_name},
-        )
-
-    if holder:
-        await ws_events_manager.broadcast(
-            WSEventTypes.ACCOUNT_FROZEN,
-            {
-                "account_number": holder.account_number,
-                "account_id": str(holder.id),
-                "status": "FROZEN",
-                "frozen_by": current_user.full_name,
-                "reason": f"Frozen for Restitution under Case {case.case_id}",
-                "balance": float(holder.balance),
-            },
         )
 
     await ws_events_manager.broadcast(
@@ -445,13 +548,13 @@ async def restitute_case(
             "transaction_id": restitution_txn.transaction_id,
             "source": holder_acc_num,
             "target": victim.account_number if victim else "ACC_VICTIM",
-            "source_name": "Terminal Holding Node",
+            "source_name": "Multi-Mule Intermediary Ring",
             "target_name": "Victim Account",
-            "amount": float(amount_to_restore),
+            "amount": float(recoverable_amount),
             "risk_score": 5.0,
             "is_flagged": False,
             "status": "COMPLETED",
-            "remark": f"Capital Restituted under Section 91 CrPC for Case {case.case_id}",
+            "remark": f"Pro-Rata Capital Restituted under Section 106 BNSS for Case {case.case_id}",
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "is_simulation": True,
             "scenario_id": "statutory_restitution",
@@ -465,8 +568,11 @@ async def restitute_case(
             "recovery_score": 100.0,
             "recovery_probability": "HIGH",
             "current_holder_account": holder_acc_num,
-            "amount_at_risk": float(case.amount_at_risk),
-            "balance_preserved": float(amount_to_restore),
+            "amount_at_risk": total_at_risk,
+            "recovered_amount": recoverable_amount,
+            "lien_amount": 0.0,
+            "recovery_branches": updated_branches,
+            "score_breakdown": case.score_breakdown,
             "status": "RECOVERED",
             "recommended_action": case.recommended_action,
         },
@@ -474,10 +580,15 @@ async def restitute_case(
 
     return {
         "success": True,
-        "message": f"Case {case.case_id} successfully restituted. ₹{float(amount_to_restore):,.2f} restored to victim.",
+        "message": f"Case {case.case_id} pro-rata restitution executed. ₹{recoverable_amount:,.2f} ({recovery_percentage}%) restored to victim.",
         "case_id": case.case_id,
         "status": "RECOVERED",
-        "amount_restituted": float(amount_to_restore),
+        "amount_at_risk": total_at_risk,
+        "amount_restituted": recoverable_amount,
+        "recovered_amount": recoverable_amount,
+        "recovery_percentage": recovery_percentage,
+        "leaked_shortfall": leaked_shortfall,
+        "recovery_branches": updated_branches,
         "holder_account": holder_acc_num,
         "victim_account": victim.account_number if victim else None,
         "victim_balance": float(victim.balance) if victim else None,
@@ -491,7 +602,8 @@ async def generate_legal_notice(
     session: AsyncSession = Depends(get_session),
 ):
     """
-    Generate statutory formal legal notice under Section 91 CrPC / Section 94 BNSS 2023.
+    Generate statutory formal legal notice under Section 91 CrPC / Section 94 & 106 BNSS 2023,
+    complete with Multi-Bank Schedule of Tainted Accounts and NPCI ISO-20022 references.
     """
     service = RecoveryService(session)
     case = await service.get_case(case_id)
@@ -503,10 +615,22 @@ async def generate_legal_notice(
     elif case.transaction and case.transaction.sender_account:
         victim_acc = case.transaction.sender_account.account_number
 
-    notice_content = f"""# STATUTORY NOTICE UNDER SECTION 91 OF THE CODE OF CRIMINAL PROCEDURE, 1973
-**(Read with Section 94 of Bharatiya Nagarik Suraksha Sanhita, 2023 - BNSS)**
+    branches = case.recovery_branches or []
+    total_lien = float(case.lien_amount or case.amount_at_risk or 100000.0)
 
-**REFERENCE NO:** MT-SEC91/{case.case_id}
+    # Build schedule rows
+    schedule_rows = []
+    for b in branches:
+        schedule_rows.append(
+            f"| `{b.get('branch_id', 'BR')}` | `{b.get('account_number')}` | {b.get('bank_name')} | Hop {b.get('hop_level', 1)} | **{b.get('rail')}** | ₹{float(b.get('tainted_amount', 0)):,.2f} | ₹{float(b.get('recoverable_amount', 0)):,.2f} | `{b.get('npci_ref', 'N/A')}` | `{b.get('status', 'ACTIVE')}` |"
+        )
+    schedule_table_md = "\n".join(schedule_rows) if schedule_rows else f"| `BR-01` | `{case.current_holder_account}` | Partner Bank | Hop 1 | NEFT | ₹{total_lien:,.2f} | ₹{total_lien:,.2f} | `NPCI-LIEN-01` | `{case.status}` |"
+
+    notice_content = f"""# STATUTORY NOTICE UNDER SECTION 91 OF THE CODE OF CRIMINAL PROCEDURE, 1973
+**(Read with Sections 94 & 106 of Bharatiya Nagarik Suraksha Sanhita, 2023 - BNSS)**
+**National Cybercrime Reporting Portal (NCRP / I4C - Helpline 1930) Inter-Bank Directive**
+
+**REFERENCE NO:** MT-SEC106-BNSS/{case.case_id}
 **DATE OF ISSUANCE:** {now_str}
 **ISSUING AUTHORITY:** Financial Crime Cyber Operations Unit, FIU-IND / MoneyTrace Platform
 **INVESTIGATING OFFICER:** {current_user.full_name} ({current_user.email})
@@ -514,43 +638,57 @@ async def generate_legal_notice(
 ---
 
 ### TO:
-**THE NODAL OFFICER / AUTHORIZED SIGNATORY (FRAUD & DISPUTE OPERATIONS)**
-Partner Beneficiary Bank / Intermediary Payment Gateway
+**THE NODAL OFFICERS / AUTHORIZED SIGNATORIES (FRAUD & DISPUTE OPERATIONS)**
+Partner Beneficiary Banks, NPCI Switch Members & Intermediary Payment Gateways
 
 ---
 
 ### SUBJECT:
-**EMERGENCY DIRECTION FOR IMMEDIATE DEBIT FREEZE AND PRESERVATION OF FUNDS PERTAINING TO CYBER FINANCIAL FRAUD INVESTIGATION**
+**STATUTORY LIEN DIRECTIVE & EMERGENCY DEBIT RESTRAINT UNDER SECTION 106 BNSS 2023 FOR PROCEEDS OF CYBER CRIME**
 
 Sir / Madam,
 
-1. WHEREAS an investigation is being conducted into an unauthorized cyber financial siphon incident registered under Case Docket **{case.case_id}**, involving a total compromised sum of **INR {case.amount_at_risk:,.2f}** originally debited from victim account **{victim_acc}**.
+1. **INCIDENT OVERVIEW:**
+   An investigation is being conducted into an unauthorized cyber financial siphon incident registered under Case Docket **{case.case_id}**, involving a total compromised sum of **INR {float(case.amount_at_risk or 0):,.2f}** originally debited from victim account **`{victim_acc}`**.
 
-2. AND WHEREAS automated graph intelligence and real-time pass-through telemetry have identified that the said compromised proceeds have flowed into account **{case.current_holder_account}** maintained within your institution.
+2. **GRAPH INTELLIGENCE & MULTI-MULE FAN-OUT:**
+   Automated forensic graph telemetry and real-time NPCI pass-through logs have identified that the said compromised proceeds were layered across multiple recipient accounts and payment rails as specified in the **Multi-Bank Schedule of Tainted Accounts** below.
 
-3. NOW THEREFORE, by virtue of the powers conferred under **Section 91 of the Code of Criminal Procedure, 1973** (and corresponding provisions under BNSS 2023), you are hereby directed to:
-   - **Immediately place a complete DEBIT FREEZE (Lien)** on Account Number **{case.current_holder_account}** to prevent dissipation or routing of proceeds of crime.
-   - **Preserve the current balance of INR {case.amount_at_risk:,.2f}** for judicial restitution and asset recovery proceedings.
-   - **Furnish within 24 hours** the complete KYC dossier, registered mobile number, IP logs, and 90-day ledger extract for the said account.
+3. **SCHEDULE OF BENEFICIARY / MULE ACCOUNTS UNDER STATUTORY LIEN (SEC 106 BNSS):**
 
-4. TAKE NOTICE that non-compliance with this lawful order shall attract statutory penal liabilities under **Section 175 and Section 187 of the Indian Penal Code (IPC)** / Bharatiya Nyaya Sanhita (BNS).
+| Branch ID | Beneficiary Account | Bank / Institution | Hop | Rail | Tainted Flow | Statutory Lien | NPCI Reference | Disposition |
+| :--- | :--- | :--- | :---: | :---: | :---: | :---: | :--- | :--- |
+{schedule_table_md}
+
+4. **STATUTORY DIRECTIVE (SECTION 106 BNSS / SECTION 91 CrPC):**
+   By virtue of the powers conferred under **Section 106 BNSS 2023** (Statutory Lien & Ring-Fencing of Criminal Proceeds) and **Section 91 CrPC**, you are hereby commanded to:
+   - **Immediately place a STATUTORY LIEN** against the disputed sums indicated above in each respective beneficiary account. Ring-fence these balances without affecting legitimate unencumbered capital.
+   - **Furnish within 24 hours** the complete KYC dossier, registered mobile number, IP logs, and 90-day ledger extract for each listed beneficiary account.
+   - **Hold all marked funds** subject to further judicial restitution directives or Section 457 CrPC restitution orders.
+
+5. **LEGAL NOTICE:**
+   Take notice that non-compliance with this lawful order shall attract statutory penal liabilities under **Section 175 and Section 187 of the Indian Penal Code (IPC)** / **Bharatiya Nyaya Sanhita (BNS)**.
 
 ---
 
 **BY ORDER OF THE COMPETENT INVESTIGATING AUTHORITY**
-*Digital Signature Hash: SHA256-MT91-{case.case_id}-CERTIFIED*
-*Status: {case.status} | ML Recovery Confidence: {case.recovery_score:.1f}% ({case.recovery_probability})*
+*Digital Signature Hash: SHA256-MT106-{case.case_id}-NPCI-CERTIFIED*
+*Docket Status: {case.status} | ML Recovery Confidence: {case.recovery_score:.1f}% ({case.recovery_probability})*
 """
 
     return {
         "success": True,
         "case_id": case.case_id,
-        "reference_no": f"MT-SEC91/{case.case_id}",
-        "statute": "Section 91 CrPC / Section 94 BNSS",
+        "reference_no": f"MT-SEC106-BNSS/{case.case_id}",
+        "statute": "Section 91 CrPC / Section 94 & 106 BNSS",
         "target_account": case.current_holder_account,
         "amount": case.amount_at_risk,
+        "recovered_amount": case.recovered_amount,
+        "lien_amount": case.lien_amount,
+        "recovery_branches": branches,
         "status": case.status,
         "issued_at": now_str,
         "officer": current_user.full_name,
         "notice_text": notice_content,
     }
+

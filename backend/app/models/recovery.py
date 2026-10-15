@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from uuid import UUID, uuid4
 
-from sqlalchemy import Column, DateTime, String, ForeignKey, Float, Text, Index
+from sqlalchemy import Column, DateTime, String, ForeignKey, Float, Text, Index, JSON
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -62,6 +62,18 @@ class RecoveryCase(Base):
     )
     amount_at_risk: Mapped[float] = mapped_column(
         Float, nullable=False
+    )
+    recovered_amount: Mapped[float] = mapped_column(
+        Float, default=0.0, nullable=True
+    )
+    lien_amount: Mapped[float] = mapped_column(
+        Float, default=0.0, nullable=True
+    )
+    recovery_branches: Mapped[list | None] = mapped_column(
+        JSON, default=list, nullable=True
+    )
+    score_breakdown: Mapped[dict | None] = mapped_column(
+        JSON, default=dict, nullable=True
     )
     recommended_action: Mapped[str] = mapped_column(
         Text, nullable=False

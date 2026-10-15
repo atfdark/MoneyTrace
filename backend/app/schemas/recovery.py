@@ -23,6 +23,10 @@ class RecoveryCaseResponse(BaseModel):
     recovery_probability: RecoveryProbability
     current_holder_account: str
     amount_at_risk: float
+    recovered_amount: float = 0.0
+    lien_amount: float = 0.0
+    recovery_branches: Optional[List[dict]] = None
+    score_breakdown: Optional[dict] = None
     recommended_action: str
     status: CaseStatus
     created_at: datetime

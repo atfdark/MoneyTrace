@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { RecoveryCalculatorModal } from '../components/recovery/RecoveryCalculatorModal';
-import { RecoveryCommandCenter } from '../components/dashboard/RecoveryCommandCenter';
+import { RecoveryCommandCenter, RecoveryBranch, ScoreBreakdown } from '../components/dashboard/RecoveryCommandCenter';
 import { LegalNoticeModal } from '../components/recovery/LegalNoticeModal';
 import { soundAlarm } from '../utils/soundAlarm';
 import { formatCurrency } from '../utils/formatters';
@@ -17,6 +17,10 @@ interface RecoveryCase {
   recovery_probability: string;
   current_holder_account: string;
   amount_at_risk: number;
+  recovered_amount?: number;
+  lien_amount?: number;
+  recovery_branches?: RecoveryBranch[];
+  score_breakdown?: ScoreBreakdown;
   recommended_action: string;
   status: string;
   created_at: string;
@@ -37,14 +41,15 @@ export const Recovery: React.FC = () => {
   const [noticeModalOpen, setNoticeModalOpen] = useState(false);
   const [noticeData, setNoticeData] = useState<any>(null);
   const [noticeLoading, setNoticeLoading] = useState(false);
-  const [isDossierFreezing, setIsDossierFreezing] = useState(false);
+  const [isDossierLienPlacing, setIsDossierLienPlacing] = useState(false);
   const [isDossierRestituting, setIsDossierRestituting] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [dossierLienMode, setDossierLienMode] = useState<'LIEN' | 'FULL_FREEZE'>('LIEN');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showNotification = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 4000);
+    setTimeout(() => setToastMessage(null), 4500);
   };
 
   const fetchCases = async (preserveSelectedId?: string) => {
@@ -55,12 +60,12 @@ export const Recovery: React.FC = () => {
       setCases(data);
       if (data.length > 0) {
         if (preserveSelectedId) {
-          const match = data.find(c => c.case_id === preserveSelectedId || c.id === preserveSelectedId);
+          const match = data.find((c) => c.case_id === preserveSelectedId || c.id === preserveSelectedId);
           setSelectedCase(match || data[0]);
         } else {
-          setSelectedCase(prev => {
+          setSelectedCase((prev) => {
             if (!prev) return data[0];
-            const match = data.find(c => c.case_id === prev.case_id);
+            const match = data.find((c) => c.case_id === prev.case_id);
             return match || data[0];
           });
         }
@@ -78,7 +83,7 @@ export const Recovery: React.FC = () => {
 
   // Filtered cases
   const filteredCases = useMemo(() => {
-    return cases.filter(c => {
+    return cases.filter((c) => {
       const matchesStatus =
         statusFilter === 'ALL' || c.status.toUpperCase() === statusFilter.toUpperCase();
       const q = searchQuery.toLowerCase().trim();
@@ -91,35 +96,46 @@ export const Recovery: React.FC = () => {
     });
   }, [cases, statusFilter, searchQuery]);
 
-  // Execute Freeze from Dossier
-  const handleDossierFreeze = async () => {
+  // Execute Statutory Lien / Freeze from Dossier
+  const handleDossierLienOrFreeze = async (mode: 'LIEN' | 'FULL_FREEZE') => {
     if (!selectedCase) return;
-    setIsDossierFreezing(true);
+    setIsDossierLienPlacing(true);
     try {
       await api.post('/recovery/action/freeze-and-protect', {
+        case_id: selectedCase.case_id,
         alert_id: selectedCase.alert_id,
         account_number: selectedCase.current_holder_account,
-        reason: `Emergency Freeze Directive issued under Section 91 CrPC for Case ${selectedCase.case_id}`,
+        mode,
+        reason:
+          mode === 'LIEN'
+            ? `Statutory Lien Directive issued under Section 106 BNSS for Case ${selectedCase.case_id}`
+            : `Emergency Full Freeze Directive issued under Section 91 CrPC for Case ${selectedCase.case_id}`,
       });
       soundAlarm.playSuccessChime();
-      showNotification(`✓ Account ${selectedCase.current_holder_account} frozen under Section 91 CrPC.`);
+      showNotification(
+        mode === 'LIEN'
+          ? `✓ Statutory Lien placed on ${selectedCase.current_holder_account} under Section 106 BNSS.`
+          : `✓ Account ${selectedCase.current_holder_account} frozen under Section 91 CrPC.`
+      );
       await fetchCases(selectedCase.case_id);
     } catch (err: any) {
-      console.error('Failed to freeze node:', err);
-      showNotification('Failed to execute freeze directive.');
+      console.error('Failed to execute directive:', err);
+      showNotification('Failed to execute directive.');
     } finally {
-      setIsDossierFreezing(false);
+      setIsDossierLienPlacing(false);
     }
   };
 
-  // Execute Restitution from Dossier
+  // Execute Pro-Rata Restitution from Dossier
   const handleDossierRestitute = async () => {
     if (!selectedCase) return;
     setIsDossierRestituting(true);
     try {
-      await api.post(`/recovery/cases/${selectedCase.case_id}/restitute`);
+      const res = await api.post(`/recovery/cases/${selectedCase.case_id}/restitute`);
       soundAlarm.playSuccessChime();
-      showNotification(`🎉 WE HAVE RECOVERED: Stolen funds for Case ${selectedCase.case_id} restituted!`);
+      const recoveredAmt = (res.data as any)?.amount_restituted || selectedCase.amount_at_risk;
+      const pct = (res.data as any)?.recovery_percentage || 80;
+      showNotification(`🎉 PRO-RATA CAPITAL RESTITUTED: ₹${formatCurrency(recoveredAmt)} (${pct}%) credited to victim!`);
       await fetchCases(selectedCase.case_id);
     } catch (err: any) {
       console.error('Failed to restitute case:', err);
@@ -136,7 +152,7 @@ export const Recovery: React.FC = () => {
     try {
       const res = await api.post<any>(`/recovery/recalculate/${selectedCase.case_id}`);
       soundAlarm.playBlip();
-      showNotification(`✓ AI score recalculated: ${res.data?.recovery_score?.toFixed(0) || 90}/100.`);
+      showNotification(`✓ AI recovery score recalculated: ${res.data?.recovery_score?.toFixed(0) || 88}/100.`);
       await fetchCases(selectedCase.case_id);
     } catch (err: any) {
       console.error('Failed to recalculate:', err);
@@ -179,18 +195,20 @@ export const Recovery: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-gray-200 shadow-card p-6 rounded-xl">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-800 flex items-center justify-center text-white shadow-lg">
-            <span className="material-symbols-outlined text-[32px]">monetization_on</span>
+          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-700 via-teal-800 to-emerald-700 flex items-center justify-center text-white shadow-lg">
+            <span className="material-symbols-outlined text-[32px]">shield_with_heart</span>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-headline-sm font-bold text-gray-900">Asset Recovery Intelligence</h1>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Phase 7 Engine Active
+              <h1 className="text-headline-sm font-bold text-gray-900">
+                Multi-Branch Asset Recovery & Statutory Lien Command Center
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                I4C / NPCI Protocol Active
               </span>
             </div>
             <p className="text-body-sm text-gray-500 mt-1">
-              Multi-hop asset preservation scores, target freeze directives, and CrPC legal notices.
+              Multi-mule fan-out intercept, targeted statutory liens under Section 106 BNSS, and pro-rata capital restitution.
             </p>
           </div>
         </div>
@@ -207,7 +225,7 @@ export const Recovery: React.FC = () => {
 
           <button
             onClick={() => setShowCalculator(true)}
-            className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs shadow-md flex items-center gap-2 transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs shadow-md flex items-center gap-2 transition-all cursor-pointer"
           >
             <span className="material-symbols-outlined text-base">calculate</span>
             <span>Recovery AI Simulator</span>
@@ -215,22 +233,34 @@ export const Recovery: React.FC = () => {
         </div>
       </div>
 
-      {/* Dynamic Instant Directive Interceptor Bar */}
+      {/* Institutional Recovery Command Center Banner */}
       {activeCaseForCommandCenter ? (
         <RecoveryCommandCenter
           caseId={activeCaseForCommandCenter.case_id}
           alertId={activeCaseForCommandCenter.alert_id}
           stolenAmount={activeCaseForCommandCenter.amount_at_risk}
           currentHolder={activeCaseForCommandCenter.current_holder_account}
-          holderBank="Partner Holding Node"
-          recoveryProbability={Math.round(activeCaseForCommandCenter.recovery_score || 92)}
+          holderBank="State Bank of India (Primary Node)"
+          recoveryProbability={Math.round(activeCaseForCommandCenter.recovery_score || 88)}
           status={activeCaseForCommandCenter.status}
+          recoveredAmount={activeCaseForCommandCenter.recovered_amount || 0}
+          lienAmount={activeCaseForCommandCenter.lien_amount || 0}
+          recoveryBranches={activeCaseForCommandCenter.recovery_branches}
+          scoreBreakdown={activeCaseForCommandCenter.score_breakdown}
           onFreezeSuccess={() => {
             showNotification(`✓ Node ${activeCaseForCommandCenter.current_holder_account} frozen.`);
             fetchCases(activeCaseForCommandCenter.case_id);
           }}
+          onLienSuccess={(mode) => {
+            showNotification(
+              mode === 'LIEN'
+                ? `✓ Statutory Lien placed under Section 106 BNSS.`
+                : `✓ Full account freeze executed under Section 91 CrPC.`
+            );
+            fetchCases(activeCaseForCommandCenter.case_id);
+          }}
           onRestituteSuccess={() => {
-            showNotification(`🎉 100% CAPITAL RESTITUTED for Case ${activeCaseForCommandCenter.case_id}!`);
+            showNotification(`🎉 Pro-rata capital restitution completed for Case ${activeCaseForCommandCenter.case_id}!`);
             fetchCases(activeCaseForCommandCenter.case_id);
           }}
         />
@@ -254,14 +284,14 @@ export const Recovery: React.FC = () => {
         isLoading={noticeLoading}
       />
 
-      {/* Main Grid */}
+      {/* Main Grid: Cases List & Comprehensive Case Intelligence Dossier */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Cases List (7 cols) */}
-        <div className="lg:col-span-7 bg-white border border-gray-200 shadow-card p-6 rounded-xl space-y-4">
+        {/* Cases List (6 cols) */}
+        <div className="lg:col-span-6 bg-white border border-gray-200 shadow-card p-6 rounded-xl space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-title-md font-bold text-gray-900">Active Asset Recovery Cases</h2>
-              <p className="text-xs text-gray-500">Showing {filteredCases.length} incident cases</p>
+              <h2 className="text-title-md font-bold text-gray-900">Active Asset Recovery Dockets</h2>
+              <p className="text-xs text-gray-500">Showing {filteredCases.length} incident dockets</p>
             </div>
 
             {/* Status Filter Tabs */}
@@ -270,13 +300,19 @@ export const Recovery: React.FC = () => {
                 <button
                   key={st}
                   onClick={() => setStatusFilter(st)}
-                  className={`px-2.5 py-1 rounded-lg transition-all ${
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                     statusFilter === st
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-500 hover:text-gray-900'
                   }`}
                 >
-                  {st === 'ALL' ? 'All' : st === 'ACTION_TAKEN' ? 'Frozen' : st === 'RECOVERED' ? 'Recovered' : 'Open'}
+                  {st === 'ALL'
+                    ? 'All'
+                    : st === 'ACTION_TAKEN'
+                    ? 'Lien Placed'
+                    : st === 'RECOVERED'
+                    ? 'Restituted'
+                    : 'Open'}
                 </button>
               ))}
             </div>
@@ -289,7 +325,7 @@ export const Recovery: React.FC = () => {
             </span>
             <input
               type="text"
-              placeholder="Filter by Case ID, Alert ID, or Holding Account..."
+              placeholder="Search Docket ID, Alert ID, or Holding Account..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -304,11 +340,12 @@ export const Recovery: React.FC = () => {
               <p className="text-xs font-semibold">No recovery cases match the current filter.</p>
             </div>
           ) : (
-            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+            <div className="space-y-3 max-h-[700px] overflow-y-auto pr-2">
               {filteredCases.map((c) => {
                 const isSelected = selectedCase?.case_id === c.case_id;
                 const isRec = c.status === 'RECOVERED';
                 const isAct = c.status === 'ACTION_TAKEN';
+                const branchCount = c.recovery_branches?.length || 3;
 
                 return (
                   <div
@@ -317,41 +354,66 @@ export const Recovery: React.FC = () => {
                     className={`p-4 rounded-xl border transition-all cursor-pointer ${
                       isSelected
                         ? isRec
-                          ? 'bg-emerald-50/80 border-emerald-500 shadow-sm'
-                          : 'bg-indigo-50/80 border-indigo-500 shadow-sm'
+                          ? 'bg-emerald-50/80 border-emerald-500 shadow-md ring-2 ring-emerald-500/20'
+                          : isAct
+                          ? 'bg-blue-50/80 border-blue-500 shadow-md ring-2 ring-blue-500/20'
+                          : 'bg-indigo-50/80 border-indigo-500 shadow-md ring-2 ring-indigo-500/20'
                         : 'bg-gray-50/70 hover:bg-gray-100 border-gray-200'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-black text-gray-900">{c.case_id}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                          isRec
-                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                            : isAct
-                            ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                            : 'bg-red-100 text-red-800 border border-red-300'
-                        }`}>
-                          {c.status}
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                            isRec
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : isAct
+                              ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                              : 'bg-rose-100 text-rose-800 border border-rose-300'
+                          }`}
+                        >
+                          {isAct ? 'LIEN MARKED' : c.status}
+                        </span>
+
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-200 text-gray-700">
+                          {branchCount} Branches
                         </span>
                       </div>
 
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        c.recovery_probability === 'HIGH' ? 'bg-emerald-100 text-emerald-800' :
-                        c.recovery_probability === 'MEDIUM' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          c.recovery_probability === 'HIGH'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : c.recovery_probability === 'MEDIUM'
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-rose-100 text-rose-800'
+                        }`}
+                      >
                         {c.recovery_probability} ({c.recovery_score?.toFixed(0)}/100)
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <span>
-                        Holder: <b className="text-amber-700 font-mono font-bold">{c.current_holder_account}</b>
+                        Primary Node: <b className="text-amber-800 font-mono font-bold">{c.current_holder_account}</b>
                       </span>
                       <span>
                         At Risk: <b className="text-gray-900 font-bold">{formatCurrency(c.amount_at_risk)}</b>
                       </span>
                     </div>
+
+                    {/* Pro-Rata or Lien Indicator */}
+                    {(c.recovered_amount || c.lien_amount) ? (
+                      <div className="mt-2 pt-2 border-t border-gray-200/80 flex items-center justify-between text-[11px] font-mono">
+                        <span className="text-gray-500">
+                          {isRec ? 'Recovered Capital:' : 'Statutory Lien Placed:'}
+                        </span>
+                        <span className={`font-black ${isRec ? 'text-emerald-700' : 'text-blue-700'}`}>
+                          {formatCurrency(isRec ? (c.recovered_amount || 0) : (c.lien_amount || 0))}
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                 );
               })}
@@ -359,107 +421,255 @@ export const Recovery: React.FC = () => {
           )}
         </div>
 
-        {/* Case Detail Dossier (5 cols) */}
-        <div className="lg:col-span-5 bg-white border border-gray-200 shadow-card p-6 rounded-xl space-y-4">
+        {/* Case Intelligence Dossier (6 cols) */}
+        <div className="lg:col-span-6 bg-white border border-gray-200 shadow-card p-6 rounded-xl space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-title-md font-bold text-gray-900">Case Intelligence Dossier</h2>
+            <h2 className="text-title-md font-bold text-gray-900">Institutional Forensic Dossier</h2>
             {selectedCase && (
-              <span className="font-mono text-xs text-gray-500 font-bold">{selectedCase.case_id}</span>
+              <span className="font-mono text-xs text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-lg font-bold">
+                {selectedCase.case_id}
+              </span>
             )}
           </div>
 
           {selectedCase ? (
             <div className="space-y-4 text-xs">
-              {/* Recommended Action Card */}
+              {/* Statutory Directive Banner */}
               <div className="p-4 rounded-xl bg-slate-50 border border-gray-200 space-y-1.5">
-                <div className="text-[10px] text-gray-500 uppercase font-black tracking-wider">
-                  STATUTORY DIRECTIVE & ACTION
+                <div className="text-[10px] text-gray-500 uppercase font-black tracking-wider flex items-center justify-between">
+                  <span>STATUTORY DIRECTIVE & PROTOCOL</span>
+                  <span className="text-indigo-600 font-mono">Section 106 BNSS / 91 CrPC</span>
                 </div>
-                <div className={`text-xs font-bold leading-relaxed ${
-                  selectedCase.status === 'RECOVERED' ? 'text-emerald-700' : 'text-indigo-900'
-                }`}>
-                  {selectedCase.recommended_action}
-                </div>
-              </div>
-
-              {/* Status & Score Grid */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase block">Recovery Score</span>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-lg font-black text-emerald-800">
-                      {selectedCase.recovery_score?.toFixed(0)}
-                    </span>
-                    <span className="text-xs text-gray-400">/ 100</span>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase block">Docket Status</span>
-                  <span className={`text-sm font-black block mt-1 ${
+                <div
+                  className={`text-xs font-bold leading-relaxed ${
                     selectedCase.status === 'RECOVERED'
                       ? 'text-emerald-700'
                       : selectedCase.status === 'ACTION_TAKEN'
                       ? 'text-blue-700'
-                      : 'text-red-700'
-                  }`}>
-                    {selectedCase.status}
-                  </span>
+                      : 'text-indigo-900'
+                  }`}
+                >
+                  {selectedCase.recommended_action}
                 </div>
               </div>
 
-              {/* Node Details */}
-              <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200 space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase">Current Holding Node</span>
-                  <span className="text-[10px] font-mono text-gray-400">Section 91 Target</span>
+              {/* Recovery Score & Capital Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                  <span className="text-[10px] text-gray-500 font-bold uppercase block">Recovery Score</span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-2xl font-black text-emerald-800">
+                      {selectedCase.recovery_score?.toFixed(0)}
+                    </span>
+                    <span className="text-xs text-gray-400">/ 100</span>
+                    <span className="ml-2 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      {selectedCase.recovery_probability}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-base font-black text-amber-700 font-mono">
-                    {selectedCase.current_holder_account}
-                  </span>
-                  <span className="text-xs font-bold text-gray-800">
+
+                <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                  <span className="text-[10px] text-gray-500 font-bold uppercase block">Disputed Sum At Risk</span>
+                  <span className="text-base font-black text-gray-900 block mt-1 font-mono">
                     {formatCurrency(selectedCase.amount_at_risk)}
                   </span>
+                  <span className="text-[10px] text-gray-500">
+                    Recoverable: {formatCurrency(Math.round(selectedCase.amount_at_risk * 0.8))} (80%)
+                  </span>
                 </div>
               </div>
 
-              {/* Dossier Action Buttons */}
+              {/* Score X-Ray Algorithmic Breakdown */}
+              <div className="p-3.5 rounded-xl bg-gradient-to-br from-slate-900 to-indigo-950 text-white border border-indigo-800/60 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-cyan-300 font-bold text-[11px]">
+                    <span className="material-symbols-outlined text-[16px]">troubleshoot</span>
+                    <span>SCORE X-RAY / ALGORITHMIC BREAKDOWN</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-gray-400">
+                    Base: 50.0 • Final: {selectedCase.recovery_score?.toFixed(0)}/100
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+                  {(selectedCase.score_breakdown?.factors || [
+                    { label: 'Golden Hour Window (< 30m elapsed)', impact: '+25', type: 'positive', category: 'TIMING' },
+                    { label: 'Liquidity Coverage (80% in banking rails)', impact: '+18', type: 'positive', category: 'LIQUIDITY' },
+                    { label: 'Batch Settlement Window (NEFT/RTGS)', impact: '+15', type: 'positive', category: 'RAIL' },
+                    { label: 'Multi-Mule Fan-Out (3 branches)', impact: '-12', type: 'negative', category: 'STRUCTURE' },
+                    { label: 'Instant Rail Velocity (UPI/IMPS)', impact: '-5', type: 'negative', category: 'VELOCITY' },
+                    { label: 'ATM Cash-Out Leakage (20% shortfall)', impact: '-10', type: 'negative', category: 'LEAKAGE' },
+                  ]).map((f, i) => (
+                    <div
+                      key={i}
+                      className="p-2 rounded-lg bg-white/5 border border-white/5 flex items-center justify-between text-[11px]"
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-white/10 text-cyan-200">
+                          {f.category || 'RULE'}
+                        </span>
+                        <span className="truncate text-gray-200" title={f.label}>
+                          {f.label}
+                        </span>
+                      </div>
+                      <span
+                        className={`font-mono text-xs font-black px-1.5 py-0.5 rounded ${
+                          f.type === 'positive'
+                            ? 'text-emerald-300 bg-emerald-500/20'
+                            : f.type === 'negative'
+                            ? 'text-rose-300 bg-rose-500/20'
+                            : 'text-gray-300 bg-gray-500/20'
+                        }`}
+                      >
+                        {f.impact}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Multi-Branch Nodes in Dossier */}
+              <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200 space-y-2">
+                <div className="flex justify-between items-center text-[10px] text-gray-500 font-bold uppercase">
+                  <span>Layering Fan-Out Tree Nodes</span>
+                  <span>Targeted Lien vs Full Freeze</span>
+                </div>
+
+                <div className="space-y-2">
+                  {(selectedCase.recovery_branches || [
+                    {
+                      branch_id: 'BR-01',
+                      account_number: selectedCase.current_holder_account,
+                      bank_name: 'State Bank of India',
+                      rail: 'NEFT',
+                      hop_level: 1,
+                      tainted_amount: Math.round(selectedCase.amount_at_risk * 0.5),
+                      actual_balance: Math.round(selectedCase.amount_at_risk * 0.5 * 1.18),
+                      recoverable_amount: Math.round(selectedCase.amount_at_risk * 0.5),
+                      status: selectedCase.status === 'RECOVERED' ? 'RESTITUTED' : selectedCase.status === 'ACTION_TAKEN' ? 'LIEN_MARKED' : 'ACTIVE',
+                      npci_ref: 'NPCI-ISO20022-L1-51291',
+                    },
+                    {
+                      branch_id: 'BR-02',
+                      account_number: 'ACC5212',
+                      bank_name: 'HDFC Bank',
+                      rail: 'IMPS',
+                      hop_level: 2,
+                      tainted_amount: Math.round(selectedCase.amount_at_risk * 0.3),
+                      actual_balance: Math.round(selectedCase.amount_at_risk * 0.3 * 1.05),
+                      recoverable_amount: Math.round(selectedCase.amount_at_risk * 0.3),
+                      status: selectedCase.status === 'RECOVERED' ? 'RESTITUTED' : selectedCase.status === 'ACTION_TAKEN' ? 'LIEN_MARKED' : 'ACTIVE',
+                      npci_ref: 'NPCI-ISO20022-L2-68310',
+                    },
+                    {
+                      branch_id: 'BR-03',
+                      account_number: 'ATM-CASH-9012',
+                      bank_name: 'ATM Terminal',
+                      rail: 'ATM_EXIT',
+                      hop_level: 3,
+                      tainted_amount: Math.round(selectedCase.amount_at_risk * 0.2),
+                      actual_balance: 0,
+                      recoverable_amount: 0,
+                      status: 'LEAKED_ATM',
+                      npci_ref: 'NPCI-ALERT-LEAK-79344',
+                    },
+                  ]).map((branch) => {
+                    const isLeaked = branch.status === 'LEAKED_ATM' || branch.rail === 'ATM_EXIT';
+                    const isLien = branch.status === 'LIEN_MARKED';
+                    const isRest = branch.status === 'RESTITUTED';
+
+                    return (
+                      <div
+                        key={branch.branch_id}
+                        className="p-2.5 rounded-lg bg-white border border-gray-200 flex items-center justify-between text-xs"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono text-[10px] font-bold text-gray-500">
+                              Hop {branch.hop_level}
+                            </span>
+                            <span className="font-bold text-gray-900">{branch.bank_name}</span>
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-gray-100 text-gray-700">
+                              {branch.rail}
+                            </span>
+                          </div>
+                          <div className="text-[11px] font-mono text-gray-500">
+                            {branch.account_number} • Tainted: <b className="text-gray-900">{formatCurrency(branch.tainted_amount)}</b>
+                          </div>
+                        </div>
+
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                            isRest
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : isLien
+                              ? 'bg-blue-100 text-blue-800'
+                              : isLeaked
+                              ? 'bg-rose-100 text-rose-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {branch.status}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Action Controls */}
               <div className="space-y-2.5 pt-2">
-                {/* 1. Freeze Holding Node Button */}
+                {/* 1. Statutory Lien or Full Freeze Action */}
                 {selectedCase.status === 'OPEN' && (
-                  <button
-                    onClick={handleDossierFreeze}
-                    disabled={isDossierFreezing}
-                    className="w-full py-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 disabled:opacity-50 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer text-xs"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">ac_unit</span>
-                    <span>{isDossierFreezing ? 'Freezing Node...' : `Freeze ${selectedCase.current_holder_account} (Sec 91)`}</span>
-                  </button>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <button
+                        onClick={() => handleDossierLienOrFreeze('LIEN')}
+                        disabled={isDossierLienPlacing}
+                        className="flex-1 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer text-xs"
+                      >
+                        <span className="material-symbols-outlined text-[17px]">lock</span>
+                        <span>{isDossierLienPlacing ? 'Placing Lien...' : 'Place Statutory Lien (Sec 106)'}</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleDossierLienOrFreeze('FULL_FREEZE')}
+                        disabled={isDossierLienPlacing}
+                        className="flex-1 py-3 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 disabled:opacity-50 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer text-xs"
+                      >
+                        <span className="material-symbols-outlined text-[17px]">ac_unit</span>
+                        <span>{isDossierLienPlacing ? 'Freezing...' : 'Full Freeze (Sec 91)'}</span>
+                      </button>
+                    </div>
+                  </div>
                 )}
 
-                {/* 2. Restitute / Recover Button */}
+                {/* 2. Pro-Rata Restitution Button */}
                 {selectedCase.status !== 'RECOVERED' && (
                   <button
                     onClick={handleDossierRestitute}
                     disabled={isDossierRestituting}
-                    className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer text-xs"
+                    className="w-full py-3 bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-700 hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer text-xs"
                   >
                     <span className="material-symbols-outlined text-[18px]">savings</span>
-                    <span>{isDossierRestituting ? 'Restituting Funds...' : 'Restitute / Recover Capital to Victim'}</span>
+                    <span>
+                      {isDossierRestituting
+                        ? 'Executing Restitution...'
+                        : 'Execute Pro-Rata Restitution to Victim'}
+                    </span>
                   </button>
                 )}
 
-                {/* 3. Statutory Legal Notice Viewer */}
+                {/* 3. Multi-Bank Statutory Legal Notice Viewer */}
                 <button
                   onClick={handleOpenLegalNotice}
                   className="w-full py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer text-xs"
                 >
                   <span className="material-symbols-outlined text-[18px]">gavel</span>
-                  <span>View Section 91 CrPC Legal Notice</span>
+                  <span>View Section 106 BNSS / 91 CrPC Multi-Bank Notice</span>
                 </button>
 
-                {/* 4. Recalculate AI Score */}
+                {/* 4. Recalculate AI Recovery Score */}
                 <button
                   onClick={handleRecalculateScore}
                   disabled={isRecalculating}
@@ -468,7 +678,7 @@ export const Recovery: React.FC = () => {
                   <span className="material-symbols-outlined text-[18px]">
                     {isRecalculating ? 'sync' : 'auto_mode'}
                   </span>
-                  <span>{isRecalculating ? 'Recalculating...' : 'Recalculate AI Recovery Score'}</span>
+                  <span>{isRecalculating ? 'Recalculating Score...' : 'Recalculate AI Recovery Score'}</span>
                 </button>
 
                 {/* 5. Trace in Money Flow */}

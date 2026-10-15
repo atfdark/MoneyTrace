@@ -44,6 +44,9 @@ class Account(Base):
     balance: Mapped[Decimal] = mapped_column(
         DECIMAL(18, 2), default=Decimal("100000.00"), nullable=False
     )
+    lien_amount: Mapped[Decimal] = mapped_column(
+        DECIMAL(18, 2), default=Decimal("0.00"), nullable=True
+    )
 
     # Status
     status: Mapped[str] = mapped_column(

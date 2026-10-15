@@ -23,6 +23,33 @@ async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
     print("Starting MoneyTrace AI Banking & Crime Intelligence Platform...")
+    try:
+        from app.database import engine
+        from sqlalchemy import inspect, text
+
+        def _check_and_alter(sync_conn):
+            inspector = inspect(sync_conn)
+            tables = inspector.get_table_names()
+            if "recovery_cases" in tables:
+                cols = [c["name"] for c in inspector.get_columns("recovery_cases")]
+                if "recovered_amount" not in cols:
+                    sync_conn.execute(text("ALTER TABLE recovery_cases ADD COLUMN recovered_amount FLOAT DEFAULT 0.0"))
+                if "lien_amount" not in cols:
+                    sync_conn.execute(text("ALTER TABLE recovery_cases ADD COLUMN lien_amount FLOAT DEFAULT 0.0"))
+                if "recovery_branches" not in cols:
+                    sync_conn.execute(text("ALTER TABLE recovery_cases ADD COLUMN recovery_branches JSON DEFAULT NULL"))
+                if "score_breakdown" not in cols:
+                    sync_conn.execute(text("ALTER TABLE recovery_cases ADD COLUMN score_breakdown JSON DEFAULT NULL"))
+            if "accounts" in tables:
+                cols = [c["name"] for c in inspector.get_columns("accounts")]
+                if "lien_amount" not in cols:
+                    sync_conn.execute(text("ALTER TABLE accounts ADD COLUMN lien_amount NUMERIC DEFAULT 0.0"))
+
+        async with engine.begin() as conn:
+            await conn.run_sync(_check_and_alter)
+    except Exception as err:
+        print("Schema compatibility notice:", err)
+
     yield
     # Shutdown
     print("Shutting down MoneyTrace API...")
