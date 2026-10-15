@@ -58,11 +58,12 @@ async def refresh(
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
     data: RefreshRequest,
+    request: Request,
     session: AsyncSession = Depends(get_session),
 ) -> None:
     """Revoke the refresh token (logout)."""
     service = AuthService(session)
-    await service.logout(data.refresh_token)
+    await service.logout(data.refresh_token, request=request)
 
 
 @router.get("/me", response_model=UserResponse)

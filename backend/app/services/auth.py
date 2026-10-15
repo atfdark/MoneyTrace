@@ -103,6 +103,24 @@ class AuthService:
         """Authenticate a user and return JWT tokens while capturing client IP and GeoIP city."""
         user = await self._get_user_by_email(data.email)
         if not user or not verify_password(data.password, user.password_hash):
+            from app.services.audit_service import AuditService
+            from app.models.audit_log import AuditAction
+            try:
+                audit_svc = AuditService(self.session)
+                await audit_svc.log_event(
+                    action=AuditAction.LOGIN_FAILED,
+                    target_type="USER",
+                    target_id=data.email.strip()[:100],
+                    user=None,
+                    user_name="Unauthenticated Client",
+                    user_email=data.email.strip()[:100],
+                    user_role="anonymous",
+                    details={"reason": "Invalid credentials", "attempted_identifier": data.email.strip()[:100]},
+                    request=request,
+                    commit=True,
+                )
+            except Exception:
+                pass
             raise exceptions.UnauthorizedError("Invalid email or password")
 
         if not user.is_active:
@@ -126,6 +144,28 @@ class AuthService:
         user.last_login_city = f"{geo['city']}, {geo['country']}"
         user.last_login_device = user_agent[:150]
         await self.session.commit()
+
+        # Record audit log for successful login
+        from app.services.audit_service import AuditService
+        from app.models.audit_log import AuditAction
+        try:
+            audit_svc = AuditService(self.session)
+            await audit_svc.log_event(
+                action=AuditAction.LOGIN,
+                target_type="USER",
+                target_id=user.email,
+                user=user,
+                details={
+                    "city": geo["city"],
+                    "country": geo["country"],
+                    "device": user_agent[:150],
+                    "status": "SUCCESS",
+                },
+                request=request,
+                commit=True,
+            )
+        except Exception:
+            pass
 
         # Broadcast login status event over WebSocket with IP & GeoIP coordinates
         try:
@@ -205,9 +245,34 @@ class AuthService:
     # Logout
     # ------------------------------------------------------------------
 
-    async def logout(self, refresh_token_str: str) -> None:
-        """Revoke a refresh token."""
+    async def logout(self, refresh_token_str: str, request: Any = None) -> None:
+        """Revoke a refresh token and record audit trail."""
         _revoked_refresh_tokens.add(refresh_token_str)
+        try:
+            from app.core.security import decode_token
+            from app.services.audit_service import AuditService
+            from app.models.audit_log import AuditAction
+            from uuid import UUID
+
+            payload = decode_token(refresh_token_str)
+            sub = payload.get("sub")
+            user = None
+            if sub:
+                user = await self._get_user_by_id(UUID(sub))
+
+            audit_svc = AuditService(self.session)
+            await audit_svc.log_event(
+                action=AuditAction.LOGOUT,
+                target_type="USER",
+                target_id=user.email if user else (sub or "UNKNOWN"),
+                user=user,
+                user_id=sub,
+                details={"status": "REVOKED"},
+                request=request,
+                commit=True,
+            )
+        except Exception:
+            pass
 
     # ------------------------------------------------------------------
     # Helpers

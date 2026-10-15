@@ -150,6 +150,11 @@ async def freeze_account(
     Issue an immediate freeze directive on a suspect or mule holding account.
     Halts all outbound/inbound transactions and broadcasts ACCOUNT_FROZEN.
     """
+    ALLOWED_FREEZE_ROLES = {"admin", "supervisor", "investigator"}
+    user_role = (current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)).lower()
+    if user_role not in ALLOWED_FREEZE_ROLES:
+        raise exceptions.AuthorizationError("Only investigators, supervisors, or administrators can issue freeze directives")
+
     is_uuid = False
     val_uuid = None
     try:
@@ -173,28 +178,22 @@ async def freeze_account(
     account.status = AccountStatus.FROZEN.value
     
     # Record Audit Log
-    from app.models.audit_log import AuditLog, AuditAction
-    from datetime import datetime, timezone
-    from uuid import uuid4
+    from app.services.audit_service import AuditService
+    from app.models.audit_log import AuditAction
 
-    audit = AuditLog(
-        id=uuid4(),
-        user_id=current_user.id,
-        user_name=current_user.full_name,
-        user_email=current_user.email,
-        user_role=current_user.role if isinstance(current_user.role, str) else current_user.role.value,
-        action=AuditAction.ACCOUNT_FROZEN.value,
+    audit_svc = AuditService(session)
+    await audit_svc.log_event(
+        action=AuditAction.ACCOUNT_FROZEN,
         target_type="ACCOUNT",
         target_id=account.account_number,
+        user=current_user,
         details={
             "reason": reason,
             "balance_preserved": float(account.balance),
             "status": "FROZEN",
         },
-        ip_address="127.0.0.1",
-        timestamp=datetime.now(timezone.utc),
+        commit=False,
     )
-    session.add(audit)
 
     # Sync any related RecoveryCase to ACTION_TAKEN
     try:
@@ -235,4 +234,149 @@ async def freeze_account(
         "account_id": str(account.id),
         "status": "FROZEN",
         "balance_preserved": float(account.balance),
+    }
+
+
+# ---------------------------------------------------------------------------
+# 5. Account Unfreeze Action
+# ---------------------------------------------------------------------------
+
+@router.post("/accounts/{account_number}/unfreeze")
+async def unfreeze_account(
+    account_number: str,
+    reason: str = Body("Account verified and unfrozen by compliance authority", embed=True),
+    current_user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Lift freeze directive on an account after clearance or false positive verification.
+    Restricted to investigators, supervisors, and administrators.
+    """
+    ALLOWED_UNFREEZE_ROLES = {"admin", "supervisor", "investigator"}
+    user_role = (current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)).lower()
+    if user_role not in ALLOWED_UNFREEZE_ROLES:
+        raise exceptions.AuthorizationError("Only investigators, supervisors, or administrators can unfreeze accounts")
+
+    is_uuid = False
+    val_uuid = None
+    try:
+        from uuid import UUID as PyUUID
+        val_uuid = PyUUID(account_number)
+        is_uuid = True
+    except (ValueError, TypeError, AttributeError):
+        pass
+
+    if is_uuid and val_uuid:
+        stmt = select(Account).where(or_(Account.id == val_uuid, Account.account_number == account_number))
+    else:
+        stmt = select(Account).where(Account.account_number == account_number)
+
+    res = await session.execute(stmt)
+    account = res.scalar_one_or_none()
+
+    if not account:
+        raise exceptions.NotFoundError(f"Account '{account_number}' not found")
+
+    account.status = AccountStatus.ACTIVE.value
+
+    # Record Audit Log
+    from app.services.audit_service import AuditService
+    from app.models.audit_log import AuditAction
+
+    audit_svc = AuditService(session)
+    await audit_svc.log_event(
+        action=AuditAction.ACCOUNT_UNFROZEN,
+        target_type="ACCOUNT",
+        target_id=account.account_number,
+        user=current_user,
+        details={
+            "reason": reason,
+            "previous_status": "FROZEN",
+            "status": "ACTIVE",
+            "balance": float(account.balance),
+        },
+        commit=True,
+    )
+
+    await session.refresh(account)
+
+    # Broadcast real-time ACCOUNT_UNFROZEN event
+    try:
+        await ws_events_manager.broadcast(
+            "ACCOUNT_UNFROZEN",
+            {
+                "account_number": account.account_number,
+                "account_id": str(account.id),
+                "status": "ACTIVE",
+                "unfrozen_by": current_user.full_name,
+                "reason": reason,
+                "balance": float(account.balance),
+            }
+        )
+    except Exception:
+        pass
+
+    return {
+        "success": True,
+        "message": f"Account {account.account_number} successfully restored to active status.",
+        "account_number": account.account_number,
+        "account_id": str(account.id),
+        "status": "ACTIVE",
+        "balance": float(account.balance),
+    }
+
+
+# ---------------------------------------------------------------------------
+# 6. Administrative Role Management
+# ---------------------------------------------------------------------------
+
+@router.patch("/users/{user_id}/role")
+async def update_user_role(
+    user_id: UUID,
+    new_role: str = Body(..., embed=True),
+    current_user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_session),
+):
+    """Update a user's role (admin and supervisor only)."""
+    user_role = (current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)).lower()
+    if user_role not in {"admin", "supervisor"}:
+        raise exceptions.AuthorizationError("Only administrators or supervisors can modify user roles")
+
+    valid_roles = [r.value for r in UserRole]
+    clean_role = new_role.strip().lower()
+    if clean_role not in valid_roles:
+        raise exceptions.ValidationError(f"Invalid role '{new_role}'. Valid roles: {valid_roles}")
+
+    stmt = select(User).where(User.id == user_id)
+    target_user_res = await session.execute(stmt)
+    target_user = target_user_res.scalar_one_or_none()
+    if not target_user:
+        raise exceptions.NotFoundError("User not found")
+
+    old_role = target_user.role
+    target_user.role = clean_role
+    await session.commit()
+    await session.refresh(target_user)
+
+    from app.services.audit_service import AuditService
+    from app.models.audit_log import AuditAction
+    audit_svc = AuditService(session)
+    await audit_svc.log_event(
+        action=AuditAction.USER_ROLE_CHANGED,
+        target_type="USER",
+        target_id=str(target_user.id),
+        user=current_user,
+        details={
+            "target_user_email": target_user.email,
+            "old_role": str(old_role),
+            "new_role": clean_role,
+        },
+        commit=True,
+    )
+
+    return {
+        "success": True,
+        "user_id": str(target_user.id),
+        "old_role": old_role,
+        "new_role": target_user.role,
     }

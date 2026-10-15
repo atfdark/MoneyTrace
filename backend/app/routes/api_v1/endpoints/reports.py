@@ -12,7 +12,33 @@ from app.models.user import User
 from app.schemas.reports import ReportHistoryResponse
 from app.services.report_generator import ReportGenerator, BASE_STORAGE
 
+from app.models.audit_log import AuditAction
+from app.services.audit_service import AuditService
+
 router = APIRouter()
+
+
+async def log_report_audit(
+    session: AsyncSession,
+    user: User,
+    action: str,
+    target_type: str,
+    target_id: str,
+    format_type: str,
+    filename: str,
+):
+    try:
+        audit_svc = AuditService(session)
+        await audit_svc.log_event(
+            action=action,
+            target_type=target_type,
+            target_id=target_id,
+            user=user,
+            details={"format": format_type, "filename": filename},
+            commit=True,
+        )
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -28,6 +54,7 @@ async def download_investigation_pdf(
     """Generate and download PDF investigation dossier with money trail and charts."""
     generator = ReportGenerator(session)
     file_path, filename = await generator.generate_investigation_pdf(case_id)
+    await log_report_audit(session, current_user, AuditAction.REPORT_GENERATED.value, "CASE", case_id, "PDF", filename)
     return FileResponse(
         path=str(file_path),
         media_type="application/pdf",
@@ -44,6 +71,7 @@ async def download_investigation_docx(
     """Generate and download Microsoft Word DOCX investigation dossier."""
     generator = ReportGenerator(session)
     file_path, filename = await generator.generate_investigation_docx(case_id)
+    await log_report_audit(session, current_user, AuditAction.REPORT_GENERATED.value, "CASE", case_id, "DOCX", filename)
     return FileResponse(
         path=str(file_path),
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -64,6 +92,7 @@ async def download_fraud_pdf(
     """Generate and download PDF fraud incident report."""
     generator = ReportGenerator(session)
     file_path, filename = await generator.generate_fraud_pdf(alert_id)
+    await log_report_audit(session, current_user, AuditAction.REPORT_GENERATED.value, "ALERT", alert_id, "PDF", filename)
     return FileResponse(
         path=str(file_path),
         media_type="application/pdf",
@@ -80,6 +109,7 @@ async def download_fraud_docx(
     """Generate and download Microsoft Word DOCX fraud incident report."""
     generator = ReportGenerator(session)
     file_path, filename = await generator.generate_fraud_docx(alert_id)
+    await log_report_audit(session, current_user, AuditAction.REPORT_GENERATED.value, "ALERT", alert_id, "DOCX", filename)
     return FileResponse(
         path=str(file_path),
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -100,6 +130,7 @@ async def download_recovery_pdf(
     """Generate and download PDF asset recovery report."""
     generator = ReportGenerator(session)
     file_path, filename = await generator.generate_recovery_pdf(case_id)
+    await log_report_audit(session, current_user, AuditAction.REPORT_GENERATED.value, "CASE", case_id, "PDF", filename)
     return FileResponse(
         path=str(file_path),
         media_type="application/pdf",
@@ -116,6 +147,7 @@ async def download_recovery_docx(
     """Generate and download DOCX asset recovery report."""
     generator = ReportGenerator(session)
     file_path, filename = await generator.generate_recovery_docx(case_id)
+    await log_report_audit(session, current_user, AuditAction.REPORT_GENERATED.value, "CASE", case_id, "DOCX", filename)
     return FileResponse(
         path=str(file_path),
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -135,6 +167,7 @@ async def download_dashboard_pdf(
     """Generate and download PDF executive dashboard summary."""
     generator = ReportGenerator(session)
     file_path, filename = await generator.generate_dashboard_pdf()
+    await log_report_audit(session, current_user, AuditAction.REPORT_GENERATED.value, "DASHBOARD", "EXECUTIVE", "PDF", filename)
     return FileResponse(
         path=str(file_path),
         media_type="application/pdf",
@@ -150,6 +183,7 @@ async def download_dashboard_docx(
     """Generate and download DOCX executive dashboard summary."""
     generator = ReportGenerator(session)
     file_path, filename = await generator.generate_dashboard_docx()
+    await log_report_audit(session, current_user, AuditAction.REPORT_GENERATED.value, "DASHBOARD", "EXECUTIVE", "DOCX", filename)
     return FileResponse(
         path=str(file_path),
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -169,6 +203,7 @@ async def export_transactions_csv(
     """Export transactions as CSV file."""
     generator = ReportGenerator(session)
     file_path, filename = await generator.export_transactions_csv()
+    await log_report_audit(session, current_user, AuditAction.REPORT_EXPORTED.value, "TRANSACTIONS", "ALL", "CSV", filename)
     return FileResponse(
         path=str(file_path),
         media_type="text/csv",
@@ -184,6 +219,7 @@ async def export_alerts_csv(
     """Export fraud alerts as CSV file."""
     generator = ReportGenerator(session)
     file_path, filename = await generator.export_alerts_csv()
+    await log_report_audit(session, current_user, AuditAction.REPORT_EXPORTED.value, "ALERTS", "ALL", "CSV", filename)
     return FileResponse(
         path=str(file_path),
         media_type="text/csv",
@@ -199,6 +235,7 @@ async def export_recovery_csv(
     """Export recovery cases as CSV file."""
     generator = ReportGenerator(session)
     file_path, filename = await generator.export_recovery_csv()
+    await log_report_audit(session, current_user, AuditAction.REPORT_EXPORTED.value, "RECOVERY", "ALL", "CSV", filename)
     return FileResponse(
         path=str(file_path),
         media_type="text/csv",
@@ -214,6 +251,7 @@ async def export_accounts_csv(
     """Export accounts as CSV file."""
     generator = ReportGenerator(session)
     file_path, filename = await generator.export_accounts_csv()
+    await log_report_audit(session, current_user, AuditAction.REPORT_EXPORTED.value, "ACCOUNTS", "ALL", "CSV", filename)
     return FileResponse(
         path=str(file_path),
         media_type="text/csv",

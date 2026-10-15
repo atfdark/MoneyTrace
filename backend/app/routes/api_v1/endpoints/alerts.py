@@ -67,6 +67,27 @@ async def acknowledge_alert(
     service = FraudService(session)
     alert = await service.update_alert_status(alert_id, "UNDER_REVIEW")
 
+    # Record Audit Log
+    try:
+        from app.services.audit_service import AuditService
+        from app.models.audit_log import AuditAction
+        audit_svc = AuditService(session)
+        await audit_svc.log_event(
+            action=AuditAction.ALERT_ACKNOWLEDGED,
+            target_type="ALERT",
+            target_id=alert.alert_id,
+            user=current_user,
+            details={
+                "status": "UNDER_REVIEW",
+                "risk_score": alert.risk_score,
+                "severity": alert.severity,
+                "alert_type": alert.alert_type,
+            },
+            commit=True,
+        )
+    except Exception:
+        pass
+
     # Broadcast ALERT_ACKNOWLEDGED event to immediately silence all connected SOC dashboards & mobile controllers
     try:
         from app.core.websocket_events import ws_events_manager, WSEventTypes
@@ -90,6 +111,27 @@ async def resolve_alert(
     """Resolve an alert."""
     service = FraudService(session)
     alert = await service.update_alert_status(alert_id, "CLOSED")
+
+    # Record Audit Log
+    try:
+        from app.services.audit_service import AuditService
+        from app.models.audit_log import AuditAction
+        audit_svc = AuditService(session)
+        await audit_svc.log_event(
+            action=AuditAction.ALERT_RESOLVED,
+            target_type="ALERT",
+            target_id=alert.alert_id,
+            user=current_user,
+            details={
+                "status": "CLOSED",
+                "risk_score": alert.risk_score,
+                "severity": alert.severity,
+                "alert_type": alert.alert_type,
+            },
+            commit=True,
+        )
+    except Exception:
+        pass
 
     try:
         from app.core.websocket_events import ws_events_manager, WSEventTypes
